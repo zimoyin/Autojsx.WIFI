@@ -7,7 +7,7 @@ import javax.swing.ImageIcon
 
 
 class StopAll :
-    AnAction("停止所有脚本","停止运行",ImageIcon(MyModuleType::class.java.classLoader.getResource("icons/pluginMainDeclaration.png"))) {
+    AnAction("停止所有脚本","停止运行",github.zimo.autojsx.icons.ICONS.LOGO) {
     override fun actionPerformed(e: AnActionEvent) {
         println("test1")
     }

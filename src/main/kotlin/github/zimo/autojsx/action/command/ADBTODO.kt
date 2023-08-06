@@ -6,7 +6,7 @@ import github.zimo.autojsx.module.MyModuleType
 import javax.swing.ImageIcon
 
 class ADBTODO :
-    AnAction("ADB TODO","不保存项目运行",ImageIcon(MyModuleType::class.java.classLoader.getResource("icons/pluginMainDeclaration.png"))) {
+    AnAction("ADB TODO","不保存项目运行",github.zimo.autojsx.icons.ICONS.LOGO) {
     override fun actionPerformed(e: AnActionEvent) {
         println("test1")
     }

@@ -12,7 +12,7 @@ import javax.swing.ImageIcon
 
 
 class NewAutoJSX :
-    AnAction(ImageIcon(MyModuleType::class.java.classLoader.getResource("icons/pluginMainDeclaration.png"))) {
+    AnAction(github.zimo.autojsx.icons.ICONS.LOGO) {
 
     var isShowCheckboxMessageDialog = true
     var isCreateSDK = true

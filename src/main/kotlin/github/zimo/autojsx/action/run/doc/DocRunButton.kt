@@ -9,7 +9,7 @@ import javax.swing.ImageIcon
  * 运行当前脚本
  */
 class DocRunButton:
-    AnAction(ImageIcon(MyModuleType::class.java.classLoader.getResource("icons/pluginMainDeclaration.png"))) {
+    AnAction(github.zimo.autojsx.icons.ICONS.LOGO) {
     override fun actionPerformed(e: AnActionEvent) {
         TODO("Not yet implemented")
     }

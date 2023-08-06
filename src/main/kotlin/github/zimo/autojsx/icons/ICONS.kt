@@ -1,5 +1,7 @@
 package github.zimo.autojsx.icons
 
-class ICONS {
-    val a = "145"
+import javax.swing.ImageIcon
+
+object ICONS {
+    val LOGO = ImageIcon(ICONS::class.java.classLoader.getResource("icons/logo.png"))
 }

@@ -10,7 +10,7 @@ import javax.swing.ImageIcon
  * 2. 安装的其他应用
  */
 class AnalysisApplicationList :
-    AnAction("分析应用列表","获取手机安装的应用信息等",ImageIcon(MyModuleType::class.java.classLoader.getResource("icons/pluginMainDeclaration.png"))) {
+    AnAction("分析应用列表","获取手机安装的应用信息等",github.zimo.autojsx.icons.ICONS.LOGO) {
     override fun actionPerformed(e: AnActionEvent) {
         println("test1")
     }

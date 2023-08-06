@@ -7,7 +7,7 @@ import javax.swing.ImageIcon
 
 
 class AnalysisPageNode :
-    AnAction("分析页面节点","分析页面节点",ImageIcon(MyModuleType::class.java.classLoader.getResource("icons/pluginMainDeclaration.png"))) {
+    AnAction("分析页面节点","分析页面节点",github.zimo.autojsx.icons.ICONS.LOGO) {
     override fun actionPerformed(e: AnActionEvent) {
         println("test1")
     }

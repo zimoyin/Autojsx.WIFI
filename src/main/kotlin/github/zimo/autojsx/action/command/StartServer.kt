@@ -7,7 +7,7 @@ import javax.swing.ImageIcon
 
 
 class StartServer :
-    AnAction("开启服务器","开启服务器",ImageIcon(MyModuleType::class.java.classLoader.getResource("icons/pluginMainDeclaration.png"))) {
+    AnAction("开启服务器","开启服务器",github.zimo.autojsx.icons.ICONS.LOGO) {
     override fun actionPerformed(e: AnActionEvent) {
         println("test1")
     }

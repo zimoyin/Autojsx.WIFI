@@ -15,7 +15,7 @@ import javax.swing.ImageIcon
  * 新建项目的项目描述文件 json
  */
 class NewAutoJSON :
-    AnAction(ImageIcon(MyModuleType::class.java.classLoader.getResource("icons/pluginMainDeclaration.png"))) {
+    AnAction(github.zimo.autojsx.icons.ICONS.LOGO) {
     override fun actionPerformed(e: AnActionEvent) {
         val action = this
         val file = e.getData(CommonDataKeys.VIRTUAL_FILE)

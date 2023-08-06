@@ -37,7 +37,7 @@ class MyModuleType(private val ID: String = "AUTO_JSX_MODULE_TYPE") : ModuleType
 
     //getNodeIcon() 应该返回模块类型特定的图标。
     override fun getNodeIcon(b: Boolean): Icon {
-        return ImageIcon(MyModuleType::class.java.classLoader.getResource("icons/pluginMainDeclaration.png"))
+        return github.zimo.autojsx.icons.ICONS.LOGO
     }
 
     override fun createWizardSteps(

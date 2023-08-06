@@ -7,7 +7,7 @@ import javax.swing.ImageIcon
 
 
 class StopServer :
-    AnAction("停启服务器","停启服务器",ImageIcon(MyModuleType::class.java.classLoader.getResource("icons/pluginMainDeclaration.png"))) {
+    AnAction("停启服务器","停启服务器",github.zimo.autojsx.icons.ICONS.LOGO) {
     override fun actionPerformed(e: AnActionEvent) {
         println("test1")
     }
