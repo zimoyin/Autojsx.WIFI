@@ -1,0 +1,75 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+    <id>com.example.idea-plug-demo01</id>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <name>Autojsx.WIFI</name>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+    <vendor email="tianxuanzimo@qq.com" url="https://github.com/zimoyin">zimo</vendor>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <description>
+        <![CDATA[
+    <p>Autojsx plugin</p>
+    <ul>
+        <li>Make it easier for you to develop Autojsx in IDEA</li>
+        <li>让您更容易在IDEA中开发Autojsx</li>
+    </ul>
+    ]]>
+    </description>
+
+    <!-- Extension points defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <depends>com.intellij.modules.platform</depends>
+
+
+    <extensions defaultExtensionNs="com.intellij">
+        <moduleType
+                id="AUTO_JSX_MODULE_TYPE"
+                implementationClass="github.zimo.autojsx.module.MyModuleType"/>
+        <moduleBuilder
+                builderClass="github.zimo.autojsx.module.MyModuleBuilder"
+                id="DEMO_STEP"
+                order="first"/>
+    </extensions>
+
+
+    <actions>
+        <action id="newAutojsx" class="github.zimo.autojsx.action.news.NewAutoJSX" text="AutoJSX 子项目"
+                description="New auto jsx">
+            <add-to-group group-id="NewGroup" anchor="first"/>
+        </action>
+        <action id="newAutoJSON" class="github.zimo.autojsx.action.news.NewAutoJSON" text="AutoJSX 子项目描述文件"
+                description="New auto jsx json">
+            <add-to-group group-id="NewGroup" anchor="first"/>
+        </action>
+
+        <group id="AutoMenu" class="github.zimo.autojsx.action.command.AutoMenu" text="Autojs"
+               description="Autojsx menu">
+            <add-to-group group-id="MainMenu" anchor="last"/>
+        </group>
+
+        <action id="run" class="github.zimo.autojsx.action.run.top.TopRunButton" text="Run Autojsx" description="Run auto js">
+            <add-to-group group-id="RunnerActions" anchor="last"/>
+        </action>
+        <action id="StopAllButton" class="github.zimo.autojsx.action.run.top.StopAllButton" text="Stop All Autojsx"
+                description="StopAllButton">
+            <add-to-group group-id="RunnerActions" anchor="last"/>
+        </action>
+        <action id="runDoc" class="github.zimo.autojsx.action.run.doc.DocRunButton" text="Run Autojsx"
+                description="StopAllButton">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>
+
+    </actions>
+
+
+</idea-plugin>
