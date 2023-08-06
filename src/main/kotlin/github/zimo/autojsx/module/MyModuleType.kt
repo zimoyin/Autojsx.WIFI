@@ -6,7 +6,6 @@ import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.module.ModuleTypeManager
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider
 import javax.swing.Icon
-import javax.swing.ImageIcon
 
 
 class MyModuleType(private val ID: String = "AUTO_JSX_MODULE_TYPE") : ModuleType<MyModuleBuilder>(ID) {
@@ -37,7 +36,7 @@ class MyModuleType(private val ID: String = "AUTO_JSX_MODULE_TYPE") : ModuleType
 
     //getNodeIcon() 应该返回模块类型特定的图标。
     override fun getNodeIcon(b: Boolean): Icon {
-        return github.zimo.autojsx.icons.ICONS.LOGO
+        return github.zimo.autojsx.icons.ICONS.LOGO_16
     }
 
     override fun createWizardSteps(

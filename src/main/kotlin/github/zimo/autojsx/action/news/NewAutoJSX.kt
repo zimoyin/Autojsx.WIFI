@@ -6,13 +6,11 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFileManager
-import github.zimo.autojsx.module.MyModuleType
 import github.zimo.autojsx.util.createSDK
-import javax.swing.ImageIcon
 
 
 class NewAutoJSX :
-    AnAction(github.zimo.autojsx.icons.ICONS.LOGO) {
+    AnAction(github.zimo.autojsx.icons.ICONS.LOGO_16) {
 
     var isShowCheckboxMessageDialog = true
     var isCreateSDK = true
