@@ -1,0 +1,1 @@
+### 这是一个IDEA平台上的 Autojsx 的插件。用于帮助你在idea上更好的开发 Autojsx
