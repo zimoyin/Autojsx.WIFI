@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 class Screenshot :
     AnAction("截图","截图",github.zimo.autojsx.icons.ICONS.LOGO_16) {
     override fun actionPerformed(e: AnActionEvent) {
+        //TODO
         println("test1")
     }
 }

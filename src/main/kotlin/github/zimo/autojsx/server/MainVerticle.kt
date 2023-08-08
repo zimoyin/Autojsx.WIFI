@@ -1,6 +1,8 @@
 package github.zimo.autojsx.server
 
-import github.zimo.autojsx.server.VertxServer.devices
+import github.zimo.autojsx.server.VertxServer.devicesWs
+import github.zimo.autojsx.server.VertxServer.selectDevicesWs
+import github.zimo.autojsx.util.caseString
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Promise
 import io.vertx.core.json.JsonObject
@@ -18,8 +20,6 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
             .createHttpServer()
             .requestHandler(router)
             .webSocketHandler { ws ->
-                println("========================================")
-                println("新设备进入")
                 var device = "device"
                 val delay: Long = 15 * 1000
                 // 定时器 ID，用于取消定时器
@@ -53,8 +53,11 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                             if (then19) returnData.put("version", "1.109.0")
                             returnData.put("debug", false)
                             returnData.put("type", "hello")
-                            //save ws
-                            devices[device] = ws
+                            //新设备介入
+                            selectDevicesWs[device] = ws
+                            devicesWs[device] = ws
+                            Devices.add(device)
+                            ConsoleOutputV2.systemPrint("新设备接入/I： Device $device  AppVersion: $app_version ClientVersion: $client_version")
                         }
 
                         "ping" -> {
@@ -65,30 +68,33 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                         }
 
                         "log" -> {
-                            println(jsonObject.getJsonObject("data").getString("log"))
+                            var text = jsonObject.getJsonObject("data").getString("log")
+                            if (text.contains(" ------------ ") && text.contains("运行结束，用时")) {
+                                text = text.replace("\n", " ").replace(" ------------ ", "")
+                            }
+                            ConsoleOutputV2.println(device, text)
                         }
-                    }
-                    if (!jsonObject.getString("type").equals("ping") && !jsonObject.getString("type").equals("log")) {
-                        println("request: $jsonObject")
-                        println("response: $returnData")
-                        println("-------------------------------------")
                     }
                     if (!returnData.isEmpty) ws.writeTextMessage(returnData.toString())
                 }
 
                 ws.closeHandler {
                     //remove device
-                    devices.remove("device")
-                    println("WebSocket connection closed")
+                    selectDevicesWs.remove("device")
+                    devicesWs.remove("device")
+//                    println("WebSocket connection closed")
+                    Devices.remove(device)
+                    ConsoleOutputV2.systemPrint("设备离线/I： Device $device")
                 }
             }
             .listen(port) { http ->
                 if (http.succeeded()) {
                     startPromise.complete()
-                    println("HTTP server started on InetAddress ${VertxServer.getServerIpAddress()}:$port")
+//                    ConsoleOutputV2.systemPrint("服务器启动/I:  ${VertxServer.getServerIpAddress()}:$port")
                     VertxServer.isStart = true
                 } else {
-                    startPromise.fail(http.cause());
+                    startPromise.fail(http.cause())
+                    ConsoleOutputV2.systemPrint("服务器无法启动在端口$port /E:  ${http.cause().caseString()}")
                 }
             }
 
@@ -102,16 +108,16 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
         router.route("/receive").handler(BodyHandler.create()).handler {
             val jsonObject = it.body().asJsonObject()
             VertxServer.content[jsonObject.getString("message")] = jsonObject
+            println("receive: $jsonObject")
             it.response().end("ok")
         }
 
-        router.route("/demo").handler {
+        router.route("/demo").handler { cnt ->
 //            VertxServer.Command.runProject("./build/webview.zip")
 //            VertxServer.Command.saveProjectToRoot("./build/webview.zip")
 //            VertxServer.Command.rerunJS("./build/test.js")
 //            VertxServer.Command.runJS("./build/test.js")
-            VertxServer.Command.runJsByString(content = "log(123)")
-            it.response().end("21")
+//            VertxServer.Command.runJsByString(content = "log(123)")
         }
         router.route("/stop").handler {
 //            VertxServer.Command.stop("./build/test.js")

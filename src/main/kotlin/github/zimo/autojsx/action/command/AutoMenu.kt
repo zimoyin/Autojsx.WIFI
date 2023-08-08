@@ -12,10 +12,10 @@ class AutoMenu : ActionGroup() {
             SaveAndRunProject(), SaveAndRunScript(), Separator(),
             SaveProject(), SaveDir(), SaveScript(), Separator(),
             StopRunning(), StopAll(), Separator(),
-            StartServer(), StopServer(), Separator(),
-            SelectDevice(),Separator(),
-            Screenshot(),AnalysisPageNode(),AnalysisApplicationList(),
-            Separator(),ADBTODO()
+            StartServer(), StopServer(), ModifyServerPort(), Separator(),
+            SelectDevice(), Separator(),
+            Screenshot(), AnalysisPageNode(), AnalysisApplicationList(),
+            Separator(), ADBTODO()
         )
     }
 

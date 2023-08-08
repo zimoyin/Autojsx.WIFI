@@ -7,17 +7,17 @@
 let array = [];
 //运行中的脚本
 for (let item of engines.all()) {
-
     let a = {
         engineId: item.id,
-        srourceName: item.source.toString(),
-        srource: item.source.script,
+        sourceName: item.source.toString(),
+        source: item.source.script,
         engineScriptCwd: item.cwd(),
         engineScriptArgv: item.execArgv,
-        isStoped: item.isDestroyed()
+        isStopped: item.isDestroyed()
     }
     let jsonText = JSON.stringify(a);
-    array.push(jsonText)
+    let parsedObject = JSON.parse(jsonText);
+    array.push(parsedObject)
 }
 
 // var url = "www.baidu.com";
@@ -26,14 +26,14 @@ let data = {
     cmd: 0,
     message: "getRunningList",
     ID: values[1],
-    value: JSON.stringify(array),
+    value: array,
 };
 
 let res = http.postJson(values[0], data);
-if (res.statusCode == 200) {
+if (res.statusCode === 200) {
     // toast("请求成功");
     // log(res.body.string());
-    console.log("CMD 访问成功: "+data.message+" ID: "+data.ID+"   result: "+res.body.string());
+    console.log("CMD 访问成功: "+data.message+" ID: "+data.ID+"  send data: "+data.message);
 } else {
     // toast("请求失败:" + res.statusMessage);
     console.log("CMD 访问失败: "+data.message+" ID: "+data.ID)

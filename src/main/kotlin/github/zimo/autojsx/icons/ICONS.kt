@@ -11,4 +11,6 @@ object ICONS {
     val SAVE_FILE_16 = ImageIcon(ICONS::class.java.classLoader.getResource("icons/save_file.png"))
     val START_SERVER_16 = ImageIcon(ICONS::class.java.classLoader.getResource("icons/start_server_16.png"))
     val STOP_SERVER_16 = ImageIcon(ICONS::class.java.classLoader.getResource("icons/stop_server_16.png"))
+    val CONFIG_16 = ImageIcon(ICONS::class.java.classLoader.getResource("icons/config_16.png"))
+    val PROJECT_16 = ImageIcon(ICONS::class.java.classLoader.getResource("icons/project_16.png"))
 }

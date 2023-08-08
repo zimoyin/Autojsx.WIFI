@@ -4,6 +4,7 @@ import com.intellij.ide.util.projectWizard.ModuleBuilder
 import com.intellij.ide.util.projectWizard.ModuleWizardStep
 import com.intellij.ide.util.projectWizard.WizardContext
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.externalSystem.model.project.LibraryLevel
 import com.intellij.openapi.module.ModifiableModuleModel
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
@@ -55,8 +56,8 @@ class MyModuleBuilder : ModuleBuilder() {
                     entry.addSourceFolder(this, true)
                 }
             }
-        }
 
+        }
     }
 
 

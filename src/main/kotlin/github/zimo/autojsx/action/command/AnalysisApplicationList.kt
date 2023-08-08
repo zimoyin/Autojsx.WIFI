@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 class AnalysisApplicationList :
     AnAction("分析应用列表","获取手机安装的应用信息等",github.zimo.autojsx.icons.ICONS.LOGO_16) {
     override fun actionPerformed(e: AnActionEvent) {
+        //TODO
         println("test1")
     }
 }

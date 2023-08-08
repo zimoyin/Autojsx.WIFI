@@ -1,10 +1,11 @@
 package github.zimo.autojsx.server
 
+import github.zimo.autojsx.pojo.RunningListPojo
+import github.zimo.autojsx.util.caseString
 import github.zimo.autojsx.util.resourceAsStream
 import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.http.ServerWebSocket
-import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import java.io.File
 import java.io.IOException
@@ -16,27 +17,38 @@ import java.util.*
 
 object VertxServer {
     private var vertx: Vertx? = null
-    val devices: HashMap<String, ServerWebSocket> = HashMap()
+    val devicesWs: HashMap<String, ServerWebSocket> = HashMap()
+    val selectDevicesWs: HashMap<String, ServerWebSocket> = HashMap()
     var isStart = false
-    var port = -1
+    var port = 9317
     val content: HashMap<String, JsonObject> = HashMap()
 
-    fun start(port: Int = 9317): Future<String>? {
+    fun start(port: Int = -1): Future<String>? {
         if (vertx != null) return null
-        this.port = port
+        if (port != -1) this.port = port
         vertx = Vertx.vertx()
-        return vertx!!.deployVerticle(MainVerticle(port))
+        return vertx!!.deployVerticle(MainVerticle(this.port))
     }
 
     fun stop(): Future<Void>? {
-        val close = vertx?.close()
-        this.port = -1
+        val close = vertx?.close()?.onComplete {
+            if (it.succeeded()) {
+                ConsoleOutputV2.systemPrint("服务器已停止/I: "+ getServerIpAddress())
+            }else{
+                ConsoleOutputV2.systemPrint("服务器无法被终止/E \r\n"+it.cause().caseString())
+            }
+        }
         vertx = null
         return close
     }
 
     fun isActivity(): Boolean = vertx != null
 
+    fun devicesEmpty(devices: HashMap<String, ServerWebSocket> = selectDevicesWs) {
+        if (devices.isEmpty()) {
+            ConsoleOutputV2.systemPrint("操作警告/W: 未选择任何设备,无法执行脚本")
+        }
+    }
     fun getServerIpAddress(): String {
         val networkInterfaces = NetworkInterface.getNetworkInterfaces()
         while (networkInterfaces.hasMoreElements()) {
@@ -57,7 +69,8 @@ object VertxServer {
          * 关闭运行的脚本，只能关闭远程脚本
          * TODO 待验证
          */
-        fun stop(jsPath: String, devices: HashMap<String, ServerWebSocket> = VertxServer.devices) {
+        fun stop(jsPath: String, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+            devicesEmpty(devices)
             val canonicalPath = File(jsPath).canonicalPath
             devices.forEach { (key, ws) ->
                 if (ws.isClosed) return@forEach
@@ -76,7 +89,8 @@ object VertxServer {
         /**
          * 关闭运行的脚本，只能关闭远程脚本
          */
-        fun stopAll(devices: HashMap<String, ServerWebSocket> = VertxServer.devices) {
+        fun stopAll(devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+            devicesEmpty(devices)
             devices.forEach { (key, ws) ->
                 if (ws.isClosed) return@forEach
 
@@ -95,7 +109,8 @@ object VertxServer {
          * 运行远端项目
          * @param path 本地 zip 文件路径
          */
-        fun runProject(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.devices) {
+        fun runProject(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+            devicesEmpty(devices)
             val canonicalPath = File(path).canonicalPath
             devices.forEach { (key, ws) ->
                 if (ws.isClosed) return@forEach
@@ -126,7 +141,8 @@ object VertxServer {
          * 发送项目
          * @param path 本地 zip 文件路径
          */
-        fun saveProject(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.devices) {
+        fun saveProject(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+            devicesEmpty(devices)
             val canonicalPath = File(path).canonicalPath
             devices.forEach { (key, ws) ->
                 if (ws.isClosed) return@forEach
@@ -157,7 +173,8 @@ object VertxServer {
          * 发送项目到脚本根路径
          * @param path 本地 zip 文件路径
          */
-        fun saveProjectToRoot(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.devices) {
+        fun saveProjectToRoot(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+            devicesEmpty(devices)
             val canonicalPath = File(path).canonicalPath
             devices.forEach { (key, ws) ->
                 if (ws.isClosed) return@forEach
@@ -189,7 +206,8 @@ object VertxServer {
          * 保存文件
          * @param path 本地文本文件
          */
-        fun saveJS(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.devices) {
+        fun saveJS(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+            devicesEmpty(devices)
             val canonicalPath = File(path).canonicalPath
             devices.forEach { (key, ws) ->
                 if (ws.isClosed) return@forEach
@@ -216,7 +234,8 @@ object VertxServer {
          * 运行js文件
          * @param path 本地文本文件
          */
-        fun runJS(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.devices) {
+        fun runJS(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+            devicesEmpty(devices)
             val canonicalPath = File(path).canonicalPath
             devices.forEach { (key, ws) ->
                 if (ws.isClosed) return@forEach
@@ -248,8 +267,9 @@ object VertxServer {
         fun runJsByString(
             name: String = "main.js",
             content: String,
-            devices: HashMap<String, ServerWebSocket> = VertxServer.devices,
+            devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
         ) {
+            devicesEmpty(devices)
             val canonicalPath = File(name).canonicalPath
             devices.forEach { (key, ws) ->
                 if (ws.isClosed) return@forEach
@@ -270,7 +290,8 @@ object VertxServer {
          * 重新运行js文件
          * @param path 本地文本文件
          */
-        fun rerunJS(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.devices) {
+        fun rerunJS(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+            devicesEmpty(devices)
             val canonicalPath = File(path).canonicalPath
             devices.forEach { (key, ws) ->
                 if (ws.isClosed) return@forEach
@@ -302,8 +323,9 @@ object VertxServer {
         fun rerunJsByString(
             name: String = "main.js",
             content: String,
-            devices: HashMap<String, ServerWebSocket> = VertxServer.devices,
+            devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
         ) {
+            devicesEmpty(devices)
             val canonicalPath = File(name).canonicalPath
             devices.forEach { (key, ws) ->
                 if (ws.isClosed) return@forEach
@@ -325,7 +347,11 @@ object VertxServer {
         /**
          * 获取运行时脚本列表
          */
-        fun getRunningList(callback: (array: JsonArray?) -> Unit) {
+        fun getRunningList(
+            callback: (array: List<RunningListPojo>) -> Unit,
+            devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
+        ) {
+            devicesEmpty(devices)
             var readBytes: ByteArray = ByteArray(0)
             resourceAsStream("script/RunningScripts.js")?.apply {
                 readBytes = readBytes()
@@ -334,17 +360,125 @@ object VertxServer {
             if (readBytes.isEmpty()) return
             val uuid = UUID.randomUUID().toString()
             val script =
-                "let values = ['http://${getServerIpAddress()}:$port','${uuid}'];\r\n" + String(readBytes)
-            runJsByString("getRunningList", script)
+                "let values = ['http://${getServerIpAddress()}:$port/receive','${uuid}'];\r\n" + String(readBytes)
+            runJsByString("getRunningList", script, devices)
             val startTime = System.currentTimeMillis()
             while ((System.currentTimeMillis() - startTime) < 3000) {
                 content["getRunningList"]?.let {
                     if (uuid == it.getString("ID")) {
-                        callback(it.getJsonArray("value"))
+                        val array: ArrayList<RunningListPojo> = ArrayList()
+                        it.getJsonArray("value").forEach {
+                            val pojo = RunningListPojo()
+                            JsonObject(it.toString()).apply {
+                                pojo.engineId = getInteger("engineId")
+                                pojo.engineScriptArgv = getString("engineScriptArgv")
+                                pojo.isStopped = getBoolean("isStopped")
+                                pojo.engineScriptCwd = getString("engineScriptCwd")
+                                pojo.source = getString("source")
+                                pojo.sourceName = getString("sourceName")
+                            }
+                            array.add(pojo)
+                        }
+                        callback(array)
+                        return
                     }
                 }
             }
-            callback(null)
+            callback(ArrayList<RunningListPojo>())
+        }
+
+        /**
+         * 通过ID停止一个脚本的运行。 注意： 该方法不能完全强制停止被阻塞的脚本
+         *
+         * TODO 待测试
+         */
+        fun stopScriptByID(id: Int, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+            devicesEmpty(devices)
+            var readBytes: ByteArray = ByteArray(0)
+            resourceAsStream("script/StopScriptByID.js")?.apply {
+                readBytes = readBytes()
+                close()
+            }
+            if (readBytes.isEmpty()) return
+            val script =
+                "let values = [$id];\r\n" + String(readBytes)
+            runJsByString("getRunningList", script, devices)
+        }
+
+        /**
+         * 通过文件名称停止一个脚本的运行
+         * TODO 待测试
+         */
+        fun stopScriptBySourceName(name: String, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+            devicesEmpty(devices)
+            var readBytes: ByteArray = ByteArray(0)
+            resourceAsStream("script/StopScriptByName.js")?.apply {
+                readBytes = readBytes()
+                close()
+            }
+            if (readBytes.isEmpty()) return
+            val script =
+                "let values = [$name];\r\n" + String(readBytes)
+            runJsByString("getRunningList", script, devices)
+        }
+
+        /**
+         * 获取当前屏幕上的所有节点并记录成xml
+         * TODO 待测试
+         */
+        fun getNodes(callback: (xml: String) -> Unit, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+            devicesEmpty(devices)
+            var readBytes: ByteArray = ByteArray(0)
+            resourceAsStream("script/NodesXML.js")?.apply {
+                readBytes = readBytes()
+                close()
+            }
+            if (readBytes.isEmpty()) return
+            val uuid = UUID.randomUUID().toString()
+            val script =
+                "let values = ['http://${getServerIpAddress()}:$port/receive','${uuid}'];\r\n" + String(readBytes)
+            runJsByString("getNodes", script, devices)
+            val startTime = System.currentTimeMillis()
+            while ((System.currentTimeMillis() - startTime) < 3000) {
+                content["getNodes"]?.let {
+                    if (uuid == it.getString("ID")) {
+                        callback(it.getString("value"))
+                        return
+                    }
+                }
+            }
+            callback("")
+        }
+
+        /**
+         * 截图
+         * TODO 待测试
+         */
+        fun getScreenshot(
+            callback: (base64: String) -> Unit,
+            devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
+        ) {
+            devicesEmpty(devices)
+            var readBytes: ByteArray = ByteArray(0)
+            resourceAsStream("script/Screenshot.js")?.apply {
+                readBytes = readBytes()
+                close()
+            }
+            if (readBytes.isEmpty()) return
+            val uuid = UUID.randomUUID().toString()
+            val script =
+                "let values = ['http://${getServerIpAddress()}:$port/receive','${uuid}'];\r\n" + String(readBytes)
+            runJsByString("getScreenshot", script, devices)
+            val startTime = System.currentTimeMillis()
+            while ((System.currentTimeMillis() - startTime) < 3000) {
+                content["getScreenshot"]?.let {
+                    if (uuid == it.getString("ID")) {
+                        callback(it.getString("value"))
+                        return
+                    }
+                }
+            }
+            callback("")
         }
 
 

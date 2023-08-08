@@ -39,6 +39,19 @@
                 builderClass="github.zimo.autojsx.module.MyModuleBuilder"
                 id="DEMO_STEP"
                 order="first"/>
+        <!--<fileIconProvider implementation="github.zimo.autojsx.filetree.CustomFileIconProvider"/>-->
+        <iconProvider implementation="github.zimo.autojsx.filetree.CustomIconProvider"/>
+
+        <notificationGroup id="AutojsNotifier"
+                           displayType="BALLOON"
+                           key="notification.group.name"/>
+
+        <toolWindow id="Autojsx"
+                    anchor="bottom"
+                    factoryClass="github.zimo.autojsx.window.AutojsxConsoleWindow"
+                    secondary="false"
+        />
+
     </extensions>
 
 
@@ -57,17 +70,19 @@
             <add-to-group group-id="MainMenu" anchor="last"/>
         </group>
 
-        <action id="run" class="github.zimo.autojsx.action.run.top.TopRunButton" text="Run Autojsx" description="Run auto js">
+        <action id="run" class="github.zimo.autojsx.action.run.top.TopRunButton" text="Run Autojsx"
+                description="Run auto js">
             <add-to-group group-id="RunnerActions" anchor="last"/>
         </action>
         <action id="StopAllButton" class="github.zimo.autojsx.action.run.top.StopAllButton" text="Stop All Autojsx"
                 description="StopAllButton">
             <add-to-group group-id="RunnerActions" anchor="last"/>
         </action>
-        <action id="runDoc" class="github.zimo.autojsx.action.run.doc.DocRunButton" text="Run Autojsx"
+        <action id="runDoc" class="github.zimo.autojsx.action.run.doc.DocRunButton" text="执行当前 Autojsx 脚本"
                 description="StopAllButton">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
+
 
     </actions>
 

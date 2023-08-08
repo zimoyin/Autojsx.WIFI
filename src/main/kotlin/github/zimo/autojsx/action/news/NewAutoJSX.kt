@@ -21,6 +21,7 @@ class NewAutoJSX :
             Messages.showInputDialog(e.project, "请输入文件名:", "新建文件", Messages.getQuestionIcon())?.trim()
         if (userInputFileName.isNullOrEmpty()) return
         showCheckboxMessageDialog()
+
         //构建结构
         WriteCommandAction.runWriteCommandAction(e.project) {
             file.createChildDirectory(this, userInputFileName).apply {
@@ -54,6 +55,9 @@ class NewAutoJSX :
                             |    },
                             |    "packageName": "github.autojsx.$userInputFileName",
                             |    "versionName": "1.0.0",
+                            |    "srcPath":"./../../src/",
+                            |    "resources":"./../",
+                            |    "lib":"./../../lib/",
                             |    "versionCode": 1
                             |}
                         """.trimMargin().toByteArray()
@@ -92,8 +96,8 @@ class NewAutoJSX :
             isShowCheckboxMessageDialog = !checkBox.isSelected
             //单击的按钮的按钮
             when (buttonIndex) {
-                0->isCreateSDK = true
-                1->isCreateSDK = false
+                0 -> isCreateSDK = true
+                1 -> isCreateSDK = false
             }
             Messages.CANCEL
         }

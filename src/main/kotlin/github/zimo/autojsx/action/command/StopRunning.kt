@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 class StopRunning :
     AnAction("停止运行","选择一个进行停止运行",github.zimo.autojsx.icons.ICONS.STOP_16) {
     override fun actionPerformed(e: AnActionEvent) {
+        //TODO 选择停止界面
         println("test1")
     }
 }

@@ -31,6 +31,9 @@ class NewAutoJSON :
                             |    },
                             |    "packageName": "github.autojsx.${file.name}",
                             |    "versionName": "1.0.0",
+                            |    "srcPath":"./../",
+                            |    "resources":"./../",
+                            |    "lib":"./../",
                             |    "versionCode": 1
                             |}
                         """.trimMargin().toByteArray()

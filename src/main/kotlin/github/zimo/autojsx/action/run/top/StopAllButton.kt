@@ -1,8 +1,14 @@
 package github.zimo.autojsx.action.run.top
 
+import com.intellij.execution.ui.ConsoleView
+import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.project.ProjectManager
 import github.zimo.autojsx.icons.ICONS
+import github.zimo.autojsx.server.ConsoleOutputV2
+import github.zimo.autojsx.server.VertxServer
+
 
 /**
  * 停止所有运行
@@ -10,6 +16,7 @@ import github.zimo.autojsx.icons.ICONS
 class StopAllButton:
     AnAction(ICONS.STOP_16) {
     override fun actionPerformed(e: AnActionEvent) {
-        TODO("Not yet implemented")
+        VertxServer.Command.stopAll()
+        ConsoleOutputV2.systemPrint("Action/I: 停止所有脚本指令已发送")
     }
 }
