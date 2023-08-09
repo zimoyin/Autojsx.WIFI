@@ -13,6 +13,10 @@ import org.jetbrains.annotations.SystemIndependent
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import javax.swing.BoxLayout
+import javax.swing.JCheckBox
+import javax.swing.JOptionPane
+import javax.swing.JPanel
 
 
 /**
@@ -94,5 +98,75 @@ fun runServer(project: Project?) {
         )
     }
 }
+fun stopServer(project: Project?) {
+    if (VertxServer.isStart) {
+        VertxServer.stop()
+        AutojsNotifier.info(
+            project,
+            "Autojsx 服务器在 ${VertxServer.getServerIpAddress()}:${VertxServer.port} 尝试关闭"
+        )
+    }
+}
 
 val executor: ExecutorService = Executors.newFixedThreadPool(3)
+
+fun logE(msg:Any,e:Throwable?=null){
+    ConsoleOutputV2.systemPrint("错误/E: $msg ${"\r\n"+e?.caseString()}")
+}
+fun logI(msg:Any){
+    ConsoleOutputV2.systemPrint("信息/I: $msg")
+}fun logW(msg:Any){
+    ConsoleOutputV2.systemPrint("警告/W: $msg")
+}
+
+
+
+
+
+
+fun selectDevice(){
+    val map = HashMap<String, JCheckBox>()
+    val panel = JPanel()
+    panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
+
+    for (item in VertxServer.devicesWs.keys) {
+        val checkBox = JCheckBox(item)
+        map[item] = checkBox
+        panel.add(checkBox)
+    }
+
+    VertxServer.selectDevicesWs.forEach {
+        map[it.key]?.isSelected = true
+    }
+
+
+    val option = JOptionPane.showConfirmDialog(
+        null, panel, "Select Items",
+        JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE
+    )
+
+    if (option == JOptionPane.OK_OPTION) {
+        val result = StringBuilder("Selected items:\n")
+        for (component in panel.components) {
+            if (component is JCheckBox) {
+                val checkBox = component
+                if (checkBox.isSelected) {
+                    result.append("✔ ").append(checkBox.text).append("\n")
+                } else {
+                    result.append("□").append(checkBox.text).append("\n")
+                }
+            }
+        }
+        JOptionPane.showMessageDialog(null, result.toString(), "Selection Result", JOptionPane.INFORMATION_MESSAGE)
+
+        VertxServer.selectDevicesWs.clear()
+        map.forEach {
+            if (it.value.isSelected) {
+                VertxServer.devicesWs[it.key]?.apply {
+                    VertxServer.selectDevicesWs[it.key] = this
+                }
+            }
+        }
+        logI("选中的设备为: ${VertxServer.selectDevicesWs.keys}")
+    }
+}

@@ -6,11 +6,9 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.vfs.VirtualFile
-import github.zimo.autojsx.server.ConsoleOutputV2
 import github.zimo.autojsx.server.VertxServer
-import github.zimo.autojsx.util.caseString
+import github.zimo.autojsx.util.logE
 import github.zimo.autojsx.util.runServer
-import java.io.File
 
 /**
  * 运行当前脚本
@@ -40,7 +38,7 @@ class DocRunButton :
                 runCatching {
                     VertxServer.Command.rerunJS(selectedFile.path)
                 }.onFailure {
-                    ConsoleOutputV2.systemPrint("js脚本网络引擎执行失败${selectedFile.path} /E \r\n"+it.caseString())
+                    logE("js脚本网络引擎执行失败${selectedFile.path} ", it)
                 }
             }
         }

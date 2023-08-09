@@ -1,7 +1,8 @@
 package github.zimo.autojsx.server
 
 import github.zimo.autojsx.pojo.RunningListPojo
-import github.zimo.autojsx.util.caseString
+import github.zimo.autojsx.util.logE
+import github.zimo.autojsx.util.logI
 import github.zimo.autojsx.util.resourceAsStream
 import io.vertx.core.Future
 import io.vertx.core.Vertx
@@ -33,11 +34,12 @@ object VertxServer {
     fun stop(): Future<Void>? {
         val close = vertx?.close()?.onComplete {
             if (it.succeeded()) {
-                ConsoleOutputV2.systemPrint("服务器已停止/I: "+ getServerIpAddress())
-            }else{
-                ConsoleOutputV2.systemPrint("服务器无法被终止/E \r\n"+it.cause().caseString())
+                logI("服务器已停止")
+            } else {
+                logE("服务器无法被终止", it.cause())
             }
         }
+        isStart = false
         vertx = null
         return close
     }
@@ -49,6 +51,7 @@ object VertxServer {
             ConsoleOutputV2.systemPrint("操作警告/W: 未选择任何设备,无法执行脚本")
         }
     }
+
     fun getServerIpAddress(): String {
         val networkInterfaces = NetworkInterface.getNetworkInterfaces()
         while (networkInterfaces.hasMoreElements()) {
@@ -111,7 +114,8 @@ object VertxServer {
          */
         fun runProject(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
             devicesEmpty(devices)
-            val canonicalPath = File(path).canonicalPath
+            val zipFile = File(path)
+            val canonicalPath = zipFile.canonicalPath
             devices.forEach { (key, ws) ->
                 if (ws.isClosed) return@forEach
                 vertx!!.fileSystem().readFile(path).onSuccess {
@@ -128,11 +132,10 @@ object VertxServer {
                         data.put("name", canonicalPath)
                         ws.writeTextMessage(returnData.toString())
                     }.onFailure {
-                        println("发送文件失败")
+                        logE("发送文件失败: $zipFile")
                     }
                 }.onFailure {
-                    println("读取文件失败")
-                    it.printStackTrace()
+                    logE("读取文件失败: exists: ${zipFile.exists()}", it)
                 }
             }
         }
@@ -160,11 +163,10 @@ object VertxServer {
                         data.put("name", canonicalPath)
                         ws.writeTextMessage(returnData.toString())
                     }.onFailure {
-                        println("发送文件失败")
+                        logE("发送文件失败: $path")
                     }
                 }.onFailure {
-                    println("读取文件失败")
-                    it.printStackTrace()
+                    logE("读取文件失败: exists: ${File(path).exists()}", it)
                 }
             }
         }
@@ -192,11 +194,10 @@ object VertxServer {
                         data.put("name", "/")
                         ws.writeTextMessage(returnData.toString())
                     }.onFailure {
-                        println("发送文件失败")
+                        logE("发送文件失败: $path")
                     }
                 }.onFailure {
-                    println("读取文件失败")
-                    it.printStackTrace()
+                    logE("读取文件失败: exists: ${File(path).exists()}", it)
                 }
             }
         }
@@ -224,9 +225,9 @@ object VertxServer {
                     data.put("script", it.toString(Charset.forName("UTF-8")))
                     ws.writeTextMessage(returnData.toString())
                 }.onFailure {
-                    println("读取文件失败")
-                    it.printStackTrace()
+                    logE("发送文件失败: $path")
                 }
+
             }
         }
 
@@ -253,9 +254,9 @@ object VertxServer {
                     data.put("script", it.toString())
                     ws.writeTextMessage(returnData.toString())
                 }.onFailure {
-                    println("读取文件失败")
-                    it.printStackTrace()
+                    logE("发送文件失败: $path")
                 }
+
             }
         }
 
@@ -309,9 +310,9 @@ object VertxServer {
                     data.put("script", it.toString())
                     ws.writeTextMessage(returnData.toString())
                 }.onFailure {
-                    println("读取文件失败")
-                    it.printStackTrace()
+                    logE("发送文件失败: $path")
                 }
+
             }
         }
 
@@ -409,7 +410,10 @@ object VertxServer {
          * 通过文件名称停止一个脚本的运行
          * TODO 待测试
          */
-        fun stopScriptBySourceName(name: String, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+        fun stopScriptBySourceName(
+            name: String,
+            devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
+        ) {
             devicesEmpty(devices)
             var readBytes: ByteArray = ByteArray(0)
             resourceAsStream("script/StopScriptByName.js")?.apply {
@@ -426,7 +430,10 @@ object VertxServer {
          * 获取当前屏幕上的所有节点并记录成xml
          * TODO 待测试
          */
-        fun getNodes(callback: (xml: String) -> Unit, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+        fun getNodes(
+            callback: (xml: String) -> Unit,
+            devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
+        ) {
             devicesEmpty(devices)
             var readBytes: ByteArray = ByteArray(0)
             resourceAsStream("script/NodesXML.js")?.apply {

@@ -3,6 +3,8 @@ package github.zimo.autojsx.server
 import github.zimo.autojsx.server.VertxServer.devicesWs
 import github.zimo.autojsx.server.VertxServer.selectDevicesWs
 import github.zimo.autojsx.util.caseString
+import github.zimo.autojsx.util.logE
+import github.zimo.autojsx.util.logI
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Promise
 import io.vertx.core.json.JsonObject
@@ -70,7 +72,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                         "log" -> {
                             var text = jsonObject.getJsonObject("data").getString("log")
                             if (text.contains(" ------------ ") && text.contains("运行结束，用时")) {
-                                text = text.replace("\n", " ").replace(" ------------ ", "")
+                                text = text.replace("\n", " ").replace(" ------------ ", "")+"\r\n"
                             }
                             ConsoleOutputV2.println(device, text)
                         }
@@ -84,7 +86,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                     devicesWs.remove("device")
 //                    println("WebSocket connection closed")
                     Devices.remove(device)
-                    ConsoleOutputV2.systemPrint("设备离线/I： Device $device")
+                   logI("设备离线： Device $device")
                 }
             }
             .listen(port) { http ->
@@ -94,7 +96,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                     VertxServer.isStart = true
                 } else {
                     startPromise.fail(http.cause())
-                    ConsoleOutputV2.systemPrint("服务器无法启动在端口$port /E:  ${http.cause().caseString()}")
+                    logE("服务器无法启动在端口$port",http.cause())
                 }
             }
 

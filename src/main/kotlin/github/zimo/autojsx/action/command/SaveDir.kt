@@ -2,11 +2,44 @@ package github.zimo.autojsx.action.command
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.fileChooser.FileChooserFactory
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
+import github.zimo.autojsx.server.VertxServer
+import github.zimo.autojsx.util.*
+import java.io.File
 
 class SaveDir :
-    AnAction("保存当前文件夹","保存文件夹",github.zimo.autojsx.icons.ICONS.SAVE_16) {
+    AnAction("上传文件夹", "保存文件夹", github.zimo.autojsx.icons.ICONS.SAVE_16) {
     override fun actionPerformed(e: AnActionEvent) {
-        //TODO 选择文件夹界面
-        println("test1")
+        val dialog = FileChooserFactory.getInstance()
+            .createFileChooser(FileChooserDescriptorFactory.createSingleFolderDescriptor(), e.project, null)
+
+        val files = dialog.choose(e.project)
+//            val selectedDir = files[0]
+
+        if (files.isNotEmpty()) {
+            val dir = files[0]
+            runProject(dir, e.project)
+        }
+    }
+
+    private fun runProject(file: VirtualFile, project: Project?) {
+        runServer(project)
+        val zip = File(project?.basePath + "/build-output" + "/${file.name}.zip")
+        zip.parentFile.mkdirs()
+        zip.delete()
+
+        executor.submit {
+            zip(
+                arrayListOf(file.path),
+                project?.basePath + File.separator + "build-output" + File.separator + "${file.name}.zip"
+            )
+            VertxServer.Command.saveProject(zip.canonicalPath)
+            VertxServer.Command.runProject(zip.canonicalPath)
+            zip.delete()
+            logI("文件夹正在上传: " + file.path)
+        }
     }
 }

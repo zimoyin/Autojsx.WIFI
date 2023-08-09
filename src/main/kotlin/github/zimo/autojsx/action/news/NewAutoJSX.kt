@@ -32,7 +32,7 @@ class NewAutoJSX :
                 createChildDirectory(this, "src").apply {
                     createChildData(this, "main.js").getOutputStream(this).use { outputStream ->
                         outputStream.write(
-                            ("(function main() {\n" + "    let path = files.path(\"./text.txt\")\n" + "    console.log(files.read(path))\n" + "})()").toByteArray()
+                            ("(function main() {\n" + "    let path = files.path(\"./test.txt\")\n" + "    log(files.read(path))\n" + "})()").toByteArray()
                         )
                     }
                 }

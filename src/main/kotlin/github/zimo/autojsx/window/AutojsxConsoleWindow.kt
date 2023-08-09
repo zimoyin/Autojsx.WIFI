@@ -11,6 +11,10 @@ import github.zimo.autojsx.icons.ICONS
 import github.zimo.autojsx.server.ConsoleOutputV2
 import github.zimo.autojsx.server.ConsoleOutput_V1
 import github.zimo.autojsx.server.Devices
+import github.zimo.autojsx.server.VertxServer
+import github.zimo.autojsx.util.runServer
+import github.zimo.autojsx.util.selectDevice
+import github.zimo.autojsx.util.stopServer
 import java.awt.Dimension
 import java.awt.FlowLayout
 import javax.swing.*
@@ -78,6 +82,15 @@ class AutojsxConsoleWindow : ToolWindowFactory {
 
                     button("回到底部") {
                         ConsoleOutputV2.toEnd()
+                    }
+                    button("开启服务器") {
+                        runServer(project)
+                    }
+                    button("关闭服务器") {
+                       stopServer(project)
+                    }
+                    button("选择设备列表") {
+                        selectDevice()
                     }
 
                 }

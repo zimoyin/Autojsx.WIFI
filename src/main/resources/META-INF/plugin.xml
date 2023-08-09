@@ -56,6 +56,7 @@
 
 
     <actions>
+        <!--右键菜单-new-->
         <action id="newAutojsx" class="github.zimo.autojsx.action.news.NewAutoJSX" text="AutoJSX 子项目"
                 description="New auto jsx">
             <add-to-group group-id="NewGroup" anchor="first"/>
@@ -64,26 +65,34 @@
                 description="New auto jsx json">
             <add-to-group group-id="NewGroup" anchor="first"/>
         </action>
-
-        <group id="AutoMenu" class="github.zimo.autojsx.action.command.AutoMenu" text="Autojs"
+        <!--右键菜单-->
+        <action id="SaveAutojs" class="github.zimo.autojsx.action.save.Save" text="保存到设备"
+                description="保存到设备">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
+        </action>
+        <!--顶部菜单栏-->
+        <group id="AutojsMenu" class="github.zimo.autojsx.action.command.AutoMenu" text="Autojs"
                description="Autojsx menu">
             <add-to-group group-id="MainMenu" anchor="last"/>
         </group>
-
-        <action id="run" class="github.zimo.autojsx.action.run.top.TopRunButton" text="Run Autojsx"
+        <!--运行按钮-->
+        <action id="runAutojs" class="github.zimo.autojsx.action.run.top.TopRunButton" text="Run Autojsx"
                 description="Run auto js">
             <add-to-group group-id="RunnerActions" anchor="last"/>
         </action>
-        <action id="StopAllButton" class="github.zimo.autojsx.action.run.top.StopAllButton" text="Stop All Autojsx"
+        <action id="StopAllButtonAutojs" class="github.zimo.autojsx.action.run.top.StopAllButton" text="Stop All Autojsx"
                 description="StopAllButton">
             <add-to-group group-id="RunnerActions" anchor="last"/>
         </action>
-        <action id="runDoc" class="github.zimo.autojsx.action.run.doc.DocRunButton" text="执行当前 Autojsx 脚本"
+        <!--右键文档-->
+        <action id="runDocAutojs" class="github.zimo.autojsx.action.run.doc.DocRunButton" text="执行当前 Autojsx 脚本"
                 description="StopAllButton">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
-
-
+        <action id="saveDocAutojs" class="github.zimo.autojsx.action.save.SaveDoc" text="保存脚本"
+                description="保存脚本">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>
     </actions>
 
 

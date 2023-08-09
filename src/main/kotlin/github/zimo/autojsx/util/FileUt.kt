@@ -1,8 +1,8 @@
 package github.zimo.autojsx.util
 
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
 import github.zimo.autojsx.module.MyModuleBuilder
-import github.zimo.autojsx.server.ConsoleOutputV2
 import github.zimo.autojsx.server.MainVerticle
 import java.io.File
 import java.io.FileInputStream
@@ -91,4 +91,42 @@ fun addFileToZip(zipOutputStream: ZipOutputStream, file: File, parentDir: String
             zipOutputStream.closeEntry()
         }
     }
+}
+
+
+fun findFile(rootDir: VirtualFile, fileName:String): VirtualFile? {
+    return findInDirRecursive(rootDir, fileName)
+}
+
+private fun findInDirRecursive(dir: VirtualFile, filename: String?): VirtualFile? {
+
+    // 1. 在当前目录查找指定文件
+    var file = dir.findChild(filename!!)
+    if (file != null) {
+        return file
+    }
+
+    // 2. 获取当前目录的子目录
+    val children = VfsUtil.getChildren(dir)
+
+    // 3. 优先查找resources子目录
+    for (child in children) {
+        if (child.name == "resources") {
+            file = findInDirRecursive(child, filename)
+            if (file != null) {
+                return file
+            }
+        }
+    }
+
+    // 4. 递归搜索每个子目录
+    for (child in children) {
+        if (child.isDirectory) {
+            file = findInDirRecursive(child, filename)
+            if (file != null) {
+                return file
+            }
+        }
+    }
+    return null
 }

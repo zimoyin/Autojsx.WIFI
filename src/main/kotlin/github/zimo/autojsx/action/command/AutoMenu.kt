@@ -11,6 +11,7 @@ class AutoMenu : ActionGroup() {
             RunScript(), RunProject(), Separator(),
             SaveAndRunProject(), SaveAndRunScript(), Separator(),
             SaveProject(), SaveDir(), SaveScript(), Separator(),
+            ConfusingAndSaveScript(), ConfusingAndSaveProject(), Separator(),
             StopRunning(), StopAll(), Separator(),
             StartServer(), StopServer(), ModifyServerPort(), Separator(),
             SelectDevice(), Separator(),
