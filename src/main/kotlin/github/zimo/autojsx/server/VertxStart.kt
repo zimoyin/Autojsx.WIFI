@@ -70,7 +70,6 @@ object VertxServer {
     object Command {
         /**
          * 关闭运行的脚本，只能关闭远程脚本
-         * TODO 待验证
          */
         fun stop(jsPath: String, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
             devicesEmpty(devices)
@@ -391,7 +390,6 @@ object VertxServer {
         /**
          * 通过ID停止一个脚本的运行。 注意： 该方法不能完全强制停止被阻塞的脚本
          *
-         * TODO 待测试
          */
         fun stopScriptByID(id: Int, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
             devicesEmpty(devices)
@@ -408,7 +406,6 @@ object VertxServer {
 
         /**
          * 通过文件名称停止一个脚本的运行
-         * TODO 待测试
          */
         fun stopScriptBySourceName(
             name: String,
@@ -428,7 +425,6 @@ object VertxServer {
 
         /**
          * 获取当前屏幕上的所有节点并记录成xml
-         * TODO 待测试
          */
         fun getNodes(
             callback: (xml: String) -> Unit,
@@ -459,7 +455,6 @@ object VertxServer {
 
         /**
          * 截图
-         * TODO 待测试
          */
         fun getScreenshot(
             callback: (base64: String) -> Unit,
@@ -477,7 +472,7 @@ object VertxServer {
                 "let values = ['http://${getServerIpAddress()}:$port/receive','${uuid}'];\r\n" + String(readBytes)
             runJsByString("getScreenshot", script, devices)
             val startTime = System.currentTimeMillis()
-            while ((System.currentTimeMillis() - startTime) < 3000) {
+            while ((System.currentTimeMillis() - startTime) < 6000) {
                 content["getScreenshot"]?.let {
                     if (uuid == it.getString("ID")) {
                         callback(it.getString("value"))

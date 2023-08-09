@@ -4,7 +4,6 @@ import java.io.File
 
 /**
  * js 字符串放入数组中
- * TODO 将 输出转为程序中的控制台输出
  */
 fun main() {
     // 读取 JavaScript 文件的内容

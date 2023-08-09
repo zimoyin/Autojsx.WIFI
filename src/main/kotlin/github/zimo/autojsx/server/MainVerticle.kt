@@ -110,7 +110,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
         router.route("/receive").handler(BodyHandler.create()).handler {
             val jsonObject = it.body().asJsonObject()
             VertxServer.content[jsonObject.getString("message")] = jsonObject
-            println("receive: $jsonObject")
+//            println("receive: $jsonObject")
             it.response().end("ok")
         }
 

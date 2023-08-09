@@ -5,4 +5,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = "idea-plug-demo01"
+rootProject.name = "auto-jsx-wifi-plugin"

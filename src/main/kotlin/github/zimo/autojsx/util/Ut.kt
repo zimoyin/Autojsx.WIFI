@@ -1,8 +1,10 @@
 package github.zimo.autojsx.util
 
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import github.zimo.autojsx.server.AutojsNotifier
@@ -98,6 +100,7 @@ fun runServer(project: Project?) {
         )
     }
 }
+
 fun stopServer(project: Project?) {
     if (VertxServer.isStart) {
         VertxServer.stop()
@@ -110,21 +113,20 @@ fun stopServer(project: Project?) {
 
 val executor: ExecutorService = Executors.newFixedThreadPool(3)
 
-fun logE(msg:Any,e:Throwable?=null){
-    ConsoleOutputV2.systemPrint("错误/E: $msg ${"\r\n"+e?.caseString()}")
+fun logE(msg: Any, e: Throwable? = null) {
+    ConsoleOutputV2.systemPrint("错误/E: $msg ${"\r\n" + e?.caseString()}")
 }
-fun logI(msg:Any){
+
+fun logI(msg: Any) {
     ConsoleOutputV2.systemPrint("信息/I: $msg")
-}fun logW(msg:Any){
+}
+
+fun logW(msg: Any) {
     ConsoleOutputV2.systemPrint("警告/W: $msg")
 }
 
 
-
-
-
-
-fun selectDevice(){
+fun selectDevice() {
     val map = HashMap<String, JCheckBox>()
     val panel = JPanel()
     panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
@@ -141,12 +143,12 @@ fun selectDevice(){
 
 
     val option = JOptionPane.showConfirmDialog(
-        null, panel, "Select Items",
+        null, panel, "Selection Devices",
         JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE
     )
 
     if (option == JOptionPane.OK_OPTION) {
-        val result = StringBuilder("Selected items:\n")
+        val result = StringBuilder("Selection Devices:\n")
         for (component in panel.components) {
             if (component is JCheckBox) {
                 val checkBox = component
@@ -157,7 +159,7 @@ fun selectDevice(){
                 }
             }
         }
-        JOptionPane.showMessageDialog(null, result.toString(), "Selection Result", JOptionPane.INFORMATION_MESSAGE)
+        JOptionPane.showMessageDialog(null, result.toString(), "Selection Devices", JOptionPane.INFORMATION_MESSAGE)
 
         VertxServer.selectDevicesWs.clear()
         map.forEach {
@@ -169,4 +171,77 @@ fun selectDevice(){
         }
         logI("选中的设备为: ${VertxServer.selectDevicesWs.keys}")
     }
+}
+
+
+fun runningList(e: AnActionEvent) {
+    var result = false
+    executor.submit {
+        ProgressManager.getInstance().runProcessWithProgressSynchronously<Any, RuntimeException>(
+            {
+                while (true) {
+                    Thread.sleep(600)
+                    if (result) break
+                }
+            },
+            "正在等待网络结果",
+            true,  // indeterminate
+            e.project
+        )
+    }
+
+    executor.submit {
+        runningCheckBox {
+            result = true
+        }
+    }
+}
+
+fun runningCheckBox(callback: () -> Unit={}) {
+    logI("正在查询待关闭的脚本")
+    VertxServer.Command.getRunningList({
+        callback()
+        val panel = JPanel()
+        val list = ArrayList<JCheckBox>()
+        panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
+
+        if (it.isEmpty()) {
+            val checkBox = JCheckBox("截止到当前没有任何脚本在运行")
+            panel.add(checkBox)
+        }
+        for (item in it) {
+            val checkBox = JCheckBox(item.sourceName)
+            list.add(checkBox)
+            panel.add(checkBox)
+        }
+
+        val option = JOptionPane.showConfirmDialog(
+            null, panel, "Select Items",
+            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE
+        )
+
+        if (option == JOptionPane.OK_OPTION) {
+            val result = StringBuilder("Selected items:\n")
+            for (component in panel.components) {
+                if (component is JCheckBox) {
+                    val checkBox = component
+                    if (checkBox.isSelected) {
+                        result.append("✔ ").append(checkBox.text).append("\n")
+                    }
+                }
+            }
+            JOptionPane.showMessageDialog(
+                null,
+                result.toString(),
+                "Selection Result",
+                JOptionPane.INFORMATION_MESSAGE
+            )
+            list.forEach {
+                if (it.isSelected) {
+                    VertxServer.Command.stopScriptBySourceName(it.text)
+                }
+            }
+        }
+    })
+    callback()
 }
