@@ -10,8 +10,6 @@ import github.zimo.autojsx.util.runServer
 
 class SaveDoc : AnAction(github.zimo.autojsx.icons.ICONS.SAVE_FILE_16) {
 
-    var isShowCheckboxMessageDialog = true
-    var isCreateSDK = true
     override fun actionPerformed(e: AnActionEvent) {
         val file = e.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
         if (file.isDirectory) return

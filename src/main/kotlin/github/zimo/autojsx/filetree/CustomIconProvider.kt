@@ -12,9 +12,8 @@ import javax.swing.Icon
 class CustomIconProvider : IconProvider() {
     override fun getIcon(element: PsiElement, flags: Int): Icon? {
         if (element is PsiDirectory) {
-            val psiDirectory = element
-            val project = psiDirectory.project
-            val dirFile = psiDirectory.virtualFile
+            val project = element.project
+            val dirFile = element.virtualFile
             val fileIndex = ProjectFileIndex.getInstance(project)
             if (project.basePath != dirFile.path) // 防止替换根项目图标
                 if (dirFile.isDirectory && fileIndex.isInContent(dirFile) && !fileIndex.isInSourceContent(dirFile)) {

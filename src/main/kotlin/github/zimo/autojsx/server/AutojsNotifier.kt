@@ -16,7 +16,7 @@ object AutojsNotifier {
         }
     }
 
-    fun error(project: Project?, content: String?,) {
+    fun error(project: Project?, content: String?) {
         content?.let {
             NotificationGroupManager.getInstance() // plugin.xml里配置的id
                 .getNotificationGroup("AutojsNotifier").createNotification(it, NotificationType.ERROR)

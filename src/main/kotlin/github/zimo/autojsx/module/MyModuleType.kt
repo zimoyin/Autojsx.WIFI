@@ -1,10 +1,7 @@
 package github.zimo.autojsx.module
 
-import com.intellij.ide.util.projectWizard.ModuleWizardStep
-import com.intellij.ide.util.projectWizard.WizardContext
 import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.module.ModuleTypeManager
-import com.intellij.openapi.roots.ui.configuration.ModulesProvider
 import javax.swing.Icon
 
 
@@ -39,12 +36,12 @@ class MyModuleType(private val ID: String = "AUTO_JSX_MODULE_TYPE") : ModuleType
         return github.zimo.autojsx.icons.ICONS.LOGO_16
     }
 
-    override fun createWizardSteps(
-        wizardContext: WizardContext,
-        moduleBuilder: MyModuleBuilder,
-        modulesProvider: ModulesProvider,
-    ): Array<ModuleWizardStep?> {
-        return super.createWizardSteps(wizardContext, moduleBuilder, modulesProvider)
-    }
+//    override fun createWizardSteps(
+//        wizardContext: WizardContext,
+//        moduleBuilder: MyModuleBuilder,
+//        modulesProvider: ModulesProvider,
+//    ): Array<ModuleWizardStep?> {
+//        return super.createWizardSteps(wizardContext, moduleBuilder, modulesProvider)
+//    }
 
 }

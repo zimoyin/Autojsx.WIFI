@@ -4,16 +4,12 @@ import com.intellij.ide.util.projectWizard.ModuleBuilder
 import com.intellij.ide.util.projectWizard.ModuleWizardStep
 import com.intellij.ide.util.projectWizard.WizardContext
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.externalSystem.model.project.LibraryLevel
 import com.intellij.openapi.module.ModifiableModuleModel
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModifiableRootModel
-import com.intellij.openapi.vfs.VirtualFile
 import github.zimo.autojsx.util.createSDK
 import java.io.File
-import java.io.FileOutputStream
-import java.util.zip.ZipInputStream
 
 
 /**

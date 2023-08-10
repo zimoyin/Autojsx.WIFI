@@ -2,8 +2,6 @@ package github.zimo.autojsx.module
 
 import com.intellij.ide.util.projectWizard.ModuleWizardStep
 import com.intellij.ui.dsl.builder.*
-import com.intellij.ui.jcef.JBCefBrowser
-import com.intellij.ui.jcef.JBCefJSQuery
 import javax.swing.JComponent
 
 

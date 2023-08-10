@@ -2,7 +2,6 @@ package github.zimo.autojsx.action.run.top
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.progress.ProgressManager
 import github.zimo.autojsx.icons.ICONS
 import github.zimo.autojsx.server.VertxServer
 import github.zimo.autojsx.util.executor

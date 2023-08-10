@@ -7,14 +7,19 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.dsl.builder.panel
-import github.zimo.autojsx.icons.ICONS
 import github.zimo.autojsx.server.ConsoleOutputV2
 import github.zimo.autojsx.server.ConsoleOutput_V1
 import github.zimo.autojsx.server.Devices
-import github.zimo.autojsx.util.*
+import github.zimo.autojsx.util.runServer
+import github.zimo.autojsx.util.runningCheckBox
+import github.zimo.autojsx.util.selectDevice
+import github.zimo.autojsx.util.stopServer
 import java.awt.Dimension
 import java.awt.FlowLayout
-import javax.swing.*
+import javax.swing.Box
+import javax.swing.BoxLayout
+import javax.swing.JPanel
+import javax.swing.ListCellRenderer
 
 
 class AutojsxConsoleWindow : ToolWindowFactory {
@@ -146,8 +151,8 @@ class AutojsxConsoleWindow : ToolWindowFactory {
         }
     }
 
-
-    override fun getIcon(): Icon {
-        return ICONS.LOGO_16
-    }
+    //TODO: 使用了不稳定的API，这在以后会寻求解决
+//    override fun getIcon(): Icon {
+//        return ICONS.LOGO_16
+//    }
 }

@@ -2,7 +2,6 @@ package github.zimo.autojsx.server
 
 import github.zimo.autojsx.server.VertxServer.devicesWs
 import github.zimo.autojsx.server.VertxServer.selectDevicesWs
-import github.zimo.autojsx.util.caseString
 import github.zimo.autojsx.util.logE
 import github.zimo.autojsx.util.logI
 import io.vertx.core.AbstractVerticle
@@ -10,6 +9,7 @@ import io.vertx.core.Promise
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
+import io.vertx.ext.web.handler.StaticHandler
 import java.util.*
 
 
@@ -100,33 +100,12 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                 }
             }
 
-
-        router.route("/").handler {
-            println("/\t" + it.body().asString())
-        }
-        router.route("/exec").handler {
-            println("/exec\t" + it.body().asString())
-        }
         router.route("/receive").handler(BodyHandler.create()).handler {
             val jsonObject = it.body().asJsonObject()
             VertxServer.content[jsonObject.getString("message")] = jsonObject
-//            println("receive: $jsonObject")
             it.response().end("ok")
         }
-
-        router.route("/demo").handler { cnt ->
-//            VertxServer.Command.runProject("./build/webview.zip")
-//            VertxServer.Command.saveProjectToRoot("./build/webview.zip")
-//            VertxServer.Command.rerunJS("./build/test.js")
-//            VertxServer.Command.runJS("./build/test.js")
-//            VertxServer.Command.runJsByString(content = "log(123)")
-        }
-        router.route("/stop").handler {
-//            VertxServer.Command.stop("./build/test.js")
-            VertxServer.Command.saveJS("./build/test.js")
-//            VertxServer.Command.stopAll()
-            it.response().end("21")
-        }
+        router.route("/*").handler(StaticHandler.create())
     }
 
     fun String.asJsonObject(): JsonObject = JsonObject(this)

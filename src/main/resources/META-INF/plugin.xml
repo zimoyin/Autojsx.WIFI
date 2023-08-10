@@ -18,21 +18,26 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <description>
         <![CDATA[
-    <p>Autojsx plugin</p>
-    <p>Make it easier for you to develop Autojsx in IDEA</p>
-    <p>让您更容易在IDEA中开发Autojsx</p>
-    <p>功能列表</p>
+    <p>Enable your Auto.js to connect to IDEA over the Local Area Network, allowing you to use IDEA for Auto.js coding, execution, and task management.</p>
+    <p>Autojs 在IDEA上的插件，可以让你在IDEA上进行 Autojs 开发</p>
+
+    <br/>
     <ul>
-        <li>让您更容易在IDEA中开发Autojsx</li>
-        <li>能够帮助你完成 运行/保存/部署/上传文件...</li>
-        <li>SDK 能让你的 IntelliJ IDEA Ultimate 具有 API 提示功能</li>
+      <li>Device Connection: Easily connect your Android device and IDEA within the same local network.</li>
+      <li>Effortless Script Execution: Execute scripts directly from your IDEA environment on your connected Android device.</li>
+      <li>Real-time Log Monitoring: Monitor real-time logs and outputs of your scripts, aiding in efficient debugging.</li>
+      <li>Project Deployment: Package script files into the app for convenient transfer and deployment.</li>
+      <li>Multiple Transfer Methods: Support for single file transfer, folder transfer, and entire project transfer to cater to different development needs.</li>
+      <li>Task Management: Seamlessly manage script execution tasks within IDEA, including stopping single tasks, stopping multiple tasks, running projects, and executing single scripts.</li>
     </ul>
-    <p>未来实现</p>
-    <ul>
-        <li>编译 dex</li>
-        <li>js混淆</li>
-        <li>app 节点分析</li>
-    </ul>
+
+     <p><strong>Usage Instructions:</strong></p>
+     <ol>
+        <li><strong>Install the App:</strong> Install the <a href="https://github.com/kkevsekk1/AutoX">Auto.js</a> app on your Android device.</li>
+        <li><strong>Open the Plugin Server:</strong> Open the plugin server within IDEA.</li>
+        <li><strong>Connect the App to the Server:</strong> Connect the Auto.js app to the plugin server, ensuring bidirectional communication between your device and IDEA.</li>
+    </ol>
+
     ]]>
     </description>
 

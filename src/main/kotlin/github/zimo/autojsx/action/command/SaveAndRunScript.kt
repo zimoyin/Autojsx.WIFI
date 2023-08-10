@@ -2,15 +2,9 @@ package github.zimo.autojsx.action.command
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.fileChooser.FileChooserFactory
-import com.intellij.openapi.fileEditor.FileDocumentManager
-import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.vfs.VirtualFile
-import github.zimo.autojsx.server.ConsoleOutputV2
 import github.zimo.autojsx.server.VertxServer
-import github.zimo.autojsx.util.caseString
 import github.zimo.autojsx.util.logE
 import github.zimo.autojsx.util.runServer
 

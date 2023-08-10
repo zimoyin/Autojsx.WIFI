@@ -31,7 +31,7 @@ object ConsoleOutputV2 {
     }
 
     fun println(device: String, message: String) {
-        var list = map.get(device)
+        var list = map[device]
         if (list == null) {
             list = ArrayList()
             map[device] = list
@@ -43,7 +43,7 @@ object ConsoleOutputV2 {
     }
 
     fun print(device: String, message: String) {
-        var list = map.get(device)
+        var list = map[device]
         if (list == null) {
             list = ArrayList()
             map[device] = list
@@ -67,7 +67,7 @@ object ConsoleOutputV2 {
      */
 
     private fun print(message: Message) {
-        var list = map.get("所有设备")
+        var list = map["所有设备"]
         if (list == null) {
             list = ArrayList()
             map["所有设备"] = list
@@ -85,12 +85,11 @@ object ConsoleOutputV2 {
 
     private fun parse(device: String, message: String): Message {
         var level: ConsoleViewContentType = ConsoleViewContentType.LOG_VERBOSE_OUTPUT
-        var levelI: Int = 0
+        var levelI = 0
 
         val indexOfSlash = message.indexOf('/')
         if (indexOfSlash != -1 && indexOfSlash < message.length - 1) {
-            val result = message.substring(indexOfSlash + 1, indexOfSlash + 2)
-            when (result) {
+            when (message.substring(indexOfSlash + 1, indexOfSlash + 2)) {
                 "V" -> {
                     level = ConsoleViewContentType.LOG_VERBOSE_OUTPUT
                     levelI = 0

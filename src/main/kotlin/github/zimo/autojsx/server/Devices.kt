@@ -52,7 +52,7 @@ object Devices : ArrayList<String>() {
     }
 
     override fun removeAll(elements: Collection<String>): Boolean {
-        val result = super.removeAll(elements)
+        val result = super.removeAll(elements.toSet())
         add("所有设备")
         updateComponent()
         return result
@@ -76,7 +76,7 @@ object Devices : ArrayList<String>() {
     }
 
     override fun retainAll(elements: Collection<String>): Boolean {
-        val result = super.retainAll(elements)
+        val result = super.retainAll(elements.toSet())
         updateComponent()
         return result
     }

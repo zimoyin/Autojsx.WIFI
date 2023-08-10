@@ -2,13 +2,7 @@ package github.zimo.autojsx.action.command
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import github.zimo.autojsx.server.VertxServer
-import github.zimo.autojsx.util.logI
 import github.zimo.autojsx.util.selectDevice
-import javax.swing.BoxLayout
-import javax.swing.JCheckBox
-import javax.swing.JOptionPane
-import javax.swing.JPanel
 
 
 /**

@@ -1,10 +1,7 @@
 package github.zimo.autojsx.action.run.top
 
-import com.intellij.execution.ui.ConsoleView
-import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.project.ProjectManager
 import github.zimo.autojsx.icons.ICONS
 import github.zimo.autojsx.server.ConsoleOutputV2
 import github.zimo.autojsx.server.VertxServer

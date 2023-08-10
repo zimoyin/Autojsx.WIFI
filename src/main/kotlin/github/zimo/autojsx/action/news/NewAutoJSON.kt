@@ -12,7 +12,6 @@ import com.intellij.openapi.vfs.VirtualFileManager
 class NewAutoJSON :
     AnAction(github.zimo.autojsx.icons.ICONS.LOGO_16) {
     override fun actionPerformed(e: AnActionEvent) {
-        val action = this
         val file = e.getData(CommonDataKeys.VIRTUAL_FILE)
         if (file == null || !file.isDirectory) return
         //构建结构

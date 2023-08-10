@@ -5,12 +5,12 @@ import com.intellij.ui.components.JBTextArea
 object ConsoleOutput_V1 {
     var console: JBTextArea? = null
     var currentDevice: String? = "所有设备"
-    val rows = 80
+    const val rows = 80
 
     private val map: HashMap<String, ArrayList<String>> = HashMap()
 
     fun print(device: String, message: String) {
-        var list = map.get("所有设备")
+        var list = map["所有设备"]
         if (list == null) {
             list = ArrayList()
             map["所有设备"] = list
@@ -20,7 +20,7 @@ object ConsoleOutput_V1 {
     }
 
     fun print(message: String) {
-        var list = map.get("所有设备")
+        var list = map["所有设备"]
         if (list == null) {
             list = ArrayList()
             map["所有设备"] = list
@@ -70,7 +70,7 @@ object ConsoleOutput_V1 {
         val device = Devices.currentDevice
         if (device == currentDevice) {
             if (console != null) {
-                map[device]?.forEach {
+                map[device]?.forEach { _ ->
 //                    console!!.append(it)
                     console!!.text = ""
                     map[device]?.forEach {

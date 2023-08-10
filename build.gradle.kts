@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "github.zimo"
-version = "1.0-SNAPSHOT"
+version = "1.0.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -23,7 +23,7 @@ intellij {
 dependencies {
     // 声明对Kotlin标准库的依赖关系
     implementation(kotlin("test"))
-    implementation("com.google.javascript:closure-compiler:v20230502")
+//    implementation("com.google.javascript:closure-compiler:v20230502")
     // https://mvnrepository.com/artifact/io.vertx/vertx-web
     implementation("io.vertx:vertx-web:4.4.4")
     // https://mvnrepository.com/artifact/io.vertx/vertx-lang-kotlin

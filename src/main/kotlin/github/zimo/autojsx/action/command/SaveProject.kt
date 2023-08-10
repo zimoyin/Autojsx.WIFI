@@ -13,7 +13,7 @@ import java.io.File
 
 class SaveProject :
     AnAction("上传当前项目","保存项目",github.zimo.autojsx.icons.ICONS.SAVE_16) {
-    private val ProjectJSON = "project.json"
+    private val projectJSON = "project.json"
     override fun actionPerformed(e: AnActionEvent) {
         val dialog = FileChooserFactory.getInstance()
             .createFileChooser(FileChooserDescriptorFactory.createSingleFolderDescriptor(), e.project, null)
@@ -28,7 +28,7 @@ class SaveProject :
     }
 
     private fun runProject(file: VirtualFile, project: Project?) {
-        val jsonFile = findFile(file, ProjectJSON)
+        val jsonFile = findFile(file, projectJSON)
         if (jsonFile != null) {
             val projectJson = File(jsonFile.path)
             val json = JsonObject(projectJson.readText())

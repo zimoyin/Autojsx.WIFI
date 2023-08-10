@@ -6,7 +6,6 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.fileChooser.FileChooserFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import github.zimo.autojsx.server.ConsoleOutputV2
 import github.zimo.autojsx.server.VertxServer
 import github.zimo.autojsx.util.*
 import io.vertx.core.json.JsonObject
@@ -15,7 +14,7 @@ import java.io.File
 
 class RunProject :
     AnAction("选择运行项目", "不保存项目运行", github.zimo.autojsx.icons.ICONS.START_16) {
-    private val ProjectJSON = "project.json"
+    private val projectJSON = "project.json"
     override fun actionPerformed(e: AnActionEvent) {
         val dialog = FileChooserFactory.getInstance()
             .createFileChooser(FileChooserDescriptorFactory.createSingleFolderDescriptor(), e.project, null)
@@ -30,7 +29,7 @@ class RunProject :
     }
 
     private fun runProject(file: VirtualFile, project: Project?) {
-        val jsonFile = findFile(file, ProjectJSON)
+        val jsonFile = findFile(file, projectJSON)
         if (jsonFile != null) {
             val projectJson = File(jsonFile.path)
             val json = JsonObject(projectJson.readText())

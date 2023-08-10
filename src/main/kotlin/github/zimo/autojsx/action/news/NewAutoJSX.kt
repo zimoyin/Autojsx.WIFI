@@ -12,8 +12,8 @@ import github.zimo.autojsx.util.createSDK
 class NewAutoJSX :
     AnAction(github.zimo.autojsx.icons.ICONS.LOGO_16) {
 
-    var isShowCheckboxMessageDialog = true
-    var isCreateSDK = true
+    private var isShowCheckboxMessageDialog = true
+    private var isCreateSDK = true
     override fun actionPerformed(e: AnActionEvent) {
         val file = e.getData(CommonDataKeys.VIRTUAL_FILE)
         if (file == null || !file.isDirectory) return
