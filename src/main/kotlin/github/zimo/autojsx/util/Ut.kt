@@ -7,6 +7,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.wm.ToolWindowManager
 import github.zimo.autojsx.server.AutojsNotifier
 import github.zimo.autojsx.server.ConsoleOutputV2
 import github.zimo.autojsx.server.VertxServer
@@ -82,7 +83,7 @@ fun searchProjectJSON(project: Project?, executeSpecificOperation: (VirtualFile)
 
             ConsoleOutputV2.systemPrint("$targetFileName not found in the parent paths.")
         } else {
-            ConsoleOutputV2.systemPrint("为打开任何项目")
+            logW("未打开任何项目，请打开你的 main.js。插件需要再活动编辑器窗口看到他")
         }
     }
 }
@@ -94,20 +95,25 @@ fun isProjectRoot(path: @NonNls String, projectBasePath: @SystemIndependent @Non
 fun runServer(project: Project?) {
     if (!VertxServer.isStart) {
         VertxServer.start()
-        AutojsNotifier.info(
-            project,
-            "Autojsx 服务器在 ${VertxServer.getServerIpAddress()}:${VertxServer.port} 尝试启动"
-        )
+//        AutojsNotifier.info(
+//            project,
+//            "Autojsx 服务器在 ${VertxServer.getServerIpAddress()}:${VertxServer.port} 尝试启动"
+//        )
+        val toolWindowManager = ToolWindowManager.getInstance(project!!)
+        toolWindowManager.getToolWindow("AutojsxConsole")?.apply {
+            show()
+        }
     }
 }
 
 fun stopServer(project: Project?) {
     if (VertxServer.isStart) {
+        VertxServer.Command.stopAll()
         VertxServer.stop()
-        AutojsNotifier.info(
-            project,
-            "Autojsx 服务器在 ${VertxServer.getServerIpAddress()}:${VertxServer.port} 尝试关闭"
-        )
+//        AutojsNotifier.info(
+//            project,
+//            "Autojsx 服务器在 ${VertxServer.getServerIpAddress()}:${VertxServer.port} 尝试关闭"
+//        )
     }
 }
 
@@ -174,7 +180,7 @@ fun selectDevice() {
 }
 
 
-fun runningList(e: AnActionEvent) {
+fun runningList(project: Project) {
     var result = false
     executor.submit {
         ProgressManager.getInstance().runProcessWithProgressSynchronously<Any, RuntimeException>(
@@ -186,21 +192,24 @@ fun runningList(e: AnActionEvent) {
             },
             "正在等待网络结果",
             true,  // indeterminate
-            e.project
+            project
         )
     }
 
     executor.submit {
+        runServer(project)
         runningCheckBox {
             result = true
         }
     }
 }
 
-fun runningCheckBox(callback: () -> Unit={}) {
+fun runningCheckBox(callback: () -> Unit = {}) {
     logI("正在查询待关闭的脚本")
+
     VertxServer.Command.getRunningList({
         callback()
+        Thread.sleep(600)
         val panel = JPanel()
         val list = ArrayList<JCheckBox>()
         panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)

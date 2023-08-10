@@ -11,7 +11,7 @@ import github.zimo.autojsx.util.runningList
 class StopRunning :
     AnAction("停止运行", "选择脚本进行停止运行", github.zimo.autojsx.icons.ICONS.STOP_16) {
     override fun actionPerformed(e: AnActionEvent) {
-        runningList(e)
+        e.project?.let { runningList(it) }
     }
 
 

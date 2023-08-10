@@ -7,15 +7,16 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.dsl.builder.panel
+import github.zimo.autojsx.icons.ICONS
 import github.zimo.autojsx.server.ConsoleOutputV2
 import github.zimo.autojsx.server.ConsoleOutput_V1
 import github.zimo.autojsx.server.Devices
-import github.zimo.autojsx.util.runServer
-import github.zimo.autojsx.util.runningCheckBox
-import github.zimo.autojsx.util.selectDevice
-import github.zimo.autojsx.util.stopServer
+import github.zimo.autojsx.server.VertxServer
+import github.zimo.autojsx.util.*
+import io.vertx.core.json.JsonObject
 import java.awt.Dimension
 import java.awt.FlowLayout
+import java.io.File
 import javax.swing.Box
 import javax.swing.BoxLayout
 import javax.swing.JPanel
@@ -87,17 +88,54 @@ class AutojsxConsoleWindow : ToolWindowFactory {
                     }
                     button("开启服务器") {
                         runServer(project)
+                    }.apply {
+                        component.icon = ICONS.START_SERVER_16
                     }
                     button("关闭服务器") {
                         stopServer(project)
+                    }.apply {
+                        component.icon = ICONS.STOP_SERVER_16
                     }
                     button("选择设备列表") {
                         selectDevice()
                     }
                     button("选择需要关闭的脚本") {
-                        runningCheckBox()
+                        runningList(project)
                     }
+                    button("运行项目") {
+                        runServer(project)
+                        searchProjectJSON(project) { file ->
+                            val projectJson = File(file.path)
+                            val json = JsonObject(projectJson.readText())
 
+                            val name = json.getString("name")
+                            val src = projectJson.resolve(json.getString("srcPath")).canonicalFile
+                            val resources = projectJson.resolve(json.getString("resources")).canonicalFile
+                            val lib = projectJson.resolve(json.getString("lib")).canonicalFile
+
+                            val zip = File(project?.basePath + "/build-output" + "/${name}.zip")
+                            zip.parentFile.mkdirs()
+                            zip.delete()
+
+                            executor.submit {
+                                zip(
+                                    arrayListOf(src.path, resources.path, lib.path),
+                                    project?.basePath + File.separator + "build-output" + File.separator + "${name}.zip"
+                                )
+//                ConsoleOutputV2.systemPrint("文件打包完成: "+project?.basePath+"/build-output"+"/${name}.zip")
+                                VertxServer.Command.runProject(zip.canonicalPath)
+                                zip.delete()
+                            }
+                        }
+                    }.apply {
+                        component.icon = ICONS.START_16
+                    }
+                    button("停止所有项目") {
+                        VertxServer.Command.stopAll()
+                        ConsoleOutputV2.systemPrint("Action/I: 停止所有脚本指令已发送")
+                    }.apply {
+                        component.icon = ICONS.STOP_16
+                    }
                 }
             }
         }

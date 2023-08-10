@@ -64,10 +64,11 @@
         <notificationGroup id="AutojsNotifier"
                            displayType="BALLOON"/>
 
-        <toolWindow id="Autojsx"
+        <toolWindow id="AutojsxConsole"
                     anchor="bottom"
                     factoryClass="github.zimo.autojsx.window.AutojsxConsoleWindow"
                     secondary="false"
+                    icon="icons/logo.png"
         />
 
     </extensions>
@@ -88,6 +89,10 @@
                 description="保存到设备">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
         </action>
+        <action id="runAutojsToRightDir" class="github.zimo.autojsx.action.run.dir.DirRunButton" text="Run Autojsx Project"
+                description="Run auto js">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
+        </action>
         <!--顶部菜单栏-->
         <group id="AutojsMenu" class="github.zimo.autojsx.action.command.AutoMenu" text="Autojs"
                description="Autojsx menu">
@@ -96,11 +101,11 @@
         <!--运行按钮-->
         <action id="runAutojs" class="github.zimo.autojsx.action.run.top.TopRunButton" text="Run Autojsx"
                 description="Run auto js">
-            <add-to-group group-id="RunnerActions" anchor="last"/>
+            <add-to-group group-id="RunnerActions" anchor="first"/>
         </action>
         <action id="StopAllButtonAutojs" class="github.zimo.autojsx.action.run.top.StopAllButton" text="Stop All Autojsx"
                 description="StopAllButton">
-            <add-to-group group-id="RunnerActions" anchor="last"/>
+            <add-to-group group-id="RunnerActions" anchor="first"/>
         </action>
         <!--右键文档-->
         <action id="runDocAutojs" class="github.zimo.autojsx.action.run.doc.DocRunButton" text="执行当前 Autojsx 脚本"
@@ -111,6 +116,16 @@
                 description="保存脚本">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
+        <action id="runAutojsToRightEditor" class="github.zimo.autojsx.action.run.top.TopRunButton" text="Run Autojsx Project"
+                description="Run auto js">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>
+
+        <action id="runAutojsToRightEditor1" class="github.zimo.autojsx.action.run.top.TopRunButton" text="Run Autojsx Project"
+                description="Run auto js">
+            <add-to-group group-id="ToolbarRunGroup" anchor="last"/>
+        </action>
+
     </actions>
 
 

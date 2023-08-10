@@ -93,6 +93,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                 if (http.succeeded()) {
                     startPromise.complete()
 //                    ConsoleOutputV2.systemPrint("服务器启动/I:  ${VertxServer.getServerIpAddress()}:$port")
+                    logI("Autojsx 服务器在 ${VertxServer.getServerIpAddress()}:${VertxServer.port} 启动")
                     VertxServer.isStart = true
                 } else {
                     startPromise.fail(http.cause())
