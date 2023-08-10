@@ -5,7 +5,8 @@ plugins {
 }
 
 group = "github.zimo"
-version = "1.0.1-SNAPSHOT"
+//SNAPSHOT
+version = "1.0.1"
 
 repositories {
     mavenCentral()

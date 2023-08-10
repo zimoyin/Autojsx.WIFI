@@ -23,6 +23,6 @@
 如果您对 Autojsx IDEA 插件不满意，您可以看看位于其他平台的插件 [VS code 插件](https://marketplace.visualstudio.com/items?itemName=aaroncheng.auto-js-vsce-fixed)  
 
 ----
-* [Autojsx项目](https://github.com/kkevsekk1/AutoX)
-* [Autojsx应用下载地址](https://github.com/kkevsekk1/AutoX/releases)
-* [Autojsx.WIFI下载地址](https://plugins.jetbrains.com/plugin/22458-autojsx-wifi)
+* [Autojsx 项目](https://github.com/kkevsekk1/AutoX)
+* [Autojsx 应用下载地址](https://github.com/kkevsekk1/AutoX/releases)
+* [Autojsx.WIFI 正式版下载地址](https://plugins.jetbrains.com/plugin/22458-autojsx-wifi)
