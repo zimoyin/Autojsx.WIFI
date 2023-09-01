@@ -1,12 +1,16 @@
 package github.zimo.autojsx.server
 
+import com.intellij.ide.BrowserUtil
+import github.zimo.autojsx.pojo.ApplicationListPojo
 import github.zimo.autojsx.pojo.RunningListPojo
+import github.zimo.autojsx.util.base64_image
 import github.zimo.autojsx.util.logE
 import github.zimo.autojsx.util.logI
 import github.zimo.autojsx.util.resourceAsStream
 import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.http.ServerWebSocket
+import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import java.io.File
 import java.io.IOException
@@ -39,6 +43,8 @@ object VertxServer {
                 logE("服务器无法被终止", it.cause())
             }
         }
+        selectDevicesWs.clear()
+        devicesWs.clear()
         isStart = false
         vertx = null
         return close
@@ -351,6 +357,7 @@ object VertxServer {
             callback: (array: List<RunningListPojo>) -> Unit,
             devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
         ) {
+            content["getRunningList"] = JsonObject("{\"ID\": \"0\"}")
             devicesEmpty(devices)
             var readBytes: ByteArray = ByteArray(0)
             resourceAsStream("script/RunningScripts.js")?.apply {
@@ -377,12 +384,17 @@ object VertxServer {
                                 pojo.source = getString("source")
                                 pojo.sourceName = getString("sourceName")
                             }
-                            array.add(pojo)
+                            if (!pojo.sourceName.contains("getRunningList")) array.add(pojo)
                         }
                         callback(array)
                         return
                     }
                 }
+            }
+            if (!content.contains("getRunningList")) {
+                logE("未能获取到Autojs.WIFI 内部脚本执行结果，未能查找到 message: getRunningList。诊断为回传数据超时")
+            } else if (content["getRunningList"]?.getString("ID") == uuid) {
+                logE("未能获取到Autojs.WIFI 内部脚本执行结果，未能查找到 uuid: $uuid 。请重试")
             }
             callback(ArrayList<RunningListPojo>())
         }
@@ -430,6 +442,7 @@ object VertxServer {
             callback: (xml: String) -> Unit,
             devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
         ) {
+            content["getNodes"] = JsonObject("{\"ID\": \"0\"}")
             devicesEmpty(devices)
             var readBytes: ByteArray = ByteArray(0)
             resourceAsStream("script/NodesXML.js")?.apply {
@@ -450,7 +463,67 @@ object VertxServer {
                     }
                 }
             }
+            if (!content.contains("getNodes")) {
+                logE("未能获取到Autojs.WIFI 内部脚本执行结果，未能查找到 message: getNodes。诊断为回传数据超时")
+            } else if (content["getNodes"]?.getString("ID") == uuid) {
+                logE("未能获取到Autojs.WIFI 内部脚本执行结果，未能查找到 uuid: $uuid 。请重试")
+            }
             callback("")
+        }
+
+        /**
+         * 获取设备上的应用信息列表
+         */
+        fun getApplications(
+            callback: (list: ArrayList<ApplicationListPojo>) -> Unit,
+            devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
+        ) {
+            content["getApplications"] = JsonObject("{\"ID\": \"0\"}")
+            devicesEmpty(devices)
+            var readBytes: ByteArray = ByteArray(0)
+            resourceAsStream("script/ApplicationList.js")?.apply {
+                readBytes = readBytes()
+                close()
+            }
+            if (readBytes.isEmpty()) return
+            val uuid = UUID.randomUUID().toString()
+            val script =
+                "let values = ['http://${getServerIpAddress()}:$port/receive','${uuid}'];\r\n" + String(readBytes)
+            runJsByString("getApplications", script, devices)
+            val startTime = System.currentTimeMillis()
+            while ((System.currentTimeMillis() - startTime) < 8 * 1000) {
+                content["getApplications"]?.let {
+                    if (uuid == it.getString("ID")) {
+                        val list = ArrayList<ApplicationListPojo>()
+                        it.getJsonArray("value").forEach {
+                            val pojo = ApplicationListPojo()
+                            JsonObject(it.toString()).apply {
+                                pojo.name = getString("name")
+                                pojo.packageName = getString("packageName")
+                                pojo.installTime = getLong("installTime")
+                                pojo.versionName = getString("versionName")
+                                pojo.versionCode = getInteger("versionCode")
+                                pojo.icon = getString("icon")?.replace("\n", "")?.replace(" ", "")
+                                runCatching {
+                                    pojo.iconImage = pojo.icon?.let { it1 -> base64_image(it1) }
+                                }.onFailure {
+                                    logE("Failed to get application ", it)
+                                }
+                            }
+                            list.add(pojo)
+                        }
+                        callback(list)
+                        return
+                    }
+                }
+            }
+            if (!content.contains("getApplications")) {
+                logE("未能获取到Autojs.WIFI 内部脚本执行结果，未能查找到 message: getApplications。诊断为回传数据超时")
+            } else if (content["getApplications"]?.getString("ID") == uuid) {
+                logE("未能获取到Autojs.WIFI 内部脚本执行结果，未能查找到 uuid: $uuid 。请重试")
+            }
+
+            callback(ArrayList())
         }
 
         /**
@@ -460,6 +533,7 @@ object VertxServer {
             callback: (base64: String) -> Unit,
             devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
         ) {
+            content["getScreenshot"] = JsonObject("{\"ID\": \"0\"}")
             devicesEmpty(devices)
             var readBytes: ByteArray = ByteArray(0)
             resourceAsStream("script/Screenshot.js")?.apply {
@@ -480,7 +554,68 @@ object VertxServer {
                     }
                 }
             }
+            if (!content.contains("getScreenshot")) {
+                logE("未能获取到Autojs.WIFI 内部脚本执行结果，未能查找到 message: getScreenshot。诊断为回传数据超时")
+            } else if (content["getScreenshot"]?.getString("ID") == uuid) {
+                logE("未能获取到Autojs.WIFI 内部脚本执行结果，未能查找到 uuid: $uuid 。请重试")
+            }
             callback("")
+        }
+
+        @Deprecated("混淆不在使用脚本回传")
+        var isStartConfusion = false
+
+        /**
+         * 截图
+         */
+        @Deprecated("混淆不在使用脚本回传")
+        fun confusion(
+            src: File,
+            out: File,
+        ): Boolean {
+            if (isStartConfusion) {
+                logE("混淆正在进行，请等待超时结束")
+                isStartConfusion = false
+                return false
+            }
+            isStartConfusion = true
+
+            if (!(src.exists() && src.isDirectory && out.exists() && out.isDirectory)) {
+                logE("目录未存在: src: [${src}]  out: [${out}]")
+                isStartConfusion = false
+                return false
+            }
+
+            val cacheJSON = JsonObject()
+            val cacheArray = JsonArray()
+            src.listFiles()?.forEach {
+                if (!it.name.endsWith(".js")) return@forEach
+                val valJSON = JsonObject()
+                valJSON.put(it.name, it.readText())
+                cacheArray.add(valJSON)
+            }
+            cacheJSON.put("text", cacheArray)
+            CacheTexts.cacheOutJson = cacheJSON.toString()
+            BrowserUtil.browse("http://${VertxServer.getServerIpAddress()}:${VertxServer.port}/confusion.html")
+
+            val startTime = System.currentTimeMillis()
+            while ((System.currentTimeMillis() - startTime) < 60 * 1000 && isStartConfusion) {
+                content["confusion"]?.let {
+                    it.getJsonArray("text").forEach {
+                        JsonObject(it.toString()).forEach {
+                            out.resolve("/${it.key}").writeText(it.value.toString())
+                        }
+                    }
+
+                    content.remove("confusion")
+                    isStartConfusion = false
+                    return true
+                }
+            }
+            isStartConfusion = false
+            content.remove("confusion")
+            logE("在规定时间内未能等到客户端回传混淆文件")
+            return false
         }
 
 

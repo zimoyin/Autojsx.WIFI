@@ -12,7 +12,7 @@ import io.vertx.core.json.JsonObject
 import java.io.File
 
 class SaveProject :
-    AnAction("上传当前项目","保存项目",github.zimo.autojsx.icons.ICONS.SAVE_16) {
+    AnAction("选择上传项目", "保存项目", github.zimo.autojsx.icons.ICONS.SAVE_16) {
     private val projectJSON = "project.json"
     override fun actionPerformed(e: AnActionEvent) {
         val dialog = FileChooserFactory.getInstance()
@@ -23,7 +23,7 @@ class SaveProject :
 
         if (files.isNotEmpty()) {
             val dir = files[0]
-            runProject(dir,e.project)
+            runProject(dir, e.project)
         }
     }
 
@@ -41,7 +41,7 @@ class SaveProject :
 
             val zip = File(project?.basePath + "/build-output" + "/${name}.zip")
             zip.parentFile.mkdirs()
-            zip.delete()
+            if (zip.exists()) zip.delete()
 
             executor.submit {
                 zip(
@@ -49,11 +49,15 @@ class SaveProject :
                     project?.basePath + File.separator + "build-output" + File.separator + "${name}.zip"
                 )
                 VertxServer.Command.saveProject(zip.canonicalPath)
-                zip.delete()
+//                zip.delete()
                 logI("项目正在上传: " + projectJson.path)
+                logI("正在上传 src: " + src.path)
+                logI("项目正在上传 resources: " + resources.path)
+                logI("项目正在上传 lib: " + lib.path)
+
             }
             return
         }
-        logE("项目无法上传: 选择的文件夹没有包含项目描述文件 'project.json'" )
+        logE("项目无法上传: 选择的文件夹没有包含项目描述文件 'project.json'")
     }
 }

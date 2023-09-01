@@ -32,7 +32,7 @@ class SaveDir :
         runServer(project)
         val zip = File(project?.basePath + "/build-output" + "/${file.name}.zip")
         zip.parentFile.mkdirs()
-        zip.delete()
+        if (zip.exists()) zip.delete()
 
         executor.submit {
             zip(
@@ -41,7 +41,7 @@ class SaveDir :
             )
             VertxServer.Command.saveProject(zip.canonicalPath)
             VertxServer.Command.runProject(zip.canonicalPath)
-            zip.delete()
+//            zip.delete()
             logI("文件夹正在上传: " + file.path)
         }
     }

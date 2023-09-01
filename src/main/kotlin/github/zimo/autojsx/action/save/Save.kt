@@ -43,7 +43,7 @@ class Save :
     }
 
     fun saveDir(file: VirtualFile, project: Project?, showDialog: Boolean = true) {
-        val jsonFile = findFile(file,ProjectJSON)
+        val jsonFile = findFile(file, ProjectJSON)
         if (jsonFile != null) {
             if (showDialog) showCheckboxMessageDialog()
             if (isSaveProject) {
@@ -57,7 +57,7 @@ class Save :
 
                 val zip = File(project?.basePath + "/build-output" + "/${name}.zip")
                 zip.parentFile.mkdirs()
-                zip.delete()
+                if (zip.exists()) zip.delete()
 
                 executor.submit {
                     zip(
@@ -65,8 +65,11 @@ class Save :
                         project?.basePath + File.separator + "build-output" + File.separator + "${name}.zip"
                     )
                     VertxServer.Command.saveProject(zip.canonicalPath)
-                    zip.delete()
                     ConsoleOutputV2.systemPrint("项目正在上传/I: " + projectJson.path)
+                    logI("正在上传 src: " + src.path)
+                    logI("项目正在上传 resources: " + resources.path)
+                    logI("项目正在上传 lib: " + lib.path+"\r\n")
+//                    if (zip.exists()) zip.delete()
                 }
                 return
             }

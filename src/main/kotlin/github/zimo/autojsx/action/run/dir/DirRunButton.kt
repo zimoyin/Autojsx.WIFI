@@ -25,7 +25,7 @@ class DirRunButton : AnAction(ICONS.START_16) {
         runServer(project)
         val folder = e.getData(PlatformDataKeys.VIRTUAL_FILE)
         if (folder?.isDirectory == true) {
-            runProject(folder,e.project)
+            runProject(folder, e.project)
         }
     }
 
@@ -44,7 +44,7 @@ class DirRunButton : AnAction(ICONS.START_16) {
 
             val zip = File(project?.basePath + "/build-output" + "/${name}.zip")
             zip.parentFile.mkdirs()
-            zip.delete()
+            if (zip.exists()) zip.delete()
 
             executor.submit {
                 zip(
@@ -52,11 +52,16 @@ class DirRunButton : AnAction(ICONS.START_16) {
                     project?.basePath + File.separator + "build-output" + File.separator + "${name}.zip"
                 )
                 VertxServer.Command.runProject(zip.canonicalPath)
-                zip.delete()
                 logI("项目正在上传: " + projectJson.path)
+                logI("正在上传 src: " + src.path)
+                logI("项目正在上传 resources: " + resources.path)
+                logI("项目正在上传 lib: " + lib.path)
+                logI("项目上传完成" + "\r\n")
+//                if (zip.exists()) zip.delete()
+
             }
             return
         }
-        logE("项目无法上传: 选择的文件夹没有包含项目描述文件 'project.json'" )
+        logE("项目无法上传: 选择的文件夹没有包含项目描述文件 'project.json'")
     }
 }

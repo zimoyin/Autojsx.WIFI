@@ -42,7 +42,7 @@ class RunProject :
 
             val zip = File(project?.basePath + "/build-output" + "/${name}.zip")
             zip.parentFile.mkdirs()
-            zip.delete()
+            if (zip.exists()) zip.delete()
 
             executor.submit {
                 zip(
@@ -50,8 +50,11 @@ class RunProject :
                     project?.basePath + File.separator + "build-output" + File.separator + "${name}.zip"
                 )
                 VertxServer.Command.runProject(zip.canonicalPath)
-                zip.delete()
                 logI("项目正在上传: " + projectJson.path)
+                logI("正在上传 src: " + src.path)
+                logI("项目正在上传 resources: " + resources.path)
+                logI("项目正在上传 lib: " + lib.path+"\r\n")
+//                if (zip.exists()) zip.delete()
             }
             return
         }

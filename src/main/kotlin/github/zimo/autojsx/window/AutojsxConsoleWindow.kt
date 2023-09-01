@@ -100,11 +100,11 @@ class AutojsxConsoleWindow : ToolWindowFactory {
                         selectDevice()
                     }
                     button("选择需要关闭的脚本") {
-                        runningList(project)
+                        runningScriptList(project)
                     }
                     button("运行项目") {
                         runServer(project)
-                        searchProjectJSON(project) { file ->
+                        searchProjectJsonByEditor(project) { file ->
                             val projectJson = File(file.path)
                             val json = JsonObject(projectJson.readText())
 

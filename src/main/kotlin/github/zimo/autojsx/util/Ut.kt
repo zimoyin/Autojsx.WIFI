@@ -1,6 +1,5 @@
 package github.zimo.autojsx.util
 
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -8,14 +7,17 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindowManager
-import github.zimo.autojsx.server.AutojsNotifier
 import github.zimo.autojsx.server.ConsoleOutputV2
 import github.zimo.autojsx.server.VertxServer
 import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.SystemIndependent
+import java.awt.image.BufferedImage
+import java.io.ByteArrayInputStream
 import java.io.File
+import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import javax.imageio.ImageIO
 import javax.swing.BoxLayout
 import javax.swing.JCheckBox
 import javax.swing.JOptionPane
@@ -27,7 +29,7 @@ import javax.swing.JPanel
  *  存在项目文件： 执行特点操作
  *  不存在项目文件：上级查询文件/不存在则查找resources是否存在/存在则查询resources下的project.json/存在则执行/不存在则循环该操作一直到项目/模块根目录
  */
-fun searchProjectJSON(project: Project?, executeSpecificOperation: (VirtualFile) -> Unit) {
+fun searchProjectJsonByEditor(project: Project?, executeSpecificOperation: (VirtualFile) -> Unit) {
     if (project != null) {
         val projectBasePath = project.basePath
         val fileEditorManager = FileEditorManager.getInstance(project)
@@ -88,6 +90,47 @@ fun searchProjectJSON(project: Project?, executeSpecificOperation: (VirtualFile)
     }
 }
 
+fun searchProjectJsonByFile(project: Project?, selectedFile: VirtualFile, executeSpecificOperation: (VirtualFile) -> Unit) {
+    if (project != null) {
+        val projectBasePath = project.basePath
+        val targetFileName = "project.json"
+        var currentDir = selectedFile.parent
+
+        while (currentDir != null && isProjectRoot(currentDir.path, projectBasePath)) {
+            val targetFile = currentDir.findChild(targetFileName)
+            if (targetFile != null) {
+                // 找到项目文件
+                ConsoleOutputV2.systemPrint("执行项目/I: $targetFile")
+                // 在这里执行特定操作
+                runCatching { executeSpecificOperation(targetFile) }.onFailure {
+                    ConsoleOutputV2.systemPrint("执行项目文件失败 $targetFile  /E\r\n" + it.caseString())
+                }
+                return
+            }
+
+            // 如果当前目录中没有找到项目文件，则继续向上级目录查找
+            val resourcesDir = currentDir.findChild("resources")
+            if (resourcesDir != null) {
+                val resourcesFile = resourcesDir.findChild(targetFileName)
+                if (resourcesFile != null) {
+                    // 在 resources 目录下找到项目文件
+                    ConsoleOutputV2.systemPrint("执行项目/I: $resourcesFile")
+                    // 在这里执行特定操作
+                    runCatching { executeSpecificOperation(resourcesFile) }.onFailure {
+                        ConsoleOutputV2.systemPrint("执行项目文件失败 $resourcesFile  /E\r\n" + it.caseString())
+                    }
+                    return
+                }
+            }
+
+            // 继续向上级目录查找
+            currentDir = currentDir.parent
+        }
+
+        ConsoleOutputV2.systemPrint("$targetFileName not found in the parent paths.")
+    }
+}
+
 fun isProjectRoot(path: @NonNls String, projectBasePath: @SystemIndependent @NonNls String?): Boolean {
     return path != projectBasePath?.let { File(it).parent }
 }
@@ -119,15 +162,19 @@ fun stopServer(project: Project?) {
 
 val executor: ExecutorService = Executors.newFixedThreadPool(3)
 
-fun logE(msg: Any, e: Throwable? = null) {
-    ConsoleOutputV2.systemPrint("错误/E: $msg ${"\r\n" + e?.caseString()}")
+fun logE(msg: Any?, e: Throwable? = null) {
+    ConsoleOutputV2.systemPrint("错误/E: $msg ${(if (e != null) "\r\n" else "") + e?.caseString()}")
 }
 
-fun logI(msg: Any) {
+fun logE(msg: Any?) {
+    ConsoleOutputV2.systemPrint("错误/E: $msg")
+}
+
+fun logI(msg: Any?) {
     ConsoleOutputV2.systemPrint("信息/I: $msg")
 }
 
-fun logW(msg: Any) {
+fun logW(msg: Any?) {
     ConsoleOutputV2.systemPrint("警告/W: $msg")
 }
 
@@ -180,7 +227,11 @@ fun selectDevice() {
 }
 
 
-fun runningList(project: Project) {
+fun runningScriptList(project: Project) {
+    if (!VertxServer.isStart || VertxServer.selectDevicesWs.isEmpty()) {
+        logW("服务器中未选中设备")
+        return
+    }
     var result = false
     executor.submit {
         ProgressManager.getInstance().runProcessWithProgressSynchronously<Any, RuntimeException>(
@@ -198,13 +249,13 @@ fun runningList(project: Project) {
 
     executor.submit {
         runServer(project)
-        runningCheckBox {
+        runningScriptCheckBox {
             result = true
         }
     }
 }
 
-fun runningCheckBox(callback: () -> Unit = {}) {
+fun runningScriptCheckBox(callback: () -> Unit = {}) {
     logI("正在查询待关闭的脚本")
 
     VertxServer.Command.getRunningList({
@@ -253,4 +304,23 @@ fun runningCheckBox(callback: () -> Unit = {}) {
         }
     })
     callback()
+}
+
+
+fun base64_image_toFile(
+    base64: String,
+    basePath: String,
+    times: Long = System.currentTimeMillis(),
+): File {
+    val image = base64_image(base64)
+    val file = File(basePath + File.separator + "/build-output/images/$times/${UUID.randomUUID()}.png")
+    file.parentFile.mkdirs()
+    ImageIO.write(image, "png", file)
+    return file
+}
+
+fun base64_image(it: String): BufferedImage? {
+    val bytes = Base64.getDecoder().decode(it)
+    val image = ImageIO.read(ByteArrayInputStream(bytes))
+    return image
 }

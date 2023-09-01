@@ -8,15 +8,25 @@ import com.intellij.openapi.actionSystem.Separator
 class AutoMenu : ActionGroup() {
     override fun getChildren(e: AnActionEvent?): Array<AnAction> {
         return arrayOf(
+            /**/
             RunScript(), RunProject(), Separator(),
+            /**/
             SaveAndRunProject(), SaveAndRunScript(), Separator(),
-            SaveProject(), SaveDir(), SaveScript(), Separator(),
-            ConfusingAndSaveScript(), ConfusingAndSaveProject(), Separator(),
+            /**/
+            SaveCurrentProject(), SaveProject(), SaveDir(), SaveScript(), Separator(),
+            /**/
+//            ConfusingAndSaveScript(), ConfusingAndSaveProject(), Separator(),
+            ConfusingWeb(), Separator(),
+            /**/
             StopRunning(), StopAll(), Separator(),
+            /**/
             StartServer(), StopServer(), ModifyServerPort(), Separator(),
+            /**/
             SelectDevice(), Separator(),
+            /**/
             Screenshot(), AnalysisPageNode(), AnalysisApplicationList(),
-            Separator(), ADBTODO()
+            /**/
+//            Separator(), ADBTODO()
         )
     }
 

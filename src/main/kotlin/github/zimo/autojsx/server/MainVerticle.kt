@@ -2,10 +2,13 @@ package github.zimo.autojsx.server
 
 import github.zimo.autojsx.server.VertxServer.devicesWs
 import github.zimo.autojsx.server.VertxServer.selectDevicesWs
+import github.zimo.autojsx.util.executor
 import github.zimo.autojsx.util.logE
 import github.zimo.autojsx.util.logI
+import github.zimo.autojsx.util.logW
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Promise
+import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
@@ -24,6 +27,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
             .webSocketHandler { ws ->
                 var device = "device"
                 val delay: Long = 15 * 1000
+                var isTimeout: Boolean = false
                 // 定时器 ID，用于取消定时器
                 val timerId = vertx.setPeriodic(delay) { timerId: Long? ->
                     // 检查 WebSocket 活动情况
@@ -32,7 +36,8 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                         vertx.cancelTimer(timerId!!)
                     } else {
                         // WebSocket 超时，手动关闭连接
-                        println("WebSocket connection timed out")
+                        logW("WebSocket connection timed out")
+                        isTimeout = true
                         ws.close()
                     }
                 }
@@ -72,7 +77,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                         "log" -> {
                             var text = jsonObject.getJsonObject("data").getString("log")
                             if (text.contains(" ------------ ") && text.contains("运行结束，用时")) {
-                                text = text.replace("\n", " ").replace(" ------------ ", "")+"\r\n"
+                                text = text.replace("\n", " ").replace(" ------------ ", "") + "\r\n"
                             }
                             ConsoleOutputV2.println(device, text)
                         }
@@ -84,9 +89,11 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                     //remove device
                     selectDevicesWs.remove("device")
                     devicesWs.remove("device")
+
 //                    println("WebSocket connection closed")
                     Devices.remove(device)
-                   logI("设备离线： Device $device")
+                    if (isTimeout) logI("设备超时离线： Device $device")
+                    else logI("设备主动离线： Device $device")
                 }
             }
             .listen(port) { http ->
@@ -97,7 +104,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                     VertxServer.isStart = true
                 } else {
                     startPromise.fail(http.cause())
-                    logE("服务器无法启动在端口$port",http.cause())
+                    logE("服务器无法启动在端口$port", http.cause())
                 }
             }
 
@@ -107,6 +114,9 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
             it.response().end("ok")
         }
         router.route("/*").handler(StaticHandler.create())
+        router.route("/api/files").handler {
+            it.end(CacheTexts.cacheOutJson)
+        }
     }
 
     fun String.asJsonObject(): JsonObject = JsonObject(this)

@@ -6,7 +6,7 @@ import github.zimo.autojsx.icons.ICONS
 import github.zimo.autojsx.server.VertxServer
 import github.zimo.autojsx.util.executor
 import github.zimo.autojsx.util.runServer
-import github.zimo.autojsx.util.searchProjectJSON
+import github.zimo.autojsx.util.searchProjectJsonByEditor
 import github.zimo.autojsx.util.zip
 import io.vertx.core.json.JsonObject
 import java.io.File
@@ -23,7 +23,7 @@ class TopRunButton : AnAction(ICONS.START_16) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project
         runServer(project)
-        searchProjectJSON(project) { file ->
+        searchProjectJsonByEditor(project) { file ->
             val projectJson = File(file.path)
             val json = JsonObject(projectJson.readText())
 
@@ -34,7 +34,7 @@ class TopRunButton : AnAction(ICONS.START_16) {
 
             val zip = File(project?.basePath + "/build-output" + "/${name}.zip")
             zip.parentFile.mkdirs()
-            zip.delete()
+            if(zip.exists()) zip.delete()
 
             executor.submit {
                 zip(
@@ -43,7 +43,7 @@ class TopRunButton : AnAction(ICONS.START_16) {
                 )
 //                ConsoleOutputV2.systemPrint("文件打包完成: "+project?.basePath+"/build-output"+"/${name}.zip")
                 VertxServer.Command.runProject(zip.canonicalPath)
-                zip.delete()
+//                if(zip.exists()) zip.delete()
             }
         }
     }

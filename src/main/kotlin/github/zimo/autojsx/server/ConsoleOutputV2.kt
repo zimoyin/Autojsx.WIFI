@@ -133,7 +133,7 @@ object ConsoleOutputV2 {
         var list1 = list
         if (list1.size >= 100000) {
             list1 = ArrayList<Message>().apply {
-                for (i in 50000..list1.size) {
+                for (i in list1.size/2 until list1.size) {
                     add(list1[i])
                 }
             }

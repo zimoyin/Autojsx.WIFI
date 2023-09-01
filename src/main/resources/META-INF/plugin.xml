@@ -116,7 +116,8 @@
                 description="保存脚本">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
-        <action id="runAutojsToRightEditor" class="github.zimo.autojsx.action.run.top.TopRunButton" text="Run Autojsx Project"
+        <!--<action id="runAutojsToRightEditor" class="github.zimo.autojsx.action.run.top.TopRunButton" text="运行当前项目"-->
+        <action id="runAutojsToRightEditor" class="github.zimo.autojsx.action.run.doc.DocRunProjectButton" text="运行当前项目"
                 description="Run auto js">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
