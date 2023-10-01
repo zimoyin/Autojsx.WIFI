@@ -70,6 +70,12 @@
                     secondary="false"
                     icon="icons/logo.png"
         />
+        <toolWindow id="AutojsxConfusing"
+                    anchor="right"
+                    factoryClass="github.zimo.autojsx.window.BrowserWindow"
+                    secondary="false"
+                    icon="icons/logo.png"
+        />
 
     </extensions>
 

@@ -36,24 +36,8 @@ class AnalysisApplicationList :
             logW("服务器中未选中设备")
             return
         }
-        var result = false
-//        executor.submit {
-//            ProgressManager.getInstance().runProcessWithProgressSynchronously<Any, RuntimeException>(
-//                {
-//                    while (true) {
-//                        Thread.sleep(600)
-//                        if (result) break
-//                    }
-//                },
-//                "正在等待网络结果",
-//                true,  // indeterminate
-//                project
-//            )
-//        }
-
         executor.submit {
             VertxServer.Command.getApplications({
-                result = true
                 SwingUtilities.invokeLater {
                     val dialog = AppListDialog(project, it)
                     dialog.show()
