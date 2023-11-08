@@ -16,7 +16,7 @@ class AutoMenu : ActionGroup() {
             SaveCurrentProject(), SaveProject(), SaveDir(), SaveScript(), Separator(),
             /**/
 //            ConfusingAndSaveScript(), ConfusingAndSaveProject(), Separator(),
-            ConfusingWeb(), Separator(),
+            Confusing(), Separator(),
             /**/
             StopRunning(), StopAll(), Separator(),
             /**/

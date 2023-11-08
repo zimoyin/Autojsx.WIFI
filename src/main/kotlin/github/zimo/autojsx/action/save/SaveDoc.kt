@@ -15,6 +15,8 @@ class SaveDoc : AnAction(github.zimo.autojsx.icons.ICONS.SAVE_FILE_16) {
         if (file.isDirectory) return
         val project = e.project
         runServer(project)
+        //TODO 创建临时混淆目录，并混淆，如果开启了混淆
+        //TODO 抽取公共方法： 保存脚本/项目，运行脚本/项目....
         runCatching {
             VertxServer.Command.saveJS(file.path)
         }.onFailure {

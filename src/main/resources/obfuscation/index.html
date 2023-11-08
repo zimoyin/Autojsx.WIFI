@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.jsdelivr.net/npm/javascript-obfuscator/dist/index.browser.js"></script>
+</head>
+<body>
+
+</body>
+<script>
+    // var JavaScriptObfuscator = require('javascript-obfuscator');
+
+
+    const obfuscationOptions = {
+        compact: false,
+        controlFlowFlattening: true,
+        controlFlowFlatteningThreshold: 1,
+        numbersToExpressions: true,
+        simplify: true,
+        stringArrayShuffle: true,
+        splitStrings: true,
+        stringArrayThreshold: 1
+    }
+
+
+    var obfuscationResult = JavaScriptObfuscator.obfuscate(
+        `
+        function a(){
+           console.log(123);
+        }
+    `, obfuscationOptions);
+
+    var obfuscationResult2 = JavaScriptObfuscator.obfuscate(
+        `
+        (function(){
+            var variable1 = '5' - 3;
+            var variable2 = '5' + 3;
+            var variable3 = '5' + - '2';
+            var variable4 = ['10','10','10','10','10'].map(parseInt);
+            var variable5 = 'foo ' + 1 + 1;
+            console.log(variable1);
+            console.log(variable2);
+            console.log(variable3);
+            console.log(variable4);
+            console.log(variable5);
+            a();
+        })();
+    `, obfuscationOptions);
+
+    console.log(obfuscationResult.getObfuscatedCode());
+    // console.log(obfuscationResult2.getObfuscatedCode());
+</script>
+</html>

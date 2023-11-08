@@ -29,6 +29,10 @@ dependencies {
     implementation("io.vertx:vertx-web:4.4.4")
     // https://mvnrepository.com/artifact/io.vertx/vertx-lang-kotlin
     implementation("io.vertx:vertx-lang-kotlin:4.4.4")
+    implementation("com.caoccao.javet:javet:3.0.1") // Linux and Windows (x86_64)
+//    implementation("com.caoccao.javet:javet-linux-arm64:3.0.1") // Linux (arm64)
+//    implementation("com.caoccao.javet:javet-macos:3.0.1") // Mac OS (x86_64 and arm64)
+//    implementation("com.caoccao.javet:javet-android:3.0.1") // Android (arm, arm64, x86 and x86_64)
 
 }
 

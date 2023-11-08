@@ -1,4 +1,7 @@
 {
- "sdk":"2023/7/26_1.0.2",
- "webpack":"2023/7/26"
+ "sdk":"2023/7/26",
+ "sdk_version":"1.0.2",
+ "webpack":"2023/7/26",
+ "app_version": "6.4.3",
+ "inherit": true
 }

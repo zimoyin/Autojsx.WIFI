@@ -35,6 +35,7 @@ class DocRunButton :
 
             if (selectedEditor != null) {
                 val selectedFile: VirtualFile = fileEditorManager.selectedFiles[0]
+                //TODO 创建临时混淆目录，并混淆，如果开启了混淆
                 runCatching {
                     VertxServer.Command.rerunJS(selectedFile.path)
                 }.onFailure {

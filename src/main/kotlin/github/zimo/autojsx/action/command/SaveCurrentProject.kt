@@ -18,6 +18,7 @@ class SaveCurrentProject :
 
             val name = json.getString("name")
             val src = projectJson.resolve(json.getString("srcPath")).canonicalFile
+            //TODO 创建临时混淆目录，并混淆，如果开启了混淆
             val resources = projectJson.resolve(json.getString("resources")).canonicalFile
             val lib = projectJson.resolve(json.getString("lib")).canonicalFile
 

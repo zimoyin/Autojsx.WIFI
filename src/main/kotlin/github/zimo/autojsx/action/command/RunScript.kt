@@ -21,6 +21,7 @@ class RunScript :
 
         if (files.isNotEmpty()) {
             val file = files[0]
+            //TODO 创建临时混淆目录，并混淆，如果开启了混淆
             runCatching {
                 VertxServer.Command.rerunJS(file.path)
             }.onFailure {
