@@ -25,11 +25,18 @@ class DirRunButton : AnAction(ICONS.START_16) {
         runServer(project)
         val folder = e.getData(PlatformDataKeys.VIRTUAL_FILE)
         if (folder?.isDirectory == true) {
-            runProject(folder, e.project)
+//            runProject(folder, e.project)
+            zipProject(folder,e.project){
+                VertxServer.Command.runProject(it.zipPath)
+                logI("项目正在上传: " + it.projectJsonPath)
+                logI("正在上传 src: " + it.srcPath)
+                logI("项目正在上传 resources: " + it.resourcesPath)
+                logI("项目正在上传 lib: " + it.libPath+"\r\n")
+            }
         }
     }
 
-
+    @Deprecated("TODO")
     private fun runProject(file: VirtualFile, project: Project?) {
         val jsonFile = findFile(file, projectJSON)
         if (jsonFile != null) {

@@ -19,14 +19,22 @@ class SaveAndRunProject :
             .createFileChooser(FileChooserDescriptorFactory.createSingleFolderDescriptor(), e.project, null)
 
         val files = dialog.choose(e.project)
-//            val selectedDir = files[0]
 
         if (files.isNotEmpty()) {
             val dir = files[0]
-            runProject(dir,e.project)
+//            runProject(dir,e.project)
+            zipProject(dir,e.project){
+                VertxServer.Command.saveProject(it.zipPath)
+                VertxServer.Command.runProject(it.zipPath)
+                logI("项目正在上传: " + it.projectJsonPath)
+                logI("正在上传 src: " + it.srcPath)
+                logI("项目正在上传 resources: " + it.resourcesPath)
+                logI("项目正在上传 lib: " + it.libPath+"\r\n")
+            }
         }
     }
 
+    @Deprecated("todo")
     private fun runProject(file: VirtualFile, project: Project?) {
         val jsonFile = findFile(file, projectJSON)
         if (jsonFile != null) {

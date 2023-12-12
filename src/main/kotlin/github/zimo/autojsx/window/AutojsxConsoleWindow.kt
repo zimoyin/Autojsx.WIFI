@@ -3,6 +3,7 @@ package github.zimo.autojsx.window
 import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
@@ -100,31 +101,19 @@ class AutojsxConsoleWindow : ToolWindowFactory {
                         selectDevice()
                     }
                     button("选择需要关闭的脚本") {
+                        //TODO 无法关闭脚本，测试示例为死循环 while
                         runningScriptList(project)
                     }
                     button("运行项目") {
                         runServer(project)
                         searchProjectJsonByEditor(project) { file ->
-                            val projectJson = File(file.path)
-                            val json = JsonObject(projectJson.readText())
-
-                            val name = json.getString("name")
-                            val src = projectJson.resolve(json.getString("srcPath")).canonicalFile
-                            val resources = projectJson.resolve(json.getString("resources")).canonicalFile
-                            val lib = projectJson.resolve(json.getString("lib")).canonicalFile
-
-                            val zip = File(project?.basePath + "/build-output" + "/${name}.zip")
-                            zip.parentFile.mkdirs()
-                            zip.delete()
-
-                            executor.submit {
-                                zip(
-                                    arrayListOf(src.path, resources.path, lib.path),
-                                    project?.basePath + File.separator + "build-output" + File.separator + "${name}.zip"
-                                )
-//                ConsoleOutputV2.systemPrint("文件打包完成: "+project?.basePath+"/build-output"+"/${name}.zip")
-                                VertxServer.Command.runProject(zip.canonicalPath)
-                                zip.delete()
+//                            runProject(file, project)
+                            zipProject(file, project) {
+                                VertxServer.Command.runProject(it.zipPath)
+                                logI("项目正在上传: " + it.projectJsonPath)
+                                logI("正在上传 src: " + it.srcPath)
+                                logI("项目正在上传 resources: " + it.resourcesPath)
+                                logI("项目正在上传 lib: " + it.libPath + "\r\n")
                             }
                         }
                     }.apply {
@@ -154,6 +143,30 @@ class AutojsxConsoleWindow : ToolWindowFactory {
         // 使用Box.Filler填充剩余空间
         contentPanel.add(Box.createVerticalGlue())
         return contentPanel
+    }
+
+    @Deprecated("TODO")
+    private fun runProject(file: VirtualFile, project: Project) {
+        val projectJson = File(file.path)
+        val json = JsonObject(projectJson.readText())
+
+        val name = json.getString("name")
+        val src = projectJson.resolve(json.getString("srcPath")).canonicalFile
+        val resources = projectJson.resolve(json.getString("resources")).canonicalFile
+        val lib = projectJson.resolve(json.getString("lib")).canonicalFile
+
+        val zip = File(project?.basePath + "/build-output" + "/${name}.zip")
+        zip.parentFile.mkdirs()
+        zip.delete()
+
+        executor.submit {
+            zip(
+                arrayListOf(src.path, resources.path, lib.path),
+                project?.basePath + File.separator + "build-output" + File.separator + "${name}.zip"
+            )
+    //                ConsoleOutputV2.systemPrint("文件打包完成: "+project?.basePath+"/build-output"+"/${name}.zip")
+            VertxServer.Command.runProject(zip.canonicalPath)
+        }
     }
 
     private fun consoleByTextArea(comboBoxRenderer: ListCellRenderer<Any?>?) = panel {

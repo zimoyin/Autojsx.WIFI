@@ -1,5 +1,7 @@
 package github.zimo.autojsx.util
 
+import NodeJsWithPool
+import closeConsole
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -7,16 +9,23 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindowManager
+import executeObject
+import executeString
+import getObjectConverter
 import github.zimo.autojsx.server.ConsoleOutputV2
 import github.zimo.autojsx.server.VertxServer
+import openConsole
 import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.SystemIndependent
+import require
+import setGlobalObject
+import setNodeModuleRootDirectory
 import java.awt.image.BufferedImage
-import java.io.ByteArrayInputStream
-import java.io.File
+import java.io.*
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.zip.ZipInputStream
 import javax.imageio.ImageIO
 import javax.swing.BoxLayout
 import javax.swing.JCheckBox
@@ -90,7 +99,11 @@ fun searchProjectJsonByEditor(project: Project?, executeSpecificOperation: (Virt
     }
 }
 
-fun searchProjectJsonByFile(project: Project?, selectedFile: VirtualFile, executeSpecificOperation: (VirtualFile) -> Unit) {
+fun searchProjectJsonByFile(
+    project: Project?,
+    selectedFile: VirtualFile,
+    executeSpecificOperation: (VirtualFile) -> Unit
+) {
     if (project != null) {
         val projectBasePath = project.basePath
         val targetFileName = "project.json"
@@ -323,4 +336,94 @@ fun base64_image(it: String): BufferedImage? {
     val bytes = Base64.getDecoder().decode(it)
     val image = ImageIO.read(ByteArrayInputStream(bytes))
     return image
+}
+
+/**
+ * @param map 文件路径和内容的映射
+ */
+@Deprecated("")
+fun obfuscates(map: HashMap<String, String>, outputPath: String): HashMap<String, String>? {
+    var mapHix: HashMap<String, String>? = null
+    NodeJsWithPool {
+        val console = openConsole()
+        setNodeModuleRootDirectory("./node_modules")
+        getObjectConverter().setLargeScope()
+        require("./obfuscator.js")
+        setGlobalObject("map", map)
+        mapHix = executeObject<HashMap<String, String>>(
+            "obfuscator.obfuscateMultiple(map, obfuscator.obfuscator_options)"
+        )
+        console.closeConsole()
+    }
+    return mapHix
+}
+
+
+fun obfuscate(code: String, outputPath: String, obfuscatorFile0: File, modules0: File): String? {
+    var hix: String? = null
+    NodeJsWithPool {
+        val console = openConsole()
+//        setNodeModuleRootDirectory("./node_modules")
+        setNodeModuleRootDirectory(modules0)
+        getObjectConverter().setLargeScope()
+//        require("./obfuscator.js")
+        require(obfuscatorFile0)
+//        MyModuleBuilder::class.java.classLoader.getResourceAsStream("SDK.zip")
+        setGlobalObject("code", code)
+        hix = executeString(
+            "obfuscator.obfuscate(code, obfuscator.obfuscator_options)"
+        )
+        console.closeConsole()
+    }
+    return hix
+}
+
+
+fun File.unzip(destinationDir: File) {
+    val zipFile = this
+    FileInputStream(zipFile).use { inputStream ->
+        ZipInputStream(inputStream).use { zipInputStream ->
+            var entry = zipInputStream.getNextEntry()
+            while (entry != null) {
+                val fileName = entry.name
+                val file = File(destinationDir, fileName)
+                if (entry.isDirectory) {
+                    file.mkdirs()
+                } else {
+                    FileOutputStream(file).use { outputStream ->
+                        val buffer = ByteArray(4096)
+                        var readBytes: Int
+                        while (zipInputStream.read(buffer).also { readBytes = it } > 0) {
+                            outputStream.write(buffer, 0, readBytes)
+                        }
+                    }
+                }
+                entry = zipInputStream.getNextEntry()
+            }
+        }
+    }
+}
+
+
+fun InputStream.unzip(destinationDir: File) {
+    val inputStream = this
+    ZipInputStream(inputStream).use { zipInputStream ->
+        var entry = zipInputStream.getNextEntry()
+        while (entry != null) {
+            val fileName = entry.name
+            val file = File(destinationDir, fileName)
+            if (entry.isDirectory) {
+                file.mkdirs()
+            } else {
+                FileOutputStream(file).use { outputStream ->
+                    val buffer = ByteArray(4096)
+                    var readBytes: Int
+                    while (zipInputStream.read(buffer).also { readBytes = it } > 0) {
+                        outputStream.write(buffer, 0, readBytes)
+                    }
+                }
+            }
+            entry = zipInputStream.getNextEntry()
+        }
+    }
 }

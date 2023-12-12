@@ -5,6 +5,9 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.testFramework.HeavyPlatformTestCase.createChildData
+import github.zimo.autojsx.icons.ICONS
+import github.zimo.autojsx.util.logI
 
 /**
  * 新建项目的项目描述文件 json
@@ -33,10 +36,17 @@ class NewAutoJSON :
                             |    "srcPath":"./../",
                             |    "resources":"./../",
                             |    "lib":"./../",
-                            |    "versionCode": 1
+                            |    "versionCode": 1,
+                            |    "obfuscator": false,
+                            |    "obfuscatorPath": "./obfuscator.js"
                             |}
                         """.trimMargin().toByteArray()
                 )
+            }
+            file.createChildData(this, "obfuscator.js").getOutputStream(this).use { outputStream ->
+                ICONS::class.java.getResourceAsStream("/obfuscator.js")?.readAllBytes()?.let {
+                    outputStream.write(it)
+                }
             }
             // 刷新虚拟文件系统，以确保新创建的文件可见
             VirtualFileManager.getInstance().refreshWithoutFileWatcher(false)

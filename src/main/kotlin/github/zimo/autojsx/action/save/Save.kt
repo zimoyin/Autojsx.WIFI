@@ -26,6 +26,7 @@ class Save :
         //保存文件夹
         if (file.isDirectory) {
             saveDir(file, e.project, true)
+            logI("js 文件保存成功: ${file.path}")
         } else {//保存文件
             runCatching {
                 if (file.name == ProjectJSON) {
@@ -47,30 +48,13 @@ class Save :
         if (jsonFile != null) {
             if (showDialog) showCheckboxMessageDialog()
             if (isSaveProject) {
-                val projectJson = File(jsonFile.path)
-                val json = JsonObject(projectJson.readText())
-
-                val name = json.getString("name")
-                val src = projectJson.resolve(json.getString("srcPath")).canonicalFile
-                //TODO 创建临时混淆目录，并混淆，如果开启了混淆
-                val resources = projectJson.resolve(json.getString("resources")).canonicalFile
-                val lib = projectJson.resolve(json.getString("lib")).canonicalFile
-
-                val zip = File(project?.basePath + "/build-output" + "/${name}.zip")
-                zip.parentFile.mkdirs()
-                if (zip.exists()) zip.delete()
-
-                executor.submit {
-                    zip(
-                        arrayListOf(src.path, resources.path, lib.path),
-                        project?.basePath + File.separator + "build-output" + File.separator + "${name}.zip"
-                    )
-                    VertxServer.Command.saveProject(zip.canonicalPath)
-                    ConsoleOutputV2.systemPrint("项目正在上传/I: " + projectJson.path)
-                    logI("正在上传 src: " + src.path)
-                    logI("项目正在上传 resources: " + resources.path)
-                    logI("项目正在上传 lib: " + lib.path+"\r\n")
-//                    if (zip.exists()) zip.delete()
+//                saveProject(jsonFile, project)
+                zipProject(jsonFile,project){
+                    VertxServer.Command.saveProject(it.zipPath)
+                    logI("项目正在上传: " + it.projectJsonPath)
+                    logI("正在上传 src: " + it.srcPath)
+                    logI("项目正在上传 resources: " + it.resourcesPath)
+                    logI("项目正在上传 lib: " + it.libPath+"\r\n")
                 }
                 return
             }
@@ -83,8 +67,37 @@ class Save :
                 project?.basePath + File.separator + "build-output" + File.separator + "${file.name}.zip"
             )
             VertxServer.Command.saveProject(zip.canonicalPath)
-            zip.delete()
+//            zip.delete()
             ConsoleOutputV2.systemPrint("项目正在上传/I: " + file.path)
+        }
+    }
+
+    @Deprecated("TODO")
+    private fun saveProject(jsonFile: VirtualFile, project: Project?) {
+        val projectJson = File(jsonFile.path)
+        val json = JsonObject(projectJson.readText())
+
+        val name = json.getString("name")
+        val src = projectJson.resolve(json.getString("srcPath")).canonicalFile
+        //TODO 创建临时混淆目录，并混淆，如果开启了混淆
+        val resources = projectJson.resolve(json.getString("resources")).canonicalFile
+        val lib = projectJson.resolve(json.getString("lib")).canonicalFile
+
+        val zip = File(project?.basePath + "/build-output" + "/${name}.zip")
+        zip.parentFile.mkdirs()
+        if (zip.exists()) zip.delete()
+
+        executor.submit {
+            zip(
+                arrayListOf(src.path, resources.path, lib.path),
+                project?.basePath + File.separator + "build-output" + File.separator + "${name}.zip"
+            )
+            VertxServer.Command.saveProject(zip.canonicalPath)
+            ConsoleOutputV2.systemPrint("项目正在上传/I: " + projectJson.path)
+            logI("正在上传 src: " + src.path)
+            logI("项目正在上传 resources: " + resources.path)
+            logI("项目正在上传 lib: " + lib.path + "\r\n")
+    //                    if (zip.exists()) zip.delete()
         }
     }
 

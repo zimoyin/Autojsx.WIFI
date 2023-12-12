@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFileManager
+import github.zimo.autojsx.icons.ICONS
 import github.zimo.autojsx.util.createSDK
 
 
@@ -58,10 +59,17 @@ class NewAutoJSX :
                             |    "srcPath":"./../../src/",
                             |    "resources":"./../",
                             |    "lib":"./../../lib/",
-                            |    "versionCode": 1
+                            |    "versionCode": 1,
+                            |    "obfuscator": false,
+                            |    "obfuscatorPath": "./obfuscator.js"
                             |}
                         """.trimMargin().toByteArray()
                         )
+                    }
+                    createChildData(this, "obfuscator.js").getOutputStream(this).use { outputStream ->
+                        ICONS::class.java.getResourceAsStream("/obfuscator.js")?.readAllBytes()?.let {
+                            outputStream.write(it)
+                        }
                     }
                 }
             }
