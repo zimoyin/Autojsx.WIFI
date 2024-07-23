@@ -4,10 +4,15 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.project.modules
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.jetbrains.rd.util.getLogger
+import com.jetbrains.rd.util.warn
 import github.zimo.autojsx.icons.ICONS
 import github.zimo.autojsx.util.createSDK
+import github.zimo.autojsx.util.logI
 
 
 class NewAutoJSX :
@@ -109,5 +114,10 @@ class NewAutoJSX :
             }
             Messages.CANCEL
         }
+    }
+
+    override fun update(e: AnActionEvent) {
+        getLogger<NewAutoJSX>().warn { "The update method used a method marked as unstable" }
+        e.presentation.isEnabledAndVisible = (e.project?.modules?.count { it.moduleTypeName == "AUTO_JSX_MODULE_TYPE" } ?: 0) > 0
     }
 }

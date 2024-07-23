@@ -4,8 +4,11 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.project.modules
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.testFramework.HeavyPlatformTestCase.createChildData
+import com.jetbrains.rd.util.getLogger
+import com.jetbrains.rd.util.warn
 import github.zimo.autojsx.icons.ICONS
 import github.zimo.autojsx.util.logI
 
@@ -51,5 +54,10 @@ class NewAutoJSON :
             // 刷新虚拟文件系统，以确保新创建的文件可见
             VirtualFileManager.getInstance().refreshWithoutFileWatcher(false)
         }
+    }
+
+    override fun update(e: AnActionEvent) {
+        getLogger<NewAutoJSX>().warn { "The update method used a method marked as unstable" }
+        e.presentation.isEnabledAndVisible = (e.project?.modules?.count { it.moduleTypeName == "AUTO_JSX_MODULE_TYPE" } ?: 0) > 0
     }
 }

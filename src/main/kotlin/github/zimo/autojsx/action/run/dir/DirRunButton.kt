@@ -4,9 +4,13 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.modules
 import com.intellij.openapi.vfs.VirtualFile
+import com.jetbrains.rd.util.getLogger
+import com.jetbrains.rd.util.warn
+import github.zimo.autojsx.action.news.NewAutoJSX
 import github.zimo.autojsx.icons.ICONS
-import github.zimo.autojsx.server.VertxServer
+import github.zimo.autojsx.server.VertxCommandServer
 import github.zimo.autojsx.util.*
 import io.vertx.core.json.JsonObject
 import java.io.File
@@ -27,11 +31,11 @@ class DirRunButton : AnAction(ICONS.START_16) {
         if (folder?.isDirectory == true) {
 //            runProject(folder, e.project)
             zipProject(folder,e.project){
-                VertxServer.Command.runProject(it.zipPath)
-                logI("项目正在上传: " + it.projectJsonPath)
-                logI("正在上传 src: " + it.srcPath)
-                logI("项目正在上传 resources: " + it.resourcesPath)
-                logI("项目正在上传 lib: " + it.libPath+"\r\n")
+                logI("预运行项目: " + it.projectJsonPath)
+                logI("├──> 项目 src: " + it.srcPath)
+                logI("├──> 项目 resources: " + it.resourcesPath)
+                logI("└──> 项目 lib: " + it.libPath+"\r\n")
+                VertxCommandServer.Command.runProject(it.zipPath)
             }
         }
     }
@@ -59,7 +63,7 @@ class DirRunButton : AnAction(ICONS.START_16) {
                     arrayListOf(src.path, resources.path, lib.path),
                     project?.basePath + File.separator + "build-output" + File.separator + "${name}.zip"
                 )
-                VertxServer.Command.runProject(zip.canonicalPath)
+                VertxCommandServer.Command.runProject(zip.canonicalPath)
                 logI("项目正在上传: " + projectJson.path)
                 logI("正在上传 src: " + src.path)
                 logI("项目正在上传 resources: " + resources.path)
@@ -71,5 +75,10 @@ class DirRunButton : AnAction(ICONS.START_16) {
             return
         }
         logE("项目无法上传: 选择的文件夹没有包含项目描述文件 'project.json'")
+    }
+
+    override fun update(e: AnActionEvent) {
+        getLogger<NewAutoJSX>().warn { "The update method used a method marked as unstable" }
+        e.presentation.isEnabledAndVisible = (e.project?.modules?.count { it.moduleTypeName == "AUTO_JSX_MODULE_TYPE" } ?: 0) > 0
     }
 }

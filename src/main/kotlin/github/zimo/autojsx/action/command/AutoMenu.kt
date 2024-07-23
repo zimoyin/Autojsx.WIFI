@@ -20,7 +20,7 @@ class AutoMenu : ActionGroup() {
             /**/
             StopRunning(), StopAll(), Separator(),
             /**/
-            StartServer(), StopServer(), ModifyServerPort(), Separator(),
+            StartServer(), StopServer(),ModifyServerIpAddress(), ModifyServerPort(), Separator(),
             /**/
             SelectDevice(), Separator(),
             /**/

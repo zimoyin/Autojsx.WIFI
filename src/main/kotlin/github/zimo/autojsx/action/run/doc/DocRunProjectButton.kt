@@ -6,8 +6,12 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.modules
 import com.intellij.openapi.vfs.VirtualFile
-import github.zimo.autojsx.server.VertxServer
+import com.jetbrains.rd.util.getLogger
+import com.jetbrains.rd.util.warn
+import github.zimo.autojsx.action.news.NewAutoJSX
+import github.zimo.autojsx.server.VertxCommandServer
 import github.zimo.autojsx.util.*
 import io.vertx.core.json.JsonObject
 import java.io.File
@@ -41,11 +45,11 @@ class DocRunProjectButton :
                     searchProjectJsonByFile(project, selectedFile) { file ->
 //                        saveAndRunProject(file, project)
                         zipProject(file, e.project) {
-                            VertxServer.Command.runProject(it.zipPath)
-                            logI("项目正在上传: " + it.projectJsonPath)
-                            logI("正在上传 src: " + it.srcPath)
-                            logI("项目正在上传 resources: " + it.resourcesPath)
-                            logI("项目正在上传 lib: " + it.libPath + "\r\n")
+                            logI("预运行项目: " + it.projectJsonPath)
+                            logI("├──> 项目 src: " + it.srcPath)
+                            logI("├──> 项目 resources: " + it.resourcesPath)
+                            logI("└──> 项目 lib: " + it.libPath+"\r\n")
+                            VertxCommandServer.Command.runProject(it.zipPath)
                         }
                     }
                 }.onFailure {
@@ -76,7 +80,7 @@ class DocRunProjectButton :
                 project?.basePath + File.separator + "build-output" + File.separator + "${name}.zip"
             )
 
-            VertxServer.Command.runProject(zip.canonicalPath)
+            VertxCommandServer.Command.runProject(zip.canonicalPath)
             logI("项目正在上传: " + projectJson.path)
             logI("正在上传 src: " + src.path)
             logI("项目正在上传 resources: " + resources.path)
@@ -84,5 +88,10 @@ class DocRunProjectButton :
             logI("项目上传完成" + "\r\n")
             //                            if(zip.exists()) zip.delete()
         }
+    }
+
+    override fun update(e: AnActionEvent) {
+        getLogger<NewAutoJSX>().warn { "The update method used a method marked as unstable" }
+        e.presentation.isEnabledAndVisible = (e.project?.modules?.count { it.moduleTypeName == "AUTO_JSX_MODULE_TYPE" } ?: 0) > 0
     }
 }

@@ -6,7 +6,7 @@ plugins {
 
 group = "github.zimo"
 //SNAPSHOT
-version = "1.0.3"
+version = "1.0.4"
 
 repositories {
     mavenCentral()
@@ -15,7 +15,8 @@ repositories {
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    version.set("2022.2.5")
+//    version.set("2022.2.5")
+    version.set("2024.1.4")
     type.set("IC") // Target IDE Platform
 
     plugins.set(listOf(/* Plugin Dependencies */))
@@ -47,8 +48,11 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("222")
-        untilBuild.set("232.*")
+//        sinceBuild.set("222")
+//        untilBuild.set("232.*")
+
+        sinceBuild.set("222") // 2022
+        untilBuild.set("241.*") // 2024
     }
 
     signPlugin {

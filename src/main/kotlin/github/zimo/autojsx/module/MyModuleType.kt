@@ -4,13 +4,13 @@ import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.module.ModuleTypeManager
 import javax.swing.Icon
 
-
-class MyModuleType(private val ID: String = "AUTO_JSX_MODULE_TYPE") : ModuleType<MyModuleBuilder>(ID) {
+const val MODULE_TYPE_ID = "AUTO_JSX_MODULE_TYPE"
+class MyModuleType : ModuleType<MyModuleBuilder>(MODULE_TYPE_ID) {
 
 
     fun getInstance(): MyModuleType {
-        ModuleTypeManager.getInstance().findByID(ID)
-        return ModuleTypeManager.getInstance().findByID(ID) as MyModuleType
+        ModuleTypeManager.getInstance().findByID(MODULE_TYPE_ID)
+        return ModuleTypeManager.getInstance().findByID(MODULE_TYPE_ID) as MyModuleType
     }
 
 

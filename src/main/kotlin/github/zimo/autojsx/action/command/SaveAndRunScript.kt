@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.fileChooser.FileChooserFactory
-import github.zimo.autojsx.server.VertxServer
+import github.zimo.autojsx.server.VertxCommandServer
 import github.zimo.autojsx.util.logE
 import github.zimo.autojsx.util.runServer
 
@@ -23,8 +23,8 @@ class SaveAndRunScript :
             val file = files[0]
             //TODO 创建临时混淆目录，并混淆，如果开启了混淆
             runCatching {
-                VertxServer.Command.saveJS(file.path)
-                VertxServer.Command.rerunJS(file.path)
+                VertxCommandServer.Command.saveJS(file.path)
+                VertxCommandServer.Command.rerunJS(file.path)
             }.onFailure {
                 logE("js脚本网络引擎执行失败${file.path} ",it)
             }

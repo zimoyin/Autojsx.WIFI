@@ -2,13 +2,15 @@ package github.zimo.autojsx.action.run.doc
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.vfs.VirtualFile
-import github.zimo.autojsx.server.VertxServer
+import github.zimo.autojsx.server.VertxCommandServer
 import github.zimo.autojsx.util.logE
 import github.zimo.autojsx.util.runServer
+
 
 /**
  * 运行当前脚本
@@ -37,11 +39,18 @@ class DocRunButton :
                 val selectedFile: VirtualFile = fileEditorManager.selectedFiles[0]
                 //TODO 创建临时混淆目录，并混淆，如果开启了混淆
                 runCatching {
-                    VertxServer.Command.rerunJS(selectedFile.path)
+                    VertxCommandServer.Command.rerunJS(selectedFile.path)
                 }.onFailure {
                     logE("js脚本网络引擎执行失败${selectedFile.path} ", it)
                 }
             }
         }
+    }
+
+    override fun update(e: AnActionEvent) {
+        super.update(e)
+        val file = e.getData(CommonDataKeys.VIRTUAL_FILE)
+        val isJsFile = file != null && "js" == file.extension
+        e.presentation.isEnabledAndVisible = isJsFile
     }
 }

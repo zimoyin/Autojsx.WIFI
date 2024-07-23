@@ -4,10 +4,14 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.modules
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
+import com.jetbrains.rd.util.getLogger
+import com.jetbrains.rd.util.warn
+import github.zimo.autojsx.action.news.NewAutoJSX
 import github.zimo.autojsx.server.ConsoleOutputV2
-import github.zimo.autojsx.server.VertxServer
+import github.zimo.autojsx.server.VertxCommandServer
 import github.zimo.autojsx.util.*
 import io.vertx.core.json.JsonObject
 import java.io.File
@@ -36,7 +40,7 @@ class Save :
                         return
                     }
                 }
-                VertxServer.Command.saveJS(file.path)
+                VertxCommandServer.Command.saveJS(file.path)
             }.onFailure {
                 ConsoleOutputV2.systemPrint("js脚本网络引擎执行失败${file.path} /E \r\n" + it.caseString())
             }
@@ -50,7 +54,7 @@ class Save :
             if (isSaveProject) {
 //                saveProject(jsonFile, project)
                 zipProject(jsonFile,project){
-                    VertxServer.Command.saveProject(it.zipPath)
+                    VertxCommandServer.Command.saveProject(it.zipPath)
                     logI("项目正在上传: " + it.projectJsonPath)
                     logI("正在上传 src: " + it.srcPath)
                     logI("项目正在上传 resources: " + it.resourcesPath)
@@ -66,7 +70,7 @@ class Save :
                 arrayListOf(file.path),
                 project?.basePath + File.separator + "build-output" + File.separator + "${file.name}.zip"
             )
-            VertxServer.Command.saveProject(zip.canonicalPath)
+            VertxCommandServer.Command.saveProject(zip.canonicalPath)
 //            zip.delete()
             ConsoleOutputV2.systemPrint("项目正在上传/I: " + file.path)
         }
@@ -92,7 +96,7 @@ class Save :
                 arrayListOf(src.path, resources.path, lib.path),
                 project?.basePath + File.separator + "build-output" + File.separator + "${name}.zip"
             )
-            VertxServer.Command.saveProject(zip.canonicalPath)
+            VertxCommandServer.Command.saveProject(zip.canonicalPath)
             ConsoleOutputV2.systemPrint("项目正在上传/I: " + projectJson.path)
             logI("正在上传 src: " + src.path)
             logI("项目正在上传 resources: " + resources.path)
@@ -131,5 +135,10 @@ class Save :
             }
             Messages.CANCEL
         }
+    }
+
+    override fun update(e: AnActionEvent) {
+        getLogger<NewAutoJSX>().warn { "The update method used a method marked as unstable" }
+        e.presentation.isEnabledAndVisible = (e.project?.modules?.count { it.moduleTypeName == "AUTO_JSX_MODULE_TYPE" } ?: 0) > 0
     }
 }

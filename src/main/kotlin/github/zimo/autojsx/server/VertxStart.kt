@@ -14,18 +14,30 @@ import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import java.io.File
 import java.io.IOException
+import java.net.InetAddress
 import java.net.NetworkInterface
 import java.nio.charset.Charset
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.util.*
 
-object VertxServer {
-    private var vertx: Vertx? = null
+
+object VertxStart {
+    // TODO VertxCommandServer 字段与 start 等 启动结束方法迁移到该类
+}
+
+
+object VertxCommandServer {
+    var vertx: Vertx? = null
     val devicesWs: HashMap<String, ServerWebSocket> = HashMap()
     val selectDevicesWs: HashMap<String, ServerWebSocket> = HashMap()
     var isStart = false
+    var ipAddress = "Unknown"
     var port = 9317
+
+    /**
+     * MainVerticle 接收并解析信息后将它放入到该 map 中，VertxServer 中指令方法将循环监听其变化直到超时
+     */
     val content: HashMap<String, JsonObject> = HashMap()
 
     fun start(port: Int = -1): Future<String>? {
@@ -59,25 +71,52 @@ object VertxServer {
     }
 
     fun getServerIpAddress(): String {
+        if (ipAddress != "Unknown") return ipAddress
         val networkInterfaces = NetworkInterface.getNetworkInterfaces()
         while (networkInterfaces.hasMoreElements()) {
             val networkInterface = networkInterfaces.nextElement()
-            val interfaceAddresses = networkInterface.interfaceAddresses
-            for (interfaceAddress in interfaceAddresses) {
-                val address = interfaceAddress.address
-                if (!address.isLoopbackAddress && address.hostAddress.contains(":").not()) {
-                    return address.hostAddress
+
+            // 检查网络接口是否启用并且不为虚拟网卡
+            if (networkInterface.isUp && !networkInterface.isLoopback && !isVirtualNetworkInterface(networkInterface)) {
+                val interfaceAddresses = networkInterface.interfaceAddresses
+                for (interfaceAddress in interfaceAddresses) {
+                    val address = interfaceAddress.address
+                    // 检查是否为IPv4地址且不是回环地址，并且最后一位不是1
+                    if (address is InetAddress
+                        && !address.isLoopbackAddress
+                        && address.hostAddress.contains(":").not()
+                        && !isGatewayAddress(address.hostAddress)
+                    ) {
+                        ipAddress = address.hostAddress
+                        return ipAddress
+                    }
                 }
             }
         }
         return "Unknown"
     }
 
+    // 判断是否为虚拟网卡
+    fun isVirtualNetworkInterface(networkInterface: NetworkInterface): Boolean {
+        val name = networkInterface.name.lowercase()
+        val virtualNetworkPrefixes = listOf("vmware", "vmnet", "vbox", "virbr", "docker", "dummy")
+        return virtualNetworkPrefixes.any { name.startsWith(it) }
+    }
+
+    // 判断是否为常见的网关地址
+    fun isGatewayAddress(ipAddress: String): Boolean {
+        val parts = ipAddress.split(".")
+        if (parts.size == 4) {
+            return parts[3] == "1"
+        }
+        return false
+    }
+
     object Command {
         /**
          * 关闭运行的脚本，只能关闭远程脚本
          */
-        fun stop(jsPath: String, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+        fun stop(jsPath: String, devices: HashMap<String, ServerWebSocket> = VertxCommandServer.selectDevicesWs) {
             devicesEmpty(devices)
             val canonicalPath = File(jsPath).canonicalPath
             devices.forEach { (key, ws) ->
@@ -97,7 +136,7 @@ object VertxServer {
         /**
          * 关闭运行的脚本，只能关闭远程脚本
          */
-        fun stopAll(devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+        fun stopAll(devices: HashMap<String, ServerWebSocket> = VertxCommandServer.selectDevicesWs) {
             devicesEmpty(devices)
             devices.forEach { (key, ws) ->
                 if (ws.isClosed) return@forEach
@@ -117,7 +156,7 @@ object VertxServer {
          * 运行远端项目
          * @param path 本地 zip 文件路径
          */
-        fun runProject(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+        fun runProject(path: String, devices: HashMap<String, ServerWebSocket> = VertxCommandServer.selectDevicesWs) {
             devicesEmpty(devices)
             val zipFile = File(path)
             val canonicalPath = zipFile.canonicalPath
@@ -149,7 +188,7 @@ object VertxServer {
          * 发送项目
          * @param path 本地 zip 文件路径
          */
-        fun saveProject(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+        fun saveProject(path: String, devices: HashMap<String, ServerWebSocket> = VertxCommandServer.selectDevicesWs) {
             devicesEmpty(devices)
             val canonicalPath = File(path).canonicalPath
             devices.forEach { (key, ws) ->
@@ -180,7 +219,10 @@ object VertxServer {
          * 发送项目到脚本根路径
          * @param path 本地 zip 文件路径
          */
-        fun saveProjectToRoot(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+        fun saveProjectToRoot(
+            path: String,
+            devices: HashMap<String, ServerWebSocket> = VertxCommandServer.selectDevicesWs
+        ) {
             devicesEmpty(devices)
             val canonicalPath = File(path).canonicalPath
             devices.forEach { (key, ws) ->
@@ -212,7 +254,7 @@ object VertxServer {
          * 保存文件
          * @param path 本地文本文件
          */
-        fun saveJS(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+        fun saveJS(path: String, devices: HashMap<String, ServerWebSocket> = VertxCommandServer.selectDevicesWs) {
             devicesEmpty(devices)
             val canonicalPath = File(path).canonicalPath
             devices.forEach { (key, ws) ->
@@ -240,7 +282,7 @@ object VertxServer {
          * 运行js文件
          * @param path 本地文本文件
          */
-        fun runJS(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+        fun runJS(path: String, devices: HashMap<String, ServerWebSocket> = VertxCommandServer.selectDevicesWs) {
             devicesEmpty(devices)
             val canonicalPath = File(path).canonicalPath
             devices.forEach { (key, ws) ->
@@ -273,7 +315,7 @@ object VertxServer {
         fun runJsByString(
             name: String = "main.js",
             content: String,
-            devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
+            devices: HashMap<String, ServerWebSocket> = VertxCommandServer.selectDevicesWs,
         ) {
             devicesEmpty(devices)
             val canonicalPath = File(name).canonicalPath
@@ -296,7 +338,7 @@ object VertxServer {
          * 重新运行js文件
          * @param path 本地文本文件
          */
-        fun rerunJS(path: String, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+        fun rerunJS(path: String, devices: HashMap<String, ServerWebSocket> = VertxCommandServer.selectDevicesWs) {
             devicesEmpty(devices)
             val canonicalPath = File(path).canonicalPath
             devices.forEach { (key, ws) ->
@@ -329,7 +371,7 @@ object VertxServer {
         fun rerunJsByString(
             name: String = "main.js",
             content: String,
-            devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
+            devices: HashMap<String, ServerWebSocket> = VertxCommandServer.selectDevicesWs,
         ) {
             devicesEmpty(devices)
             val canonicalPath = File(name).canonicalPath
@@ -355,7 +397,7 @@ object VertxServer {
          */
         fun getRunningList(
             callback: (array: List<RunningListPojo>) -> Unit,
-            devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
+            devices: HashMap<String, ServerWebSocket> = VertxCommandServer.selectDevicesWs,
         ) {
             content["getRunningList"] = JsonObject("{\"ID\": \"0\"}")
             devicesEmpty(devices)
@@ -403,7 +445,7 @@ object VertxServer {
          * 通过ID停止一个脚本的运行。 注意： 该方法不能完全强制停止被阻塞的脚本
          *
          */
-        fun stopScriptByID(id: Int, devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs) {
+        fun stopScriptByID(id: Int, devices: HashMap<String, ServerWebSocket> = VertxCommandServer.selectDevicesWs) {
             devicesEmpty(devices)
             var readBytes: ByteArray = ByteArray(0)
             resourceAsStream("script/StopScriptByID.js")?.apply {
@@ -421,7 +463,7 @@ object VertxServer {
          */
         fun stopScriptBySourceName(
             name: String,
-            devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
+            devices: HashMap<String, ServerWebSocket> = VertxCommandServer.selectDevicesWs,
         ) {
             devicesEmpty(devices)
             var readBytes: ByteArray = ByteArray(0)
@@ -440,7 +482,7 @@ object VertxServer {
          */
         fun getNodes(
             callback: (xml: String) -> Unit,
-            devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
+            devices: HashMap<String, ServerWebSocket> = VertxCommandServer.selectDevicesWs,
         ) {
             content["getNodes"] = JsonObject("{\"ID\": \"0\"}")
             devicesEmpty(devices)
@@ -476,7 +518,7 @@ object VertxServer {
          */
         fun getApplications(
             callback: (list: ArrayList<ApplicationListPojo>) -> Unit,
-            devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
+            devices: HashMap<String, ServerWebSocket> = VertxCommandServer.selectDevicesWs,
         ) {
             content["getApplications"] = JsonObject("{\"ID\": \"0\"}")
             devicesEmpty(devices)
@@ -531,7 +573,7 @@ object VertxServer {
          */
         fun getScreenshot(
             callback: (base64: String) -> Unit,
-            devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
+            devices: HashMap<String, ServerWebSocket> = VertxCommandServer.selectDevicesWs,
         ) {
             content["getScreenshot"] = JsonObject("{\"ID\": \"0\"}")
             devicesEmpty(devices)
@@ -596,7 +638,7 @@ object VertxServer {
             }
             cacheJSON.put("text", cacheArray)
             CacheTexts.cacheOutJson = cacheJSON.toString()
-            BrowserUtil.browse("http://${VertxServer.getServerIpAddress()}:${VertxServer.port}/confusion.html")
+            BrowserUtil.browse("http://${VertxCommandServer.getServerIpAddress()}:${VertxCommandServer.port}/confusion.html")
 
             val startTime = System.currentTimeMillis()
             while ((System.currentTimeMillis() - startTime) < 60 * 1000 && isStartConfusion) {

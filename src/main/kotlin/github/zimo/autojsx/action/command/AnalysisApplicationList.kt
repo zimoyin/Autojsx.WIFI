@@ -4,20 +4,16 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.table.JBTable
 import github.zimo.autojsx.pojo.ApplicationListPojo
-import github.zimo.autojsx.server.VertxServer
+import github.zimo.autojsx.server.VertxCommandServer
 import github.zimo.autojsx.util.executor
 import github.zimo.autojsx.util.logW
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.Image
-import java.awt.SystemColor.text
-import java.awt.event.ActionEvent
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
-import java.awt.event.KeyEvent
 import javax.swing.*
 import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.DefaultTableModel
@@ -32,12 +28,12 @@ class AnalysisApplicationList :
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
 
-        if (!VertxServer.isStart || VertxServer.selectDevicesWs.isEmpty()) {
+        if (!VertxCommandServer.isStart || VertxCommandServer.selectDevicesWs.isEmpty()) {
             logW("服务器中未选中设备")
             return
         }
         executor.submit {
-            VertxServer.Command.getApplications({
+            VertxCommandServer.Command.getApplications({
                 SwingUtilities.invokeLater {
                     val dialog = AppListDialog(project, it)
                     dialog.show()
