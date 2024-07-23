@@ -5,9 +5,16 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.modules
 import com.intellij.openapi.vfs.VirtualFile
-import github.zimo.autojsx.server.VertxServer
+import com.jetbrains.rd.util.getLogger
+import com.jetbrains.rd.util.warn
+import github.zimo.autojsx.action.news.NewAutoJSX
+import github.zimo.autojsx.module.MODULE_TYPE_ID
+import github.zimo.autojsx.server.VertxCommandServer
 import github.zimo.autojsx.util.*
 import io.vertx.core.json.JsonObject
 import java.io.File
@@ -41,11 +48,11 @@ class DocRunProjectButton :
                     searchProjectJsonByFile(project, selectedFile) { file ->
 //                        saveAndRunProject(file, project)
                         zipProject(file, e.project) {
-                            VertxServer.Command.runProject(it.zipPath)
-                            logI("项目正在上传: " + it.projectJsonPath)
-                            logI("正在上传 src: " + it.srcPath)
-                            logI("项目正在上传 resources: " + it.resourcesPath)
-                            logI("项目正在上传 lib: " + it.libPath + "\r\n")
+                            logI("预运行项目: " + it.projectJsonPath)
+                            logI("├──> 项目 src: " + it.srcPath)
+                            logI("├──> 项目 resources: " + it.resourcesPath)
+                            logI("└──> 项目 lib: " + it.libPath+"\r\n")
+                            VertxCommandServer.Command.runProject(it.zipPath)
                         }
                     }
                 }.onFailure {
@@ -76,13 +83,26 @@ class DocRunProjectButton :
                 project?.basePath + File.separator + "build-output" + File.separator + "${name}.zip"
             )
 
-            VertxServer.Command.runProject(zip.canonicalPath)
+            VertxCommandServer.Command.runProject(zip.canonicalPath)
             logI("项目正在上传: " + projectJson.path)
             logI("正在上传 src: " + src.path)
             logI("项目正在上传 resources: " + resources.path)
             logI("项目正在上传 lib: " + lib.path)
             logI("项目上传完成" + "\r\n")
             //                            if(zip.exists()) zip.delete()
+        }
+    }
+
+    override fun update(e: AnActionEvent) {
+        val project = e.project
+        if (project != null) {
+            val moduleManager = ModuleManager.getInstance(project)
+            val hasAutoJSXModule = moduleManager.modules.any { module ->
+                ModuleType.get(module).id == MODULE_TYPE_ID
+            }
+            e.presentation.isEnabledAndVisible = hasAutoJSXModule
+        } else {
+            e.presentation.isEnabledAndVisible = false
         }
     }
 }

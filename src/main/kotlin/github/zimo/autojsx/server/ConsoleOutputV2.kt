@@ -114,7 +114,8 @@ object ConsoleOutputV2 {
                     level = ConsoleViewContentType.LOG_ERROR_OUTPUT
                     levelI = 4
                 }
-                else ->{
+
+                else -> {
                     level = ConsoleViewContentType.LOG_VERBOSE_OUTPUT
                     levelI = 0
                 }
@@ -133,7 +134,7 @@ object ConsoleOutputV2 {
         var list1 = list
         if (list1.size >= 100000) {
             list1 = ArrayList<Message>().apply {
-                for (i in list1.size/2 until list1.size) {
+                for (i in list1.size / 2 until list1.size) {
                     add(list1[i])
                 }
             }

@@ -13,7 +13,7 @@ import executeObject
 import executeString
 import getObjectConverter
 import github.zimo.autojsx.server.ConsoleOutputV2
-import github.zimo.autojsx.server.VertxServer
+import github.zimo.autojsx.server.VertxCommandServer
 import openConsole
 import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.SystemIndependent
@@ -149,8 +149,8 @@ fun isProjectRoot(path: @NonNls String, projectBasePath: @SystemIndependent @Non
 }
 
 fun runServer(project: Project?) {
-    if (!VertxServer.isStart) {
-        VertxServer.start()
+    if (!VertxCommandServer.isStart) {
+        VertxCommandServer.start()
 //        AutojsNotifier.info(
 //            project,
 //            "Autojsx 服务器在 ${VertxServer.getServerIpAddress()}:${VertxServer.port} 尝试启动"
@@ -163,9 +163,9 @@ fun runServer(project: Project?) {
 }
 
 fun stopServer(project: Project?) {
-    if (VertxServer.isStart) {
-        VertxServer.Command.stopAll()
-        VertxServer.stop()
+    if (VertxCommandServer.isStart) {
+        VertxCommandServer.Command.stopAll()
+        VertxCommandServer.stop()
 //        AutojsNotifier.info(
 //            project,
 //            "Autojsx 服务器在 ${VertxServer.getServerIpAddress()}:${VertxServer.port} 尝试关闭"
@@ -197,13 +197,13 @@ fun selectDevice() {
     val panel = JPanel()
     panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
 
-    for (item in VertxServer.devicesWs.keys) {
+    for (item in VertxCommandServer.devicesWs.keys) {
         val checkBox = JCheckBox(item)
         map[item] = checkBox
         panel.add(checkBox)
     }
 
-    VertxServer.selectDevicesWs.forEach {
+    VertxCommandServer.selectDevicesWs.forEach {
         map[it.key]?.isSelected = true
     }
 
@@ -227,21 +227,21 @@ fun selectDevice() {
         }
         JOptionPane.showMessageDialog(null, result.toString(), "Selection Devices", JOptionPane.INFORMATION_MESSAGE)
 
-        VertxServer.selectDevicesWs.clear()
+        VertxCommandServer.selectDevicesWs.clear()
         map.forEach {
             if (it.value.isSelected) {
-                VertxServer.devicesWs[it.key]?.apply {
-                    VertxServer.selectDevicesWs[it.key] = this
+                VertxCommandServer.devicesWs[it.key]?.apply {
+                    VertxCommandServer.selectDevicesWs[it.key] = this
                 }
             }
         }
-        logI("选中的设备为: ${VertxServer.selectDevicesWs.keys}")
+        logI("选中的设备为: ${VertxCommandServer.selectDevicesWs.keys}")
     }
 }
 
 
 fun runningScriptList(project: Project) {
-    if (!VertxServer.isStart || VertxServer.selectDevicesWs.isEmpty()) {
+    if (!VertxCommandServer.isStart || VertxCommandServer.selectDevicesWs.isEmpty()) {
         logW("服务器中未选中设备")
         return
     }
@@ -271,7 +271,7 @@ fun runningScriptList(project: Project) {
 fun runningScriptCheckBox(callback: () -> Unit = {}) {
     logI("正在查询待关闭的脚本")
 
-    VertxServer.Command.getRunningList({
+    VertxCommandServer.Command.getRunningList({
         callback()
         Thread.sleep(600)
         val panel = JPanel()
@@ -311,7 +311,7 @@ fun runningScriptCheckBox(callback: () -> Unit = {}) {
             )
             list.forEach {
                 if (it.isSelected) {
-                    VertxServer.Command.stopScriptBySourceName(it.text)
+                    VertxCommandServer.Command.stopScriptBySourceName(it.text)
                 }
             }
         }

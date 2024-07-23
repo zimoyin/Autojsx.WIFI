@@ -6,7 +6,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.fileChooser.FileChooserFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import github.zimo.autojsx.server.VertxServer
+import github.zimo.autojsx.server.VertxCommandServer
 import github.zimo.autojsx.util.executor
 import github.zimo.autojsx.util.logI
 import github.zimo.autojsx.util.runServer
@@ -39,8 +39,8 @@ class SaveDir :
                 arrayListOf(file.path),
                 project?.basePath + File.separator + "build-output" + File.separator + "${file.name}.zip"
             )
-            VertxServer.Command.saveProject(zip.canonicalPath)
-            VertxServer.Command.runProject(zip.canonicalPath)
+            VertxCommandServer.Command.saveProject(zip.canonicalPath)
+            VertxCommandServer.Command.runProject(zip.canonicalPath)
 //            zip.delete()
             logI("文件夹正在上传: " + file.path)
         }

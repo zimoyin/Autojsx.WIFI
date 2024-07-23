@@ -1,14 +1,12 @@
 package github.zimo.autojsx.server
 
-import github.zimo.autojsx.server.VertxServer.devicesWs
-import github.zimo.autojsx.server.VertxServer.selectDevicesWs
-import github.zimo.autojsx.util.executor
+import github.zimo.autojsx.server.VertxCommandServer.devicesWs
+import github.zimo.autojsx.server.VertxCommandServer.selectDevicesWs
 import github.zimo.autojsx.util.logE
 import github.zimo.autojsx.util.logI
 import github.zimo.autojsx.util.logW
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Promise
-import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
@@ -100,8 +98,8 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                 if (http.succeeded()) {
                     startPromise.complete()
 //                    ConsoleOutputV2.systemPrint("服务器启动/I:  ${VertxServer.getServerIpAddress()}:$port")
-                    logI("Autojsx 服务器在 ${VertxServer.getServerIpAddress()}:${VertxServer.port} 启动")
-                    VertxServer.isStart = true
+                    logI("Autojsx 服务器在 ${VertxCommandServer.getServerIpAddress()}:${VertxCommandServer.port} 启动")
+                    VertxCommandServer.isStart = true
                 } else {
                     startPromise.fail(http.cause())
                     logE("服务器无法启动在端口$port", http.cause())
@@ -110,7 +108,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
 
         router.route("/receive").handler(BodyHandler.create()).handler {
             val jsonObject = it.body().asJsonObject()
-            VertxServer.content[jsonObject.getString("message")] = jsonObject
+            VertxCommandServer.content[jsonObject.getString("message")] = jsonObject
             it.response().end("ok")
         }
         router.route("/*").handler(StaticHandler.create())

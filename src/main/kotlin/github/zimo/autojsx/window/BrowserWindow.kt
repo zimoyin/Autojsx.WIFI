@@ -25,6 +25,7 @@ class BrowserWindow : ToolWindowFactory {
         val bytes =
             BrowserWindow::class.java.classLoader.getResourceAsStream("obfuscation/index.html")?.readAllBytes()?:ByteArray(0)
         browser.loadHTML(String(bytes, StandardCharsets.UTF_8))
+        browser.loadURL("https://www.baidu.com/")
 
 
         val contentFactory = ContentFactory.getInstance()

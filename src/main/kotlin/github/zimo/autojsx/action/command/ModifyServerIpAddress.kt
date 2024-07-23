@@ -6,14 +6,14 @@ import com.intellij.openapi.ui.Messages
 import github.zimo.autojsx.server.VertxCommandServer
 
 /**
- * 选择设备后，任何操作只对当前设备生效。默认是所有设备
+ * 修改服务器对外显示IP
  */
-class ModifyServerPort :
-    AnAction("修改服务器端口", "", null) {
+class ModifyServerIpAddress :
+    AnAction("修改服务器IP", "", null) {
     override fun actionPerformed(e: AnActionEvent) {
-        Messages.showInputDialog(e.project, "请输入服务器端口:", "修改端口", Messages.getQuestionIcon())?.trim()?.let {
+        Messages.showInputDialog(e.project, "请输入服务器IP:", "修改IP", Messages.getQuestionIcon())?.trim()?.let {
             runCatching {
-                VertxCommandServer.port = it.toInt()
+                VertxCommandServer.ipAddress = it
             }
         }
     }

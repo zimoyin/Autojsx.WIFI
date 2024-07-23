@@ -12,7 +12,7 @@ import github.zimo.autojsx.icons.ICONS
 import github.zimo.autojsx.server.ConsoleOutputV2
 import github.zimo.autojsx.server.ConsoleOutput_V1
 import github.zimo.autojsx.server.Devices
-import github.zimo.autojsx.server.VertxServer
+import github.zimo.autojsx.server.VertxCommandServer
 import github.zimo.autojsx.util.*
 import io.vertx.core.json.JsonObject
 import java.awt.Dimension
@@ -109,7 +109,7 @@ class AutojsxConsoleWindow : ToolWindowFactory {
                         searchProjectJsonByEditor(project) { file ->
 //                            runProject(file, project)
                             zipProject(file, project) {
-                                VertxServer.Command.runProject(it.zipPath)
+                                VertxCommandServer.Command.runProject(it.zipPath)
                                 logI("项目正在上传: " + it.projectJsonPath)
                                 logI("正在上传 src: " + it.srcPath)
                                 logI("项目正在上传 resources: " + it.resourcesPath)
@@ -120,7 +120,7 @@ class AutojsxConsoleWindow : ToolWindowFactory {
                         component.icon = ICONS.START_16
                     }
                     button("停止所有项目") {
-                        VertxServer.Command.stopAll()
+                        VertxCommandServer.Command.stopAll()
                         ConsoleOutputV2.systemPrint("Action/I: 停止所有脚本指令已发送")
                     }.apply {
                         component.icon = ICONS.STOP_16
@@ -165,10 +165,11 @@ class AutojsxConsoleWindow : ToolWindowFactory {
                 project?.basePath + File.separator + "build-output" + File.separator + "${name}.zip"
             )
     //                ConsoleOutputV2.systemPrint("文件打包完成: "+project?.basePath+"/build-output"+"/${name}.zip")
-            VertxServer.Command.runProject(zip.canonicalPath)
+            VertxCommandServer.Command.runProject(zip.canonicalPath)
         }
     }
 
+    @Deprecated("废弃")
     private fun consoleByTextArea(comboBoxRenderer: ListCellRenderer<Any?>?) = panel {
         indent {
             row {
@@ -201,9 +202,4 @@ class AutojsxConsoleWindow : ToolWindowFactory {
             }
         }
     }
-
-    //TODO: 使用了不稳定的API，这在以后会寻求解决
-//    override fun getIcon(): Icon {
-//        return ICONS.LOGO_16
-//    }
 }

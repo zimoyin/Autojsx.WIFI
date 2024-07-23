@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import github.zimo.autojsx.server.VertxServer
+import github.zimo.autojsx.server.VertxCommandServer
 import github.zimo.autojsx.util.*
 import io.vertx.core.json.JsonObject
 import java.io.File
@@ -17,8 +17,8 @@ class SaveCurrentProject :
         searchProjectJsonByEditor(project) { file ->
 //            saveProject(file, project)
             zipProject(file,e.project){
-                VertxServer.Command.saveProject(it.zipPath)
-                VertxServer.Command.runProject(it.zipPath)
+                VertxCommandServer.Command.saveProject(it.zipPath)
+                VertxCommandServer.Command.runProject(it.zipPath)
                 logI("项目正在上传: " + it.projectJsonPath)
                 logI("正在上传 src: " + it.srcPath)
                 logI("项目正在上传 resources: " + it.resourcesPath)
@@ -47,8 +47,8 @@ class SaveCurrentProject :
                 arrayListOf(src.path, resources.path, lib.path),
                 project?.basePath + File.separator + "build-output" + File.separator + "${name}.zip"
             )
-            VertxServer.Command.saveProject(zip.canonicalPath)
-            VertxServer.Command.runProject(zip.canonicalPath)
+            VertxCommandServer.Command.saveProject(zip.canonicalPath)
+            VertxCommandServer.Command.runProject(zip.canonicalPath)
             logI("项目正在上传: " + projectJson.path)
             logI("正在上传 src: " + src.path)
             logI("项目正在上传 resources: " + resources.path)

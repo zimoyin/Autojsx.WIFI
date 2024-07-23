@@ -4,10 +4,17 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.module.ModuleManager
+import com.intellij.openapi.module.ModuleType
+import com.intellij.openapi.project.modules
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.jetbrains.rd.util.getLogger
+import com.jetbrains.rd.util.warn
 import github.zimo.autojsx.icons.ICONS
+import github.zimo.autojsx.module.MODULE_TYPE_ID
 import github.zimo.autojsx.util.createSDK
+import github.zimo.autojsx.util.logI
 
 
 class NewAutoJSX :
@@ -108,6 +115,19 @@ class NewAutoJSX :
                 1 -> isCreateSDK = false
             }
             Messages.CANCEL
+        }
+    }
+
+    override fun update(e: AnActionEvent) {
+        val project = e.project
+        if (project != null) {
+            val moduleManager = ModuleManager.getInstance(project)
+            val hasAutoJSXModule = moduleManager.modules.any { module ->
+                ModuleType.get(module).id == MODULE_TYPE_ID
+            }
+            e.presentation.isEnabledAndVisible = hasAutoJSXModule
+        } else {
+            e.presentation.isEnabledAndVisible = false
         }
     }
 }

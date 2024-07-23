@@ -99,18 +99,19 @@
                 description="Run auto js">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
         </action>
-        <!--顶部菜单栏-->
-        <group id="AutojsMenu" class="github.zimo.autojsx.action.command.AutoMenu" text="Autojs"
-               description="Autojsx menu">
-            <add-to-group group-id="MainMenu" anchor="last"/>
+        <!-- 工具菜单 -->
+        <group id="AutojsMenu" text="Autojs" popup="true">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <action id="AutoJsMenu" class="github.zimo.autojsx.action.command.AutoMenu" text="My Action" description="My Action Description"/>
         </group>
-        <!--运行按钮-->
-        <action id="runAutojs" class="github.zimo.autojsx.action.run.top.TopRunButton" text="Run Autojsx"
-                description="Run auto js">
-            <add-to-group group-id="RunnerActions" anchor="first"/>
-        </action>
+        <!-- 运行按钮: 新UI 无显示 -->
+        <!-- TODO 重构为运行配置形式，复用原有的 IDEA 运行按钮 -->
         <action id="StopAllButtonAutojs" class="github.zimo.autojsx.action.run.top.StopAllButton" text="Stop All Autojsx"
                 description="StopAllButton">
+            <add-to-group group-id="RunnerActions" anchor="first"/>
+        </action>
+        <action id="runAutojs" class="github.zimo.autojsx.action.run.top.TopRunButton" text="Run Autojsx"
+                description="Run auto js">
             <add-to-group group-id="RunnerActions" anchor="first"/>
         </action>
         <!--右键文档-->
@@ -128,10 +129,10 @@
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
 
-        <action id="runAutojsToRightEditor1" class="github.zimo.autojsx.action.run.top.TopRunButton" text="Run Autojsx Project"
-                description="Run auto js">
-            <add-to-group group-id="ToolbarRunGroup" anchor="last"/>
-        </action>
+<!--        <action id="runAutojsToRightEditor1" class="github.zimo.autojsx.action.run.top.TopRunButton" text="Run Autojsx Project"-->
+<!--                description="Run auto js">-->
+<!--            <add-to-group group-id="EditorPopupMenu" anchor="last"/>-->
+<!--        </action>-->
 
     </actions>
 
