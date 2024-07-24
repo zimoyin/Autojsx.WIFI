@@ -2,8 +2,6 @@ package github.zimo.autojsx.action.run.top
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.module.ModuleManager
-import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.modules
 import com.intellij.openapi.vfs.VirtualFile
@@ -11,7 +9,6 @@ import com.jetbrains.rd.util.getLogger
 import com.jetbrains.rd.util.warn
 import github.zimo.autojsx.action.news.NewAutoJSX
 import github.zimo.autojsx.icons.ICONS
-import github.zimo.autojsx.module.MODULE_TYPE_ID
 import github.zimo.autojsx.server.VertxCommandServer
 import github.zimo.autojsx.util.*
 import io.vertx.core.json.JsonObject
@@ -68,6 +65,7 @@ class TopRunButton : AnAction(ICONS.START_16) {
     }
 
     override fun update(e: AnActionEvent) {
-        e.presentation.isEnabledAndVisible = (e.project?.modules?.count { ModuleType.get(it).id == MODULE_TYPE_ID } ?: 0) > 0
+        getLogger<NewAutoJSX>().warn { "The update method used a method marked as unstable" }
+        e.presentation.isEnabledAndVisible = (e.project?.modules?.count { it.moduleTypeName == "AUTO_JSX_MODULE_TYPE" } ?: 0) > 0
     }
 }

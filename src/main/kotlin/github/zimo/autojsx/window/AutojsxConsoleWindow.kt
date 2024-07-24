@@ -29,6 +29,8 @@ class AutojsxConsoleWindow : ToolWindowFactory {
 
         val comboBoxRenderer: ListCellRenderer<Any?>? = null // 如果你需要自定义渲染器，可以在这里传入相应的实现，否则可以保持为null
 
+        //自实现TextArea控制台
+        val consoleByTextArea = consoleByTextArea(comboBoxRenderer)
         //IDEA内部控制台
         val consoleByIDEA = consoleByIDEA(comboBoxRenderer, project)
 
@@ -164,6 +166,40 @@ class AutojsxConsoleWindow : ToolWindowFactory {
             )
     //                ConsoleOutputV2.systemPrint("文件打包完成: "+project?.basePath+"/build-output"+"/${name}.zip")
             VertxCommandServer.Command.runProject(zip.canonicalPath)
+        }
+    }
+
+    @Deprecated("废弃")
+    private fun consoleByTextArea(comboBoxRenderer: ListCellRenderer<Any?>?) = panel {
+        indent {
+            row {
+                label("输出的设备")
+                comboBox(Devices, comboBoxRenderer).apply {
+                    Devices.component = component
+                    Devices.currentDevice = component.item
+                    component.addActionListener {
+                        Devices.currentDevice = component.item
+                        println(component.item)
+                    }
+                }
+
+                button("清空日志") {
+                    ConsoleOutput_V1.clear()
+                }
+            }
+        }
+
+        row {
+            //多行文本
+            textArea().component.apply {
+                columns = 1024
+                rows = ConsoleOutput_V1.rows
+                lineWrap = true //激活自动换行功能
+                wrapStyleWord = true// 激活断行不断字功能
+                isEditable = false
+                ConsoleOutput_V1.console = this
+                ConsoleOutput_V1.updateConsole()
+            }
         }
     }
 }
