@@ -17,15 +17,6 @@ class MyModuleWizardStep(val values: HashMap<String, String>) : ModuleWizardStep
             buttonsGroup {
                 indent {
                     rowsRange {
-//                        row {
-//                            topGap(TopGap.MEDIUM)
-//                            radioButton("Node 工程项目: 官方的 Node 项目", false)
-//                                .bindSelected({ selected }, { selected = it })
-//                                .actionListener { _, _ ->
-//                                    values["项目结构"] = "Node 工程项目"
-//                                }
-//                            bottomGap(BottomGap.MEDIUM)
-//                        }
                         row {
                             radioButton("SDK 单项目: 具有API提示的项目",true)
                                 .bindSelected({ selected }, { selected = it })

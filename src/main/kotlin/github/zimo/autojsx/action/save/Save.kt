@@ -1,5 +1,6 @@
 package github.zimo.autojsx.action.save
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -141,15 +142,6 @@ class Save :
     }
 
     override fun update(e: AnActionEvent) {
-        val project = e.project
-        if (project != null) {
-            val moduleManager = ModuleManager.getInstance(project)
-            val hasAutoJSXModule = moduleManager.modules.any { module ->
-                ModuleType.get(module).id == MODULE_TYPE_ID
-            }
-            e.presentation.isEnabledAndVisible = hasAutoJSXModule
-        } else {
-            e.presentation.isEnabledAndVisible = false
-        }
+        e.presentation.isEnabledAndVisible = (e.project?.modules?.count { ModuleType.get(it).id == MODULE_TYPE_ID } ?: 0) > 0
     }
 }

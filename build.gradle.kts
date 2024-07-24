@@ -51,7 +51,8 @@ tasks {
 //        sinceBuild.set("222")
 //        untilBuild.set("232.*")
 
-        sinceBuild.set("222") // 2022
+//        sinceBuild.set("222") // 2022
+        sinceBuild.set("223") // 2022.3
         untilBuild.set("241.*") // 2024
     }
 

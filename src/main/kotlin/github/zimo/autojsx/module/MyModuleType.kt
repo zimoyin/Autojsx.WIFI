@@ -5,6 +5,7 @@ import com.intellij.openapi.module.ModuleTypeManager
 import javax.swing.Icon
 
 const val MODULE_TYPE_ID = "AUTO_JSX_MODULE_TYPE"
+const val MODULE_TYPE_NAME = "Auto.JSX"
 class MyModuleType : ModuleType<MyModuleBuilder>(MODULE_TYPE_ID) {
 
 
@@ -20,7 +21,7 @@ class MyModuleType : ModuleType<MyModuleBuilder>(MODULE_TYPE_ID) {
 
 
     override fun getName(): String {
-        return "Auto.JSX"
+        return MODULE_TYPE_NAME
     }
 
 
