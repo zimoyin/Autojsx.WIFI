@@ -1,7 +1,9 @@
 {
- "sdk":"2023/7/26",
- "sdk_version":"1.0.2",
- "webpack":"2023/7/26",
- "app_version": "6.4.3",
- "inherit": true
+  "sdk": "2023/7/26",
+  "sdk_version": "1.0.2",
+  "webpack": "2023/7/26",
+  "app_version": "6.4.3",
+  "更新地址(疑似弃用)": "https://github.com/kkevsekk1/webpack-autojs",
+  "更新地址": "https://github.com/kkevsekk1/AutoX/blob/e663d34/autojs/src/main/assets/modules",
+  "inherit": true
 }

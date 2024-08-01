@@ -2,17 +2,12 @@ package github.zimo.autojsx.action.run.top
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.modules
-import com.intellij.openapi.vfs.VirtualFile
-import com.jetbrains.rd.util.getLogger
-import com.jetbrains.rd.util.warn
-import github.zimo.autojsx.action.news.NewAutoJSX
 import github.zimo.autojsx.icons.ICONS
-import github.zimo.autojsx.server.VertxCommandServer
+import github.zimo.autojsx.module.MODULE_TYPE_ID
+import github.zimo.autojsx.server.VertxCommand
 import github.zimo.autojsx.util.*
-import io.vertx.core.json.JsonObject
-import java.io.File
+import github.zimo.autojsx.window.AutojsxConsoleWindow
 
 
 /**
@@ -20,52 +15,42 @@ import java.io.File
  */
 class TopRunButton : AnAction(ICONS.START_16) {
 
-
-    private val targetFileName = "project.json"
-    private val targetDirName = "resources"
     override fun actionPerformed(e: AnActionEvent) {
-        val project = e.project
+        val project = e.project!!
+        AutojsxConsoleWindow.show(project)
         runServer(project)
-        searchProjectJsonByEditor(project) { file ->
-//            runProject(file, project)
-            zipProject(file,e.project){
-//                VertxServer.Command.saveProject(it.zipPath)
-                logI("预运行项目: " + it.projectJsonPath)
-                logI("├──> 项目 src: " + it.srcPath)
-                logI("├──> 项目 resources: " + it.resourcesPath)
-                logI("└──> 项目 lib: " + it.libPath+"\r\n")
-                VertxCommandServer.Command.runProject(it.zipPath)
+
+        if (GradleUtils.isGradleProject(project)) {
+            GradleUtils.runGradleCommandOnToolWindow(project, "buildMainJs") {
+                if (it) {
+                    logI(getGradleOutputMainJsPath(project))
+                    val zip = zipProject(getGradleOutputMainJsPath(project), project)
+                    VertxCommand.runProject(zip.bytes, zip.info.name)
+                } else {
+                    logE("Gradle:buildMainJs 构建失败,请通过构建窗口查看错误信息")
+                }
+            }
+        } else {
+            // 运行项目
+            runCatching {
+                searchProjectJsonByEditor(project) { file ->
+                    zipProject(file, e.project).apply {
+                        logI("预运行项目: " + info.projectJson)
+                        logI("├──> 项目 src: " + info.src?.canonicalPath)
+                        logI("├──> 项目 resources: " + info.resources?.canonicalPath)
+                        logI("└──> 项目 lib: " + info.lib?.canonicalPath + "\r\n")
+                        VertxCommand.runProject(bytes, info.name)
+                    }
+                }
+            }.onFailure {
+                logE("js脚本网络引擎执行失败 ", it)
             }
         }
     }
 
-    @Deprecated("TODO")
-    private fun runProject(file: VirtualFile, project: Project?) {
-        val projectJson = File(file.path)
-        val json = JsonObject(projectJson.readText())
-
-        val name = json.getString("name")
-        val src = projectJson.resolve(json.getString("srcPath")).canonicalFile
-        val resources = projectJson.resolve(json.getString("resources")).canonicalFile
-        val lib = projectJson.resolve(json.getString("lib")).canonicalFile
-
-        val zip = File(project?.basePath + "/build-output" + "/${name}.zip")
-        zip.parentFile.mkdirs()
-        if (zip.exists()) zip.delete()
-
-        executor.submit {
-            zip(
-                arrayListOf(src.path, resources.path, lib.path),
-                project?.basePath + File.separator + "build-output" + File.separator + "${name}.zip"
-            )
-    //                ConsoleOutputV2.systemPrint("文件打包完成: "+project?.basePath+"/build-output"+"/${name}.zip")
-            VertxCommandServer.Command.runProject(zip.canonicalPath)
-    //                if(zip.exists()) zip.delete()
-        }
-    }
 
     override fun update(e: AnActionEvent) {
-        getLogger<NewAutoJSX>().warn { "The update method used a method marked as unstable" }
-        e.presentation.isEnabledAndVisible = (e.project?.modules?.count { it.moduleTypeName == "AUTO_JSX_MODULE_TYPE" } ?: 0) > 0
+        // TODO "The update method used a method marked as unstable"
+        e.presentation.isEnabledAndVisible = (e.project?.modules?.count { it.moduleTypeName == MODULE_TYPE_ID } ?: 0) > 0
     }
 }

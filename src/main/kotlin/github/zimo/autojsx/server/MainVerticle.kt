@@ -1,16 +1,16 @@
 package github.zimo.autojsx.server
 
-import github.zimo.autojsx.server.VertxCommandServer.devicesWs
-import github.zimo.autojsx.server.VertxCommandServer.selectDevicesWs
-import github.zimo.autojsx.util.logE
-import github.zimo.autojsx.util.logI
-import github.zimo.autojsx.util.logW
+import github.zimo.autojsx.server.VertxServer.devicesWs
+import github.zimo.autojsx.server.VertxServer.selectDevicesWs
+import github.zimo.autojsx.util.*
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Promise
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.ext.web.handler.StaticHandler
+import java.io.File
+import java.io.FileNotFoundException
 import java.util.*
 
 
@@ -62,7 +62,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                             selectDevicesWs[device] = ws
                             devicesWs[device] = ws
                             Devices.add(device)
-                            ConsoleOutputV2.systemPrint("新设备接入/I： Device $device  AppVersion: $app_version ClientVersion: $client_version")
+                            ConsoleOutput.systemPrint("新设备接入/I： Device $device  AppVersion: $app_version ClientVersion: $client_version")
                         }
 
                         "ping" -> {
@@ -75,9 +75,11 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                         "log" -> {
                             var text = jsonObject.getJsonObject("data").getString("log")
                             if (text.contains(" ------------ ") && text.contains("运行结束，用时")) {
-                                text = text.replace("\n", " ").replace(" ------------ ", "") + "\r\n"
+                                text = text.replace("\n", " ")
+                                    .replace("  "," ")
+                                    .replace(" ------------ ", "") + "\r\n"
                             }
-                            ConsoleOutputV2.println(device, text)
+                            ConsoleOutput.println(device, text)
                         }
                     }
                     if (!returnData.isEmpty) ws.writeTextMessage(returnData.toString())
@@ -97,24 +99,52 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
             .listen(port) { http ->
                 if (http.succeeded()) {
                     startPromise.complete()
-//                    ConsoleOutputV2.systemPrint("服务器启动/I:  ${VertxServer.getServerIpAddress()}:$port")
-                    logI("Autojsx 服务器在 ${VertxCommandServer.getServerIpAddress()}:${VertxCommandServer.port} 启动")
-                    VertxCommandServer.isStart = true
+                    logI("Autojsx 服务器在 ${VertxServer.getServerIpAddress()}:${VertxServer.port} 启动")
+                    VertxServer.isStart = true
                 } else {
                     startPromise.fail(http.cause())
                     logE("服务器无法启动在端口$port", http.cause())
                 }
             }
 
-        router.route("/receive").handler(BodyHandler.create()).handler {
-            val jsonObject = it.body().asJsonObject()
-            VertxCommandServer.content[jsonObject.getString("message")] = jsonObject
-            it.response().end("ok")
+        router.route("/receive").handler(BodyHandler.create()).handler { context ->
+            kotlin.runCatching {
+                val jsonObject = context.body().asJsonObject()
+                VertxServer.content[jsonObject.getString("message")] = jsonObject
+                context.response().end("ok")
+            }.onFailure {
+                logE("接收数据失败", it)
+                context.response().end("error")
+            }
+        }
+
+        router.route("/upload_path").handler(BodyHandler.create()).handler { context ->
+            kotlin.runCatching {
+                val path = context.body().asString()
+
+                val file = File(path).apply {
+                    if (!exists()) throw FileNotFoundException("文件不存在")
+                }
+
+                if (file.isFile) {
+                    VertxCommand.saveJS(path)
+                } else {
+                    val name = file.listFiles()?.first { it.name == "project.json" && it.isFile }.let {
+                        runCatching { JsonObject(it?.readText()).getString("name") }.getOrElse { path }
+                    }
+                    VertxCommand.saveProject(zipBytes(path), name)
+                }
+
+                context.response().end("ok")
+            }.onFailure {
+                logE("接收数据失败", it)
+                context.response().apply {
+                    statusCode = 500
+                    end("error")
+                }
+            }
         }
         router.route("/*").handler(StaticHandler.create())
-        router.route("/api/files").handler {
-            it.end(CacheTexts.cacheOutJson)
-        }
     }
 
     fun String.asJsonObject(): JsonObject = JsonObject(this)

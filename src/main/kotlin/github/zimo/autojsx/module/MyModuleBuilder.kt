@@ -1,5 +1,6 @@
 package github.zimo.autojsx.module
 
+import com.intellij.ide.lightEdit.intentions.openInProject.GradleProjectRootFinder
 import com.intellij.ide.util.projectWizard.ModuleBuilder
 import com.intellij.ide.util.projectWizard.ModuleWizardStep
 import com.intellij.ide.util.projectWizard.WizardContext
@@ -8,8 +9,15 @@ import com.intellij.openapi.module.ModifiableModuleModel
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModifiableRootModel
-import github.zimo.autojsx.util.createSDK
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.findOrCreateDirectory
+import com.intellij.openapi.vfs.writeText
+import com.intellij.testFramework.HeavyPlatformTestCase.createChildData
+import com.jetbrains.rd.generator.gradle.GradleGenerationSpec
+import github.zimo.autojsx.util.GradleUtils
 import java.io.File
+import java.io.FileOutputStream
+import java.util.zip.ZipInputStream
 
 
 /**
@@ -44,18 +52,44 @@ class MyModuleBuilder : ModuleBuilder() {
     // 通过覆盖为新模块设置根模型
     override fun setupRootModel(modifiableRootModel: ModifiableRootModel) {
         doAddContentEntry(modifiableRootModel)?.let { entry ->
-            if (values.containsValue("SDK 单项目")) entry.file?.apply {
-                createChildDirectory(this, "lib").apply {
-                    createSDK(this)
+            if (values.containsValue("Kotlin/Js")) entry.file?.apply {
+                createKotlinAndJs(this)
+                this.findOrCreateChildData(this, "settings.gradle.kts").writeText("""
+                    plugins {
+                        id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
+                    }
+                    rootProject.name = "${entry.file?.name}"
+                """.trimIndent())
+                this.findOrCreateDirectory("src").apply {
+                    findOrCreateDirectory("jsMain").apply {
+                        findOrCreateDirectory("resources").apply {
+                            createChildData(this, "project.json").writeText(
+                                """
+                                {
+                                    "name": "${entry.file?.name}",
+                                    "main": "main.js",
+                                    "ignore": [
+                                        "build"
+                                    ],
+                                    "launchConfig": {
+                                        "hideLogs": true
+                                    },
+                                    "packageName": "github.autojsx.${entry.file?.name}",
+                                    "versionName": "1.0.0",
+                                    "versionCode": 1,
+                                    "obfuscator": false
+                                }
+                                """.trimIndent()
+                            )
+                        }
+                    }
                 }
-                createChildDirectory(this, "src").apply {
-                    entry.addSourceFolder(this, true)
-                }
+                GradleUtils.refreshGradleProject(modifiableRootModel.project)
+            } else {
+                // 空项目：留空
             }
-
         }
     }
-
 
 
     override fun isAvailable(): Boolean {
@@ -93,4 +127,37 @@ class MyModuleBuilder : ModuleBuilder() {
         return super.createProject(name, path)
     }
 
+    private fun createKotlinAndJs(file: VirtualFile) {
+        val buffer = ByteArray(1024)
+        MyModuleBuilder::class.java.classLoader.getResourceAsStream("KotlinAndJs.zip")?.apply {
+            try {
+                // 打开zip文件流
+                val zipInputStream = ZipInputStream(this)
+
+                // 逐个解压zip条目
+                var zipEntry = zipInputStream.nextEntry
+                while (zipEntry != null) {
+                    val unzipFilePath = file.path + File.separator + zipEntry.name
+
+                    // 如果条目是文件则创建文件
+                    if (zipEntry.isDirectory) {
+                        File(unzipFilePath).mkdirs()
+                    } else {
+                        File(unzipFilePath).parentFile.mkdirs()
+                        val fileOutputStream = FileOutputStream(unzipFilePath)
+                        var len: Int
+                        while (zipInputStream.read(buffer).also { len = it } > 0) {
+                            fileOutputStream.write(buffer, 0, len)
+                        }
+                        fileOutputStream.close()
+                    }
+                    zipEntry = zipInputStream.nextEntry
+                }
+                zipInputStream.closeEntry()
+                zipInputStream.close()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
 }

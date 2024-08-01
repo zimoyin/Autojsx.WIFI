@@ -10,6 +10,7 @@ import com.intellij.testFramework.HeavyPlatformTestCase.createChildData
 import com.jetbrains.rd.util.getLogger
 import com.jetbrains.rd.util.warn
 import github.zimo.autojsx.icons.ICONS
+import github.zimo.autojsx.module.MODULE_TYPE_ID
 import github.zimo.autojsx.util.logI
 
 /**
@@ -40,16 +41,10 @@ class NewAutoJSON :
                             |    "resources":"./../",
                             |    "lib":"./../",
                             |    "versionCode": 1,
-                            |    "obfuscator": false,
-                            |    "obfuscatorPath": "./obfuscator.js"
+                            |    "obfuscator": false
                             |}
                         """.trimMargin().toByteArray()
                 )
-            }
-            file.createChildData(this, "obfuscator.js").getOutputStream(this).use { outputStream ->
-                ICONS::class.java.getResourceAsStream("/obfuscator.js")?.readAllBytes()?.let {
-                    outputStream.write(it)
-                }
             }
             // 刷新虚拟文件系统，以确保新创建的文件可见
             VirtualFileManager.getInstance().refreshWithoutFileWatcher(false)
@@ -57,7 +52,7 @@ class NewAutoJSON :
     }
 
     override fun update(e: AnActionEvent) {
-        getLogger<NewAutoJSX>().warn { "The update method used a method marked as unstable" }
-        e.presentation.isEnabledAndVisible = (e.project?.modules?.count { it.moduleTypeName == "AUTO_JSX_MODULE_TYPE" } ?: 0) > 0
+        // TODO "The update method used a method marked as unstable"
+        e.presentation.isEnabledAndVisible = (e.project?.modules?.count { it.moduleTypeName == MODULE_TYPE_ID } ?: 0) > 0
     }
 }

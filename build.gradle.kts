@@ -19,22 +19,13 @@ intellij {
     version.set("2024.1.4")
     type.set("IC") // Target IDE Platform
 
-    plugins.set(listOf(/* Plugin Dependencies */))
+    plugins.set(listOf("com.intellij.gradle"/* Plugin Dependencies */))
 }
 
 dependencies {
     // 声明对Kotlin标准库的依赖关系
     implementation(kotlin("test"))
-//    implementation("com.google.javascript:closure-compiler:v20230502")
-    // https://mvnrepository.com/artifact/io.vertx/vertx-web
     implementation("io.vertx:vertx-web:4.4.4")
-    // https://mvnrepository.com/artifact/io.vertx/vertx-lang-kotlin
-    implementation("io.vertx:vertx-lang-kotlin:4.4.4")
-    implementation("com.caoccao.javet:javet:3.0.1") // Linux and Windows (x86_64)
-//    implementation("com.caoccao.javet:javet-linux-arm64:3.0.1") // Linux (arm64)
-//    implementation("com.caoccao.javet:javet-macos:3.0.1") // Mac OS (x86_64 and arm64)
-//    implementation("com.caoccao.javet:javet-android:3.0.1") // Android (arm, arm64, x86 and x86_64)
-
 }
 
 tasks {
@@ -51,7 +42,7 @@ tasks {
 //        sinceBuild.set("222")
 //        untilBuild.set("232.*")
 
-        sinceBuild.set("222") // 2022
+        sinceBuild.set("223")
         untilBuild.set("241.*") // 2024
     }
 

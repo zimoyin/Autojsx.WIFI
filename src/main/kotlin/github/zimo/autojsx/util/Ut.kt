@@ -1,25 +1,19 @@
 package github.zimo.autojsx.util
 
-import NodeJsWithPool
-import closeConsole
+
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.isFile
 import com.intellij.openapi.wm.ToolWindowManager
-import executeObject
-import executeString
-import getObjectConverter
-import github.zimo.autojsx.server.ConsoleOutputV2
-import github.zimo.autojsx.server.VertxCommandServer
-import openConsole
+
+import github.zimo.autojsx.server.ConsoleOutput
+import github.zimo.autojsx.server.VertxCommand
+import github.zimo.autojsx.server.VertxServer
 import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.SystemIndependent
-import require
-import setGlobalObject
-import setNodeModuleRootDirectory
 import java.awt.image.BufferedImage
 import java.io.*
 import java.util.*
@@ -27,10 +21,6 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.zip.ZipInputStream
 import javax.imageio.ImageIO
-import javax.swing.BoxLayout
-import javax.swing.JCheckBox
-import javax.swing.JOptionPane
-import javax.swing.JPanel
 
 
 /**
@@ -65,10 +55,10 @@ fun searchProjectJsonByEditor(project: Project?, executeSpecificOperation: (Virt
                 val targetFile = currentDir.findChild(targetFileName)
                 if (targetFile != null) {
                     // 找到项目文件
-                    ConsoleOutputV2.systemPrint("执行项目/I: $targetFile")
+                    ConsoleOutput.systemPrint("执行项目/I: $targetFile")
                     // 在这里执行特定操作
                     runCatching { executeSpecificOperation(targetFile) }.onFailure {
-                        ConsoleOutputV2.systemPrint("执行项目文件失败 $targetFile  /E\r\n" + it.caseString())
+                        ConsoleOutput.systemPrint("执行项目文件失败 $targetFile  /E\r\n" + it.caseString())
                     }
                     return
                 }
@@ -79,10 +69,10 @@ fun searchProjectJsonByEditor(project: Project?, executeSpecificOperation: (Virt
                     val resourcesFile = resourcesDir.findChild(targetFileName)
                     if (resourcesFile != null) {
                         // 在 resources 目录下找到项目文件
-                        ConsoleOutputV2.systemPrint("执行项目/I: $resourcesFile")
+                        ConsoleOutput.systemPrint("执行项目/I: $resourcesFile")
                         // 在这里执行特定操作
                         runCatching { executeSpecificOperation(resourcesFile) }.onFailure {
-                            ConsoleOutputV2.systemPrint("执行项目文件失败 $resourcesFile  /E\r\n" + it.caseString())
+                            ConsoleOutput.systemPrint("执行项目文件失败 $resourcesFile  /E\r\n" + it.caseString())
                         }
                         return
                     }
@@ -92,13 +82,17 @@ fun searchProjectJsonByEditor(project: Project?, executeSpecificOperation: (Virt
                 currentDir = currentDir.parent
             }
 
-            ConsoleOutputV2.systemPrint("$targetFileName not found in the parent paths.")
+            ConsoleOutput.systemPrint("$targetFileName not found in the parent paths.")
         } else {
             logW("未打开任何项目，请打开你的 main.js。插件需要再活动编辑器窗口看到他")
         }
     }
 }
 
+/**
+ * 根据当前文件，在父文件夹查找 resources/project.json 循环操作知道找到
+ * 注意: 该方法只适用于 Autojs 原生项目查找文件
+ */
 fun searchProjectJsonByFile(
     project: Project?,
     selectedFile: VirtualFile,
@@ -107,16 +101,14 @@ fun searchProjectJsonByFile(
     if (project != null) {
         val projectBasePath = project.basePath
         val targetFileName = "project.json"
-        var currentDir = selectedFile.parent
+        var currentDir = if (selectedFile.isFile) selectedFile.parent else selectedFile
 
         while (currentDir != null && isProjectRoot(currentDir.path, projectBasePath)) {
             val targetFile = currentDir.findChild(targetFileName)
             if (targetFile != null) {
-                // 找到项目文件
-                ConsoleOutputV2.systemPrint("执行项目/I: $targetFile")
                 // 在这里执行特定操作
                 runCatching { executeSpecificOperation(targetFile) }.onFailure {
-                    ConsoleOutputV2.systemPrint("执行项目文件失败 $targetFile  /E\r\n" + it.caseString())
+                    ConsoleOutput.systemPrint("执行项目文件失败 $targetFile  /E\r\n" + it.caseString())
                 }
                 return
             }
@@ -126,11 +118,9 @@ fun searchProjectJsonByFile(
             if (resourcesDir != null) {
                 val resourcesFile = resourcesDir.findChild(targetFileName)
                 if (resourcesFile != null) {
-                    // 在 resources 目录下找到项目文件
-                    ConsoleOutputV2.systemPrint("执行项目/I: $resourcesFile")
                     // 在这里执行特定操作
                     runCatching { executeSpecificOperation(resourcesFile) }.onFailure {
-                        ConsoleOutputV2.systemPrint("执行项目文件失败 $resourcesFile  /E\r\n" + it.caseString())
+                        ConsoleOutput.systemPrint("执行项目文件失败 $resourcesFile  /E\r\n" + it.caseString())
                     }
                     return
                 }
@@ -140,7 +130,7 @@ fun searchProjectJsonByFile(
             currentDir = currentDir.parent
         }
 
-        ConsoleOutputV2.systemPrint("$targetFileName not found in the parent paths.")
+        ConsoleOutput.systemPrint("$targetFileName not found in the parent paths.")
     }
 }
 
@@ -149,12 +139,8 @@ fun isProjectRoot(path: @NonNls String, projectBasePath: @SystemIndependent @Non
 }
 
 fun runServer(project: Project?) {
-    if (!VertxCommandServer.isStart) {
-        VertxCommandServer.start()
-//        AutojsNotifier.info(
-//            project,
-//            "Autojsx 服务器在 ${VertxServer.getServerIpAddress()}:${VertxServer.port} 尝试启动"
-//        )
+    if (!VertxServer.isStart) {
+        VertxServer.start()
         val toolWindowManager = ToolWindowManager.getInstance(project!!)
         toolWindowManager.getToolWindow("AutojsxConsole")?.apply {
             show()
@@ -163,161 +149,13 @@ fun runServer(project: Project?) {
 }
 
 fun stopServer(project: Project?) {
-    if (VertxCommandServer.isStart) {
-        VertxCommandServer.Command.stopAll()
-        VertxCommandServer.stop()
-//        AutojsNotifier.info(
-//            project,
-//            "Autojsx 服务器在 ${VertxServer.getServerIpAddress()}:${VertxServer.port} 尝试关闭"
-//        )
+    if (VertxServer.isStart) {
+        VertxCommand.stopAll()
+        VertxServer.stop()
     }
 }
 
 val executor: ExecutorService = Executors.newFixedThreadPool(3)
-
-fun logE(msg: Any?, e: Throwable? = null) {
-    ConsoleOutputV2.systemPrint("错误/E: $msg ${(if (e != null) "\r\n" else "") + e?.caseString()}")
-}
-
-fun logE(msg: Any?) {
-    ConsoleOutputV2.systemPrint("错误/E: $msg")
-}
-
-fun logI(msg: Any?) {
-    ConsoleOutputV2.systemPrint("信息/I: $msg")
-}
-
-fun logW(msg: Any?) {
-    ConsoleOutputV2.systemPrint("警告/W: $msg")
-}
-
-
-fun selectDevice() {
-    val map = HashMap<String, JCheckBox>()
-    val panel = JPanel()
-    panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
-
-    for (item in VertxCommandServer.devicesWs.keys) {
-        val checkBox = JCheckBox(item)
-        map[item] = checkBox
-        panel.add(checkBox)
-    }
-
-    VertxCommandServer.selectDevicesWs.forEach {
-        map[it.key]?.isSelected = true
-    }
-
-
-    val option = JOptionPane.showConfirmDialog(
-        null, panel, "Selection Devices",
-        JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE
-    )
-
-    if (option == JOptionPane.OK_OPTION) {
-        val result = StringBuilder("Selection Devices:\n")
-        for (component in panel.components) {
-            if (component is JCheckBox) {
-                val checkBox = component
-                if (checkBox.isSelected) {
-                    result.append("✔ ").append(checkBox.text).append("\n")
-                } else {
-                    result.append("□").append(checkBox.text).append("\n")
-                }
-            }
-        }
-        JOptionPane.showMessageDialog(null, result.toString(), "Selection Devices", JOptionPane.INFORMATION_MESSAGE)
-
-        VertxCommandServer.selectDevicesWs.clear()
-        map.forEach {
-            if (it.value.isSelected) {
-                VertxCommandServer.devicesWs[it.key]?.apply {
-                    VertxCommandServer.selectDevicesWs[it.key] = this
-                }
-            }
-        }
-        logI("选中的设备为: ${VertxCommandServer.selectDevicesWs.keys}")
-    }
-}
-
-
-fun runningScriptList(project: Project) {
-    if (!VertxCommandServer.isStart || VertxCommandServer.selectDevicesWs.isEmpty()) {
-        logW("服务器中未选中设备")
-        return
-    }
-    var result = false
-    executor.submit {
-        ProgressManager.getInstance().runProcessWithProgressSynchronously<Any, RuntimeException>(
-            {
-                while (true) {
-                    Thread.sleep(600)
-                    if (result) break
-                }
-            },
-            "正在等待网络结果",
-            true,  // indeterminate
-            project
-        )
-    }
-
-    executor.submit {
-        runServer(project)
-        runningScriptCheckBox {
-            result = true
-        }
-    }
-}
-
-fun runningScriptCheckBox(callback: () -> Unit = {}) {
-    logI("正在查询待关闭的脚本")
-
-    VertxCommandServer.Command.getRunningList({
-        callback()
-        Thread.sleep(600)
-        val panel = JPanel()
-        val list = ArrayList<JCheckBox>()
-        panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
-
-        if (it.isEmpty()) {
-            val checkBox = JCheckBox("截止到当前没有任何脚本在运行")
-            panel.add(checkBox)
-        }
-        for (item in it) {
-            val checkBox = JCheckBox(item.sourceName)
-            list.add(checkBox)
-            panel.add(checkBox)
-        }
-
-        val option = JOptionPane.showConfirmDialog(
-            null, panel, "Select Items",
-            JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE
-        )
-
-        if (option == JOptionPane.OK_OPTION) {
-            val result = StringBuilder("Selected items:\n")
-            for (component in panel.components) {
-                if (component is JCheckBox) {
-                    val checkBox = component
-                    if (checkBox.isSelected) {
-                        result.append("✔ ").append(checkBox.text).append("\n")
-                    }
-                }
-            }
-            JOptionPane.showMessageDialog(
-                null,
-                result.toString(),
-                "Selection Result",
-                JOptionPane.INFORMATION_MESSAGE
-            )
-            list.forEach {
-                if (it.isSelected) {
-                    VertxCommandServer.Command.stopScriptBySourceName(it.text)
-                }
-            }
-        }
-    })
-    callback()
-}
 
 
 fun base64_image_toFile(
@@ -337,47 +175,6 @@ fun base64_image(it: String): BufferedImage? {
     val image = ImageIO.read(ByteArrayInputStream(bytes))
     return image
 }
-
-/**
- * @param map 文件路径和内容的映射
- */
-@Deprecated("")
-fun obfuscates(map: HashMap<String, String>, outputPath: String): HashMap<String, String>? {
-    var mapHix: HashMap<String, String>? = null
-    NodeJsWithPool {
-        val console = openConsole()
-        setNodeModuleRootDirectory("./node_modules")
-        getObjectConverter().setLargeScope()
-        require("./obfuscator.js")
-        setGlobalObject("map", map)
-        mapHix = executeObject<HashMap<String, String>>(
-            "obfuscator.obfuscateMultiple(map, obfuscator.obfuscator_options)"
-        )
-        console.closeConsole()
-    }
-    return mapHix
-}
-
-
-fun obfuscate(code: String, outputPath: String, obfuscatorFile0: File, modules0: File): String? {
-    var hix: String? = null
-    NodeJsWithPool {
-        val console = openConsole()
-//        setNodeModuleRootDirectory("./node_modules")
-        setNodeModuleRootDirectory(modules0)
-        getObjectConverter().setLargeScope()
-//        require("./obfuscator.js")
-        require(obfuscatorFile0)
-//        MyModuleBuilder::class.java.classLoader.getResourceAsStream("SDK.zip")
-        setGlobalObject("code", code)
-        hix = executeString(
-            "obfuscator.obfuscate(code, obfuscator.obfuscator_options)"
-        )
-        console.closeConsole()
-    }
-    return hix
-}
-
 
 fun File.unzip(destinationDir: File) {
     val zipFile = this

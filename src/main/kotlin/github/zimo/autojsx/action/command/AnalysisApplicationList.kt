@@ -6,7 +6,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.table.JBTable
 import github.zimo.autojsx.pojo.ApplicationListPojo
-import github.zimo.autojsx.server.VertxCommandServer
+import github.zimo.autojsx.server.VertxCommand
+import github.zimo.autojsx.server.VertxServer
 import github.zimo.autojsx.util.executor
 import github.zimo.autojsx.util.logW
 import java.awt.Component
@@ -28,12 +29,12 @@ class AnalysisApplicationList :
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
 
-        if (!VertxCommandServer.isStart || VertxCommandServer.selectDevicesWs.isEmpty()) {
+        if (!VertxServer.isStart || VertxServer.selectDevicesWs.isEmpty()) {
             logW("服务器中未选中设备")
             return
         }
         executor.submit {
-            VertxCommandServer.Command.getApplications({
+            VertxCommand.getApplications({
                 SwingUtilities.invokeLater {
                     val dialog = AppListDialog(project, it)
                     dialog.show()

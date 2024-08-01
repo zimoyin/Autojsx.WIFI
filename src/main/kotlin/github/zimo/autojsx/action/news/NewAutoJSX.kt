@@ -4,15 +4,14 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.project.modules
 import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
-import com.jetbrains.rd.util.getLogger
-import com.jetbrains.rd.util.warn
-import github.zimo.autojsx.icons.ICONS
-import github.zimo.autojsx.util.createSDK
-import github.zimo.autojsx.util.logI
+import github.zimo.autojsx.module.MODULE_TYPE_ID
+import github.zimo.autojsx.module.MyModuleBuilder
+import java.io.FileOutputStream
+import java.util.zip.ZipInputStream
 
 
 class NewAutoJSX :
@@ -65,16 +64,10 @@ class NewAutoJSX :
                             |    "resources":"./../",
                             |    "lib":"./../../lib/",
                             |    "versionCode": 1,
-                            |    "obfuscator": false,
-                            |    "obfuscatorPath": "./obfuscator.js"
+                            |    "obfuscator": false
                             |}
                         """.trimMargin().toByteArray()
                         )
-                    }
-                    createChildData(this, "obfuscator.js").getOutputStream(this).use { outputStream ->
-                        ICONS::class.java.getResourceAsStream("/obfuscator.js")?.readAllBytes()?.let {
-                            outputStream.write(it)
-                        }
                     }
                 }
             }
@@ -117,7 +110,42 @@ class NewAutoJSX :
     }
 
     override fun update(e: AnActionEvent) {
-        getLogger<NewAutoJSX>().warn { "The update method used a method marked as unstable" }
-        e.presentation.isEnabledAndVisible = (e.project?.modules?.count { it.moduleTypeName == "AUTO_JSX_MODULE_TYPE" } ?: 0) > 0
+        // TODO "The update method used a method marked as unstable"
+        e.presentation.isEnabledAndVisible =
+            (e.project?.modules?.count { it.moduleTypeName == MODULE_TYPE_ID } ?: 0) > 0
+    }
+
+    private fun createSDK(file: VirtualFile) {
+        val lib = file.createChildDirectory(file, "sdk")
+        val buffer = ByteArray(1024)
+        MyModuleBuilder::class.java.classLoader.getResourceAsStream("SDK.zip")?.apply {
+            try {
+                // 打开zip文件流
+                val zipInputStream = ZipInputStream(this)
+
+                // 逐个解压zip条目
+                var zipEntry = zipInputStream.nextEntry
+                while (zipEntry != null) {
+                    val newFile = if (!zipEntry.isDirectory) lib.createChildData(
+                        this, zipEntry.name.substring(zipEntry.name.lastIndexOf("/") + 1)
+                    ) else lib
+
+                    // 如果条目是文件则创建文件
+                    if (!zipEntry.isDirectory) {
+                        val fileOutputStream = FileOutputStream(newFile.path)
+                        var len: Int
+                        while (zipInputStream.read(buffer).also { len = it } > 0) {
+                            fileOutputStream.write(buffer, 0, len)
+                        }
+                        fileOutputStream.close()
+                    }
+                    zipEntry = zipInputStream.nextEntry
+                }
+                zipInputStream.closeEntry()
+                zipInputStream.close()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 }

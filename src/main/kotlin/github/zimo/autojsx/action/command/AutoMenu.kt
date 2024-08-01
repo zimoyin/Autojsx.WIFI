@@ -15,9 +15,6 @@ class AutoMenu : ActionGroup() {
             /**/
             SaveCurrentProject(), SaveProject(), SaveDir(), SaveScript(), Separator(),
             /**/
-//            ConfusingAndSaveScript(), ConfusingAndSaveProject(), Separator(),
-            Confusing(), Separator(),
-            /**/
             StopRunning(), StopAll(), Separator(),
             /**/
             StartServer(), StopServer(),ModifyServerIpAddress(), ModifyServerPort(), Separator(),

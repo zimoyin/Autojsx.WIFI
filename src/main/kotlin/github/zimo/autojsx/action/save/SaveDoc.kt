@@ -3,8 +3,8 @@ package github.zimo.autojsx.action.save
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import github.zimo.autojsx.server.ConsoleOutputV2
-import github.zimo.autojsx.server.VertxCommandServer
+import github.zimo.autojsx.server.ConsoleOutput
+import github.zimo.autojsx.server.VertxCommand
 import github.zimo.autojsx.util.caseString
 import github.zimo.autojsx.util.logI
 import github.zimo.autojsx.util.runServer
@@ -16,13 +16,12 @@ class SaveDoc : AnAction(github.zimo.autojsx.icons.ICONS.SAVE_FILE_16) {
         if (file.isDirectory) return
         val project = e.project
         runServer(project)
-        //TODO 创建临时混淆目录，并混淆，如果开启了混淆
         //TODO 抽取公共方法： 保存脚本/项目，运行脚本/项目....
         runCatching {
-            VertxCommandServer.Command.saveJS(file.path)
+            VertxCommand.saveJS(file.path)
             logI("js 文件保存成功: ${file.path}")
         }.onFailure {
-            ConsoleOutputV2.systemPrint("js脚本网络引擎执行失败${file.path} /E \r\n" + it.caseString())
+            ConsoleOutput.systemPrint("js脚本网络引擎执行失败${file.path} /E \r\n" + it.caseString())
         }
     }
 

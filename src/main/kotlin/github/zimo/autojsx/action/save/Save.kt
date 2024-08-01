@@ -7,11 +7,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.modules
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
-import com.jetbrains.rd.util.getLogger
-import com.jetbrains.rd.util.warn
-import github.zimo.autojsx.action.news.NewAutoJSX
-import github.zimo.autojsx.server.ConsoleOutputV2
-import github.zimo.autojsx.server.VertxCommandServer
+import github.zimo.autojsx.server.ConsoleOutput
+import github.zimo.autojsx.server.VertxCommand
 import github.zimo.autojsx.util.*
 import io.vertx.core.json.JsonObject
 import java.io.File
@@ -40,9 +37,9 @@ class Save :
                         return
                     }
                 }
-                VertxCommandServer.Command.saveJS(file.path)
+                VertxCommand.saveJS(file.path)
             }.onFailure {
-                ConsoleOutputV2.systemPrint("js脚本网络引擎执行失败${file.path} /E \r\n" + it.caseString())
+                ConsoleOutput.systemPrint("js脚本网络引擎执行失败${file.path} /E \r\n" + it.caseString())
             }
         }
     }
@@ -52,56 +49,27 @@ class Save :
         if (jsonFile != null) {
             if (showDialog) showCheckboxMessageDialog()
             if (isSaveProject) {
-//                saveProject(jsonFile, project)
-                zipProject(jsonFile,project){
-                    VertxCommandServer.Command.saveProject(it.zipPath)
-                    logI("项目正在上传: " + it.projectJsonPath)
-                    logI("正在上传 src: " + it.srcPath)
-                    logI("项目正在上传 resources: " + it.resourcesPath)
-                    logI("项目正在上传 lib: " + it.libPath+"\r\n")
+                zipProject(jsonFile,project).apply{
+                    logI("预运行项目: " + info.projectJson)
+                    logI("├──> 项目 src: " + info.src?.canonicalPath)
+                    logI("├──> 项目 resources: " + info.resources?.canonicalPath)
+                    logI("└──> 项目 lib: " + info.lib?.canonicalPath + "\r\n")
+                    VertxCommand.runProject(bytes, info.name)
                 }
+                // 保存项目压缩包完成后就不执行下面的上传文件夹逻辑
                 return
             }
         }
 
+        // 如果不是项目文件，就上次文件夹压缩包
         executor.submit {
             val zip = File(project?.basePath + File.separator + "build-output" + File.separator + "${file.name}.zip")
             zip(
                 arrayListOf(file.path),
                 project?.basePath + File.separator + "build-output" + File.separator + "${file.name}.zip"
             )
-            VertxCommandServer.Command.saveProject(zip.canonicalPath)
-//            zip.delete()
-            ConsoleOutputV2.systemPrint("项目正在上传/I: " + file.path)
-        }
-    }
-
-    @Deprecated("TODO")
-    private fun saveProject(jsonFile: VirtualFile, project: Project?) {
-        val projectJson = File(jsonFile.path)
-        val json = JsonObject(projectJson.readText())
-
-        val name = json.getString("name")
-        val src = projectJson.resolve(json.getString("srcPath")).canonicalFile
-        //TODO 创建临时混淆目录，并混淆，如果开启了混淆
-        val resources = projectJson.resolve(json.getString("resources")).canonicalFile
-        val lib = projectJson.resolve(json.getString("lib")).canonicalFile
-
-        val zip = File(project?.basePath + "/build-output" + "/${name}.zip")
-        zip.parentFile.mkdirs()
-        if (zip.exists()) zip.delete()
-
-        executor.submit {
-            zip(
-                arrayListOf(src.path, resources.path, lib.path),
-                project?.basePath + File.separator + "build-output" + File.separator + "${name}.zip"
-            )
-            VertxCommandServer.Command.saveProject(zip.canonicalPath)
-            ConsoleOutputV2.systemPrint("项目正在上传/I: " + projectJson.path)
-            logI("正在上传 src: " + src.path)
-            logI("项目正在上传 resources: " + resources.path)
-            logI("项目正在上传 lib: " + lib.path + "\r\n")
-    //                    if (zip.exists()) zip.delete()
+            VertxCommand.saveProject(zip.canonicalPath)
+            ConsoleOutput.systemPrint("项目正在上传/I: " + file.path)
         }
     }
 
@@ -138,7 +106,7 @@ class Save :
     }
 
     override fun update(e: AnActionEvent) {
-        getLogger<NewAutoJSX>().warn { "The update method used a method marked as unstable" }
+        // TODO "The update method used a method marked as unstable"
         e.presentation.isEnabledAndVisible = (e.project?.modules?.count { it.moduleTypeName == "AUTO_JSX_MODULE_TYPE" } ?: 0) > 0
     }
 }

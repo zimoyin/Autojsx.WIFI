@@ -2,97 +2,120 @@ package github.zimo.autojsx.util
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.isFile
+import com.intellij.openapi.vfs.readText
 import github.zimo.autojsx.icons.ICONS
+import github.zimo.autojsx.util.GradleUtils.isGradleProject
 import io.vertx.core.json.JsonObject
+import java.io.ByteArrayOutputStream
 import java.io.File
 
+/**
+ * 压缩项目
+ * @param file 选择的文件
+ * @param project 项目
+ */
+fun zipProject(
+    file: VirtualFile,
+    project: Project?,
+): ZipProjectResult {
+    val info = ZipProjectJsonInfo.findProjectJsonInfo(file, project)
 
-inline fun zipProject(file: VirtualFile, project: Project?, crossinline zipCaller: (AutoJsProjectInfo) -> Unit) {
-    val projectJSON = "project.json"
-    var jsonFile: VirtualFile? = null
-    jsonFile = if (file.isDirectory) {
-        findFile(file, projectJSON)
-    } else {
-        file
-    }
-    if (jsonFile != null && jsonFile.exists()) {
-        val projectJson = File(jsonFile.path)
-        val json = JsonObject(projectJson.readText())
-        runServer(project)
-        val projectName = json.getString("name") ?: project?.name ?: "none"
-        val isObfuscator = json.getBoolean("obfuscator") ?: false
+    if (info == null) logE("无法压缩文件夹，该文件夹不是一个项目文件夹: 无法找到 project.json 文件")
 
-        val outputPath = project?.basePath + File.separator + "build-output"
-        val name = json.getString("name")
-        var src = projectJson.resolve(json.getString("srcPath")).canonicalFile
-        // 检查 resources 下是否有 obfuscator.json 文件
-        val obfuscatorFile = File(jsonFile.parent.path).resolve("obfuscator.js")
-        if (!obfuscatorFile.exists()) {
-            obfuscatorFile.createNewFile()
-            ICONS::class.java.getResourceAsStream("/obfuscator.js")?.readAllBytes()
-                ?.let { obfuscatorFile.writeBytes(it) }
-        }
-        // 释放 node_modules.zip
-        if (isObfuscator) {
-            val modules = File(outputPath + File.separator + "obfuscator" + File.separator + "lib")
-            if (!modules.exists()) ICONS::class.java.getResourceAsStream("/node_modules.zip")?.unzip(modules)
-            // 创建临时混淆目录
-            src = dirObfuscator(
-                src,
-                outputPath + File.separator + "obfuscator" + File.separator + projectName,
-                obfuscatorFile,
-                modules
-            )
-        }
-        val resources = projectJson.resolve(json.getString("resources")).canonicalFile
-        val lib = projectJson.resolve(json.getString("lib")).canonicalFile
-
-        val zip = File(project?.basePath + "/build-output" + "/${name}.zip")
-        zip.parentFile.mkdirs()
-        if (zip.exists()) zip.delete()
-
-        executor.submit {
-            zip(
-                arrayListOf(src.path, resources.path, lib.path),
-                outputPath + File.separator + "${name}.zip"
-            )
-            zipCaller(
-                AutoJsProjectInfo(
-                    zip.canonicalPath,
-                    projectJson.path,
-                    src.path,
-                    resources.path,
-                    lib.path,
-                    name,
-                    false
-                )
-            )
-        }
-        return
-    }
-    logE("项目无法压缩: 选择的文件夹没有包含项目描述文件 'project.json'")
-}
-
-fun dirObfuscator(src: File, outputPath: String, obfuscatorFile0: File, modules0: File): File {
-    val obfuscator = File(outputPath)
-    obfuscator.delete()
-    obfuscator.mkdirs()
-    if (src.isDirectory) src.listFiles()?.forEach { file ->
-        if (file.isDirectory) {
-            dirObfuscator(file, outputPath, obfuscatorFile0, modules0)
-        } else {
-            if (file.name.endsWith(".js")) {
-                val obfuscatorPath = obfuscator.canonicalPath
-                val obfuscatorFile = File(obfuscatorPath + File.separator + file.name)
-                if (!obfuscatorFile.exists()) {
-                    obfuscatorFile.createNewFile()
-                }
-                obfuscatorFile.writeText(obfuscate(file.readText(), obfuscatorFile.path, obfuscatorFile0, modules0)!!)
+    val paths = ArrayList<String>().apply {
+        info?.lib?.canonicalPath?.let { add(it) }
+        info?.resources?.canonicalPath?.let { add(it) }
+        info?.src?.canonicalPath?.let { add(it) }
+        // 检测是否是 Gradle 项目
+        if (project != null && isGradleProject(project)) {
+            // 没有 src 的情况，并且项目是 Gradle 项目。放入根目录
+            if (info?.src == null) {
+                add(File(file.path).canonicalPath)
+            } else {
+                logW("该项目是一个 Gradle 构建的。 Kotlin/Js 项目，请不要在该项目下创建并运行 Autojs 原生项目，这可能会拖慢原生项目的上传到设备的时间")
             }
         }
+
     }
-    return obfuscator
+
+    return ByteArrayOutputStream().let {
+        zip(paths, null, it)
+        return@let ZipProjectResult(info ?: ZipProjectJsonInfo(File(file.path)), it.toByteArray())
+    }
 }
+
+data class ZipProjectResult(
+    val info: ZipProjectJsonInfo,
+    val bytes: ByteArray,
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ZipProjectResult
+
+        if (info != other.info) return false
+        if (!bytes.contentEquals(other.bytes)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = info.hashCode()
+        result = 31 * result + bytes.contentHashCode()
+        return result
+    }
+}
+
+data class ZipProjectJsonInfo(
+    val projectJson: File,
+    val src: File? = null,
+    val resources: File? = null,
+    val lib: File? = null,
+    val name: String = "Debug",
+) {
+    companion object {
+        fun from(projectJson: File, project: Project?): ZipProjectJsonInfo {
+            val json = JsonObject(projectJson.readText())
+            return ZipProjectJsonInfo(
+                projectJson = projectJson,
+                src = projectJson.resolve(json.getString("srcPath") ?: "autojs_null_paeg85132eg").let {
+                    if (it.exists()) it else null
+                },
+                resources = projectJson.resolve(json.getString("resources") ?: "autojs_null_paeg85132eg").let {
+                    if (it.exists()) it else null
+                },
+                lib = projectJson.resolve(json.getString("lib") ?: "autojs_null_paeg85132eg").let {
+                    if (it.exists()) it else null
+                },
+                name = json.getString("name") ?: project?.name ?: "Debug",
+            )
+        }
+
+        fun findProjectJsonInfo(file: VirtualFile, project: Project?): ZipProjectJsonInfo? {
+            if (file.isDirectory && file.children.isEmpty()) return null
+            if (file.isFile && file.name == "project.json")
+                return runCatching { from(File(file.path), project) }.getOrNull()
+            if (file.isFile && file.name != "project.json") return null
+            val projectJson = file.let {
+                if (it.isDirectory) findFile(it, "project.json") else it
+            }?.let {
+                if (!it.exists()) null else File(it.path)
+            }.let {
+                it
+                    ?: throw IllegalArgumentException("无法压缩文件夹，该文件夹不是一个项目文件夹: 无法找到 project.json 文件")
+            }
+
+            return runCatching { from(projectJson, project) }.getOrNull()
+        }
+    }
+
+    fun isAutoJsProject(): Boolean {
+        return src != null && resources != null && lib != null
+    }
+}
+
 
 data class AutoJsProjectInfo(
     val zipPath: String,

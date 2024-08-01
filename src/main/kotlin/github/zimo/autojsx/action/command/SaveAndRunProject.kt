@@ -4,16 +4,12 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.fileChooser.FileChooserFactory
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
-import github.zimo.autojsx.server.VertxCommandServer
+import github.zimo.autojsx.server.VertxCommand
 import github.zimo.autojsx.util.*
-import io.vertx.core.json.JsonObject
-import java.io.File
 
 class SaveAndRunProject :
-    AnAction("上传并运行项目","打包项目到APP并运行",github.zimo.autojsx.icons.ICONS.SAVE_RUN_16) {
-    private val projectJSON = "project.json"
+    AnAction("上传并运行项目", "打包项目到APP并运行", github.zimo.autojsx.icons.ICONS.SAVE_RUN_16) {
+
     override fun actionPerformed(e: AnActionEvent) {
         val dialog = FileChooserFactory.getInstance()
             .createFileChooser(FileChooserDescriptorFactory.createSingleFolderDescriptor(), e.project, null)
@@ -22,50 +18,19 @@ class SaveAndRunProject :
 
         if (files.isNotEmpty()) {
             val dir = files[0]
-//            runProject(dir,e.project)
-            zipProject(dir,e.project){
-                VertxCommandServer.Command.saveProject(it.zipPath)
-                VertxCommandServer.Command.runProject(it.zipPath)
-                logI("项目正在上传: " + it.projectJsonPath)
-                logI("正在上传 src: " + it.srcPath)
-                logI("项目正在上传 resources: " + it.resourcesPath)
-                logI("项目正在上传 lib: " + it.libPath+"\r\n")
+            zipProject(files.last(), e.project).apply {
+                logI("预运行项目: " + info.projectJson)
+                logI("├──> 项目 src: " + info.src?.canonicalPath)
+                logI("├──> 项目 resources: " + info.resources?.canonicalPath)
+                logI("└──> 项目 lib: " + info.lib?.canonicalPath + "\r\n")
+                if (info.src == null) {
+                    logE("无法运行该项目，该文件夹不是一个项目文件夹: src 为空")
+                    return
+                }
+                VertxCommand.saveProject(bytes, info.name)
+                VertxCommand.runProject(bytes, info.name)
             }
         }
     }
 
-    @Deprecated("todo")
-    private fun runProject(file: VirtualFile, project: Project?) {
-        val jsonFile = findFile(file, projectJSON)
-        if (jsonFile != null) {
-            val projectJson = File(jsonFile.path)
-            val json = JsonObject(projectJson.readText())
-            runServer(project)
-            val name = json.getString("name")
-            val src = projectJson.resolve(json.getString("srcPath")).canonicalFile
-            //TODO 创建临时混淆目录，并混淆，如果开启了混淆
-            val resources = projectJson.resolve(json.getString("resources")).canonicalFile
-            val lib = projectJson.resolve(json.getString("lib")).canonicalFile
-
-            val zip = File(project?.basePath + "/build-output" + "/${name}.zip")
-            zip.parentFile.mkdirs()
-            if (zip.exists()) zip.delete()
-
-            executor.submit {
-                zip(
-                    arrayListOf(src.path, resources.path, lib.path),
-                    project?.basePath + File.separator + "build-output" + File.separator + "${name}.zip"
-                )
-                VertxCommandServer.Command.saveProject(zip.canonicalPath)
-                VertxCommandServer.Command.runProject(zip.canonicalPath)
-                logI("项目正在上传: " + projectJson.path)
-                logI("正在上传 src: " + src.path)
-                logI("项目正在上传 resources: " + resources.path)
-                logI("项目正在上传 lib: " + lib.path+"\r\n")
-//                if (zip.exists()) zip.delete()
-            }
-            return
-        }
-        logE("项目无法上传: 选择的文件夹没有包含项目描述文件 'project.json'" )
-    }
 }

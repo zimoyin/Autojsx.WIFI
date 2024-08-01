@@ -7,9 +7,10 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.vfs.VirtualFile
-import github.zimo.autojsx.server.VertxCommandServer
+import github.zimo.autojsx.server.VertxCommand
 import github.zimo.autojsx.util.logE
 import github.zimo.autojsx.util.runServer
+import github.zimo.autojsx.window.AutojsxConsoleWindow
 
 
 /**
@@ -19,6 +20,7 @@ class DocRunButton :
     AnAction(github.zimo.autojsx.icons.ICONS.START_16) {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project
+        AutojsxConsoleWindow.show(project)
         runServer(project)
         if (project != null) {
             val fileEditorManager = FileEditorManager.getInstance(project)
@@ -37,9 +39,9 @@ class DocRunButton :
 
             if (selectedEditor != null) {
                 val selectedFile: VirtualFile = fileEditorManager.selectedFiles[0]
-                //TODO 创建临时混淆目录，并混淆，如果开启了混淆
                 runCatching {
-                    VertxCommandServer.Command.rerunJS(selectedFile.path)
+                    VertxCommand.rerunJS(selectedFile.path)
+                    AutojsxConsoleWindow.show(project)
                 }.onFailure {
                     logE("js脚本网络引擎执行失败${selectedFile.path} ", it)
                 }

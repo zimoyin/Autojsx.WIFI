@@ -2,7 +2,7 @@ package github.zimo.autojsx.action.command
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import github.zimo.autojsx.server.VertxCommandServer
+import github.zimo.autojsx.server.VertxCommand
 import github.zimo.autojsx.util.base64_image_toFile
 import github.zimo.autojsx.util.executor
 import github.zimo.autojsx.util.logI
@@ -18,7 +18,7 @@ class Screenshot :
         executor.submit {
             logI("正在截图")
             val times = System.currentTimeMillis()
-            VertxCommandServer.Command.getScreenshot({
+            VertxCommand.getScreenshot({
                 if (it.isEmpty()) {
                     logW("截图失败没有获取屏幕截图 base64")
                     return@getScreenshot

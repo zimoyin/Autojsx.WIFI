@@ -13,6 +13,7 @@ import javax.swing.JPanel
 import javax.swing.SwingUtilities
 
 
+@Deprecated("移除 V8")
 class BrowserWindow : ToolWindowFactory {
     object Const {
         val browser = JBCefBrowser().apply {

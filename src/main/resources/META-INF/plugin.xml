@@ -44,7 +44,7 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <depends>com.intellij.modules.platform</depends>
-
+    <depends>com.intellij.gradle</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <moduleType
@@ -57,9 +57,6 @@
         <!--<fileIconProvider implementation="github.zimo.autojsx.filetree.CustomFileIconProvider"/>-->
         <iconProvider implementation="github.zimo.autojsx.filetree.CustomIconProvider"/>
 
-        <!--<notificationGroup id="AutojsNotifier"-->
-        <!--                   displayType="BALLOON"-->
-        <!--                   key="notification.group.name"/>-->
 
         <notificationGroup id="AutojsNotifier"
                            displayType="BALLOON"/>
@@ -70,12 +67,8 @@
                     secondary="false"
                     icon="icons/logo.png"
         />
-        <toolWindow id="AutojsxConfusing"
-                    anchor="right"
-                    factoryClass="github.zimo.autojsx.window.BrowserWindow"
-                    secondary="false"
-                    icon="icons/logo.png"
-        />
+
+
 
     </extensions>
 
@@ -95,18 +88,21 @@
                 description="保存到设备">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
         </action>
-        <action id="runAutojsToRightDir" class="github.zimo.autojsx.action.run.dir.DirRunButton" text="Run Autojsx Project"
-                description="Run auto js">
+        <action id="runAutojsToRightDir" class="github.zimo.autojsx.action.run.dir.DirRunButton"
+                text="Run Autojsx Project"
+                description="运行当前项目">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
         </action>
         <!-- 工具菜单 -->
         <group id="AutojsMenu" text="Autojs" popup="true">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <action id="AutoJsMenu" class="github.zimo.autojsx.action.command.AutoMenu" text="My Action" description="My Action Description"/>
+            <action id="AutoJsMenu" class="github.zimo.autojsx.action.command.AutoMenu" text="My Action"
+                    description="My Action Description"/>
         </group>
         <!-- 运行按钮: 新UI 无显示 -->
         <!-- TODO 重构为运行配置形式，复用原有的 IDEA 运行按钮 -->
-        <action id="StopAllButtonAutojs" class="github.zimo.autojsx.action.run.top.StopAllButton" text="Stop All Autojsx"
+        <action id="StopAllButtonAutojs" class="github.zimo.autojsx.action.run.top.StopAllButton"
+                text="Stop All Autojsx"
                 description="StopAllButton">
             <add-to-group group-id="RunnerActions" anchor="first"/>
         </action>
@@ -124,15 +120,16 @@
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
         <!--<action id="runAutojsToRightEditor" class="github.zimo.autojsx.action.run.top.TopRunButton" text="运行当前项目"-->
-        <action id="runAutojsToRightEditor" class="github.zimo.autojsx.action.run.doc.DocRunProjectButton" text="运行当前项目"
+        <action id="runAutojsToRightEditor" class="github.zimo.autojsx.action.run.doc.DocRunProjectButton"
+                text="运行当前项目"
                 description="Run auto js">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
 
-<!--        <action id="runAutojsToRightEditor1" class="github.zimo.autojsx.action.run.top.TopRunButton" text="Run Autojsx Project"-->
-<!--                description="Run auto js">-->
-<!--            <add-to-group group-id="EditorPopupMenu" anchor="last"/>-->
-<!--        </action>-->
+        <!--        <action id="runAutojsToRightEditor1" class="github.zimo.autojsx.action.run.top.TopRunButton" text="Run Autojsx Project"-->
+        <!--                description="Run auto js">-->
+        <!--            <add-to-group group-id="EditorPopupMenu" anchor="last"/>-->
+        <!--        </action>-->
 
     </actions>
 
