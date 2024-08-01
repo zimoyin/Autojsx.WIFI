@@ -39,11 +39,13 @@ object VertxServer {
             } else {
                 logE("服务器无法被终止", it.cause())
             }
+        }.apply {
+            vertx = null
         }
         selectDevicesWs.clear()
         devicesWs.clear()
+        content.clear()
         isStart = false
-        vertx = null
         return close
     }
 

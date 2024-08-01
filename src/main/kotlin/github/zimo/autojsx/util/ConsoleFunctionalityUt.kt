@@ -45,7 +45,7 @@ fun selectDevice() {
                 if (checkBox.isSelected) {
                     result.append("✔ ").append(checkBox.text).append("\n")
                 } else {
-                    result.append("□").append(checkBox.text).append("\n")
+                    result.append("  ").append(checkBox.text).append("\n")
                 }
             }
         }
@@ -82,9 +82,7 @@ fun runningScriptList(project: Project) {
             project
         )
     }
-
     executor.submit {
-        runServer(project)
         runningScriptCheckBox {
             result = true
         }

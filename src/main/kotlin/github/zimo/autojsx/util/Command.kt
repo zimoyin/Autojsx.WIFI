@@ -33,7 +33,7 @@ fun zipProject(
             if (info?.src == null) {
                 add(File(file.path).canonicalPath)
             } else {
-                logW("该项目是一个 Gradle 构建的。 Kotlin/Js 项目，请不要在该项目下创建并运行 Autojs 原生项目，这可能会拖慢原生项目的上传到设备的时间")
+                logW("你正在 Gradle 构建的 Kotlin/Js 环境下执行，Autojs 原生项目")
             }
         }
 

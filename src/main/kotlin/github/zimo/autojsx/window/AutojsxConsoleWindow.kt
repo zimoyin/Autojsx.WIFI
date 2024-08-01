@@ -15,7 +15,9 @@ import com.intellij.ui.dsl.builder.panel
 import github.zimo.autojsx.icons.ICONS
 import github.zimo.autojsx.server.ConsoleOutput
 import github.zimo.autojsx.server.Devices
+import github.zimo.autojsx.server.Devices.component
 import github.zimo.autojsx.server.VertxCommand
+import github.zimo.autojsx.server.VertxServer
 import github.zimo.autojsx.util.*
 import org.jetbrains.plugins.gradle.service.project.open.GradleProjectOpenProcessor
 import org.jetbrains.plugins.gradle.service.project.open.canOpenGradleProject
@@ -103,21 +105,24 @@ class AutojsxConsoleWindow : ToolWindowFactory {
                     button("回到底部") {
                         ConsoleOutput.toEnd()
                     }
-                    button("开启服务器") {
-                        runServer(project)
+                    button("开启/关闭服务器") {
+                        if (VertxServer.isStart){
+                            stopServer(project)
+                        }else{
+                            runServer(project)
+                        }
                     }.apply {
-                        component.icon = ICONS.START_SERVER_16
+                        if (VertxServer.isStart){
+                            component.icon = ICONS.STOP_SERVER_16
+                        }else{
+                            component.icon = ICONS.START_SERVER_16
+                        }
                     }
-                    button("关闭服务器") {
-                        stopServer(project)
-                    }.apply {
-                        component.icon = ICONS.STOP_SERVER_16
-                    }
+
                     button("选择设备列表") {
                         selectDevice()
                     }
                     button("选择需要关闭的脚本") {
-                        //TODO 无法关闭脚本，测试示例为死循环 while
                         runningScriptList(project)
                     }
                     button("运行项目") {

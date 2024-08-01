@@ -246,7 +246,7 @@ object VertxCommand {
             "let values = ['http://${VertxServer.getServerIpAddress()}:${VertxServer.port}/receive','${uuid}'];\r\n" + String(
                 readBytes
             )
-        runJs("getRunningList", script, devices)
+        runJs("[SystemScript]GetTheRunningScript", script, devices)
         val startTime = System.currentTimeMillis()
         while ((System.currentTimeMillis() - startTime) < 3000) {
             VertxServer.content["getRunningList"]?.let {
@@ -291,7 +291,7 @@ object VertxCommand {
         if (readBytes.isEmpty()) return
         val script =
             "let values = [$id];\r\n" + String(readBytes)
-        runJs("getRunningList", script, devices)
+        runJs("StopScriptByID", script, devices)
     }
 
     /**
@@ -303,14 +303,13 @@ object VertxCommand {
     ) {
         VertxServer.devicesEmpty(devices)
         var readBytes: ByteArray = ByteArray(0)
-        resourceAsStream("script/StopScriptByName.js")?.apply {
-            readBytes = readBytes()
-            close()
+        resourceAsStream("script/StopScriptByName.js")?.use {
+            readBytes = it.readBytes()
         }
         if (readBytes.isEmpty()) return
         val script =
-            "let values = [$name];\r\n" + String(readBytes)
-        runJs("getRunningList", script, devices)
+            "let values = ['$name'];\r\n" + String(readBytes)
+        runJs("StopScriptByName", script, devices)
     }
 
     /**

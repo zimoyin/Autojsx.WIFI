@@ -104,6 +104,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                 } else {
                     startPromise.fail(http.cause())
                     logE("服务器无法启动在端口$port", http.cause())
+                    VertxServer.stop()
                 }
             }
 

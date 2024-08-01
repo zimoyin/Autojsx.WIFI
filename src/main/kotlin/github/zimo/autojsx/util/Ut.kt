@@ -151,8 +151,8 @@ fun runServer(project: Project?) {
 fun stopServer(project: Project?) {
     if (VertxServer.isStart) {
         VertxCommand.stopAll()
-        VertxServer.stop()
     }
+    VertxServer.stop()
 }
 
 val executor: ExecutorService = Executors.newFixedThreadPool(3)
