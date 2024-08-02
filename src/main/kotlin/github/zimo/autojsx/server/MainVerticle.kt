@@ -79,7 +79,9 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                                     .replace("  "," ")
                                     .replace(" ------------ ", "") + "\r\n"
                             }
-                            ConsoleOutput.println(device, text)
+                            devicesWs.forEach { (key, value) ->
+                                if (value == ws) ConsoleOutput.println(device, text)
+                            }
                         }
                     }
                     if (!returnData.isEmpty) ws.writeTextMessage(returnData.toString())
@@ -114,7 +116,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                 VertxServer.content[jsonObject.getString("message")] = jsonObject
                 context.response().end("ok")
             }.onFailure {
-                logE("接收数据失败", it)
+                logE("receive 接收数据失败", it)
                 context.response().end("error")
             }
         }
@@ -122,6 +124,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
         router.route("/upload_path").handler(BodyHandler.create()).handler { context ->
             kotlin.runCatching {
                 val path = context.body().asString()
+                logI("upload_path $path")
 
                 val file = File(path).apply {
                     if (!exists()) throw FileNotFoundException("文件不存在")
@@ -138,7 +141,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
 
                 context.response().end("ok")
             }.onFailure {
-                logE("接收数据失败", it)
+                logE("upload_path 接收数据失败", it)
                 context.response().apply {
                     statusCode = 500
                     end("error")
@@ -149,6 +152,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
         router.route("/upload_run_path").handler(BodyHandler.create()).handler { context ->
             kotlin.runCatching {
                 val path = context.body().asString()
+                logI("upload_run_path: $path")
 
                 val file = File(path).apply {
                     if (!exists()) throw FileNotFoundException("文件不存在")
@@ -165,7 +169,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
 
                 context.response().end("ok")
             }.onFailure {
-                logE("接收数据失败", it)
+                logE("upload_run_path 接收数据失败", it)
                 context.response().apply {
                     statusCode = 500
                     end("error")

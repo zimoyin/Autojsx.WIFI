@@ -20,15 +20,17 @@ import github.zimo.autojsx.util.logI
 class NewAutoJSON :
     AnAction(github.zimo.autojsx.icons.ICONS.LOGO_16) {
     override fun actionPerformed(e: AnActionEvent) {
+
         val file = e.getData(CommonDataKeys.VIRTUAL_FILE)
         if (file == null || !file.isDirectory) return
+        val name = e.project?.name ?: "Debug"
         //构建结构
         WriteCommandAction.runWriteCommandAction(e.project) {
             file.createChildData(this, "project.json").getOutputStream(this).use { outputStream ->
                 outputStream.write(
                     """
                             |{
-                            |    "name": "${file.name}",
+                            |    "name": "$name",
                             |    "main": "main.js",
                             |    "ignore": [
                             |        "build"
@@ -36,13 +38,12 @@ class NewAutoJSON :
                             |    "launchConfig": {
                             |        "hideLogs": true
                             |    },
-                            |    "packageName": "github.autojsx.${file.name}",
+                            |    "packageName": "github.autojsx.$name",
                             |    "versionName": "1.0.0",
                             |    "srcPath":"./../",
                             |    "resources":"./../",
                             |    "lib":"./../",
                             |    "versionCode": 1,
-                            |    "obfuscator": false
                             |}
                         """.trimMargin().toByteArray()
                 )
@@ -53,6 +54,7 @@ class NewAutoJSON :
     }
 
     override fun update(e: AnActionEvent) {
-        e.presentation.isEnabledAndVisible = (e.project?.modules?.count { ModuleType.get(it).id == MODULE_TYPE_ID } ?: 0) > 0
+        e.presentation.isEnabledAndVisible =
+            (e.project?.modules?.count { ModuleType.get(it).id == MODULE_TYPE_ID } ?: 0) > 0
     }
 }
