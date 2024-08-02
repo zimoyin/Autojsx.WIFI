@@ -4,7 +4,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
-import com.intellij.ui.jcef.*
+import com.intellij.ui.jcef.JBCefBrowser
+import com.intellij.ui.jcef.JBCefClient
 import github.zimo.autojsx.window.BrowserWindow.Const.browser
 import java.awt.BorderLayout
 import java.nio.charset.StandardCharsets

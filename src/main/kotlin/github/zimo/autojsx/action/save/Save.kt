@@ -12,8 +12,6 @@ import github.zimo.autojsx.module.MODULE_TYPE_ID
 import github.zimo.autojsx.server.ConsoleOutput
 import github.zimo.autojsx.server.VertxCommand
 import github.zimo.autojsx.util.*
-import io.vertx.core.json.JsonObject
-import java.io.File
 
 
 class Save :

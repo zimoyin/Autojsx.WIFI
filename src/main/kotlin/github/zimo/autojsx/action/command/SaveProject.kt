@@ -4,12 +4,10 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.fileChooser.FileChooserFactory
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 import github.zimo.autojsx.server.VertxCommand
-import github.zimo.autojsx.util.*
-import io.vertx.core.json.JsonObject
-import java.io.File
+import github.zimo.autojsx.util.logE
+import github.zimo.autojsx.util.logI
+import github.zimo.autojsx.util.zipProject
 
 class SaveProject :
     AnAction("选择上传项目", "保存项目", github.zimo.autojsx.icons.ICONS.SAVE_16) {

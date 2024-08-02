@@ -8,17 +8,10 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.project.modules
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.findDirectory
-import com.intellij.openapi.wm.ToolWindow
-import com.intellij.openapi.wm.ToolWindowManager
-import com.intellij.ui.content.ContentFactory
 import github.zimo.autojsx.module.MODULE_TYPE_ID
 import github.zimo.autojsx.server.VertxCommand
 import github.zimo.autojsx.util.*
-import github.zimo.autojsx.util.GradleUtils.isGradleProject
 import github.zimo.autojsx.window.AutojsxConsoleWindow
-import javax.swing.JScrollPane
-import javax.swing.JTextArea
 
 
 /**

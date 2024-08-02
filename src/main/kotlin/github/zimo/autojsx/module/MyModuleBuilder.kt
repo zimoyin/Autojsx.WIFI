@@ -1,6 +1,5 @@
 package github.zimo.autojsx.module
 
-import com.intellij.ide.lightEdit.intentions.openInProject.GradleProjectRootFinder
 import com.intellij.ide.util.projectWizard.ModuleBuilder
 import com.intellij.ide.util.projectWizard.ModuleWizardStep
 import com.intellij.ide.util.projectWizard.WizardContext
@@ -10,11 +9,9 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModifiableRootModel
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.findOrCreateDirectory
-import com.intellij.openapi.vfs.writeText
-import com.intellij.testFramework.HeavyPlatformTestCase.createChildData
-import com.jetbrains.rd.generator.gradle.GradleGenerationSpec
 import github.zimo.autojsx.util.GradleUtils
+import github.zimo.autojsx.util.findOrCreateDirectory
+import github.zimo.autojsx.util.writeText
 import java.io.File
 import java.io.FileOutputStream
 import java.util.zip.ZipInputStream

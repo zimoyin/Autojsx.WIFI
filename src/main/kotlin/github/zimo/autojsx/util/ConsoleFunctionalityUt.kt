@@ -4,8 +4,6 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import github.zimo.autojsx.server.VertxCommand
 import github.zimo.autojsx.server.VertxServer
-import java.util.ArrayList
-import java.util.HashMap
 import javax.swing.BoxLayout
 import javax.swing.JCheckBox
 import javax.swing.JOptionPane

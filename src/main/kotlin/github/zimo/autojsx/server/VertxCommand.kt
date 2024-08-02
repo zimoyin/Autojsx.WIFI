@@ -3,7 +3,6 @@ package github.zimo.autojsx.server
 import github.zimo.autojsx.pojo.ApplicationListPojo
 import github.zimo.autojsx.pojo.RunningListPojo
 import github.zimo.autojsx.server.AutojsJsonBuilder.Companion.rerunJsFileJson
-import github.zimo.autojsx.server.AutojsJsonBuilder.Companion.runJsFileJson
 import github.zimo.autojsx.server.AutojsJsonBuilder.Companion.runProjectJson
 import github.zimo.autojsx.server.AutojsJsonBuilder.Companion.saveJsFileJson
 import github.zimo.autojsx.server.AutojsJsonBuilder.Companion.saveProjectJson

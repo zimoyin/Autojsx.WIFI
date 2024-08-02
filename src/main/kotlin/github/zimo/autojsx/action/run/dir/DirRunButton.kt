@@ -4,16 +4,15 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
 import com.intellij.openapi.module.ModuleType
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.modules
-import com.intellij.openapi.vfs.VirtualFile
 import github.zimo.autojsx.icons.ICONS
 import github.zimo.autojsx.module.MODULE_TYPE_ID
 import github.zimo.autojsx.server.VertxCommand
-import github.zimo.autojsx.util.*
+import github.zimo.autojsx.util.logE
+import github.zimo.autojsx.util.logI
+import github.zimo.autojsx.util.runServer
+import github.zimo.autojsx.util.zipProject
 import github.zimo.autojsx.window.AutojsxConsoleWindow
-import io.vertx.core.json.JsonObject
-import java.io.File
 
 
 /**

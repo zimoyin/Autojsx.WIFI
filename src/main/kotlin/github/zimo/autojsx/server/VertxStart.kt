@@ -8,8 +8,6 @@ import io.vertx.core.http.ServerWebSocket
 import io.vertx.core.json.JsonObject
 import java.net.InetAddress
 import java.net.NetworkInterface
-import java.util.*
-
 
 
 object VertxServer {

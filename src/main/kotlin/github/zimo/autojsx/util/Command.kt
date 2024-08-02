@@ -2,9 +2,6 @@ package github.zimo.autojsx.util
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.isFile
-import com.intellij.openapi.vfs.readText
-import github.zimo.autojsx.icons.ICONS
 import github.zimo.autojsx.util.GradleUtils.isGradleProject
 import io.vertx.core.json.JsonObject
 import java.io.ByteArrayOutputStream

@@ -1,9 +1,6 @@
 package github.zimo.autojsx.server
 
-import github.zimo.autojsx.server.VertxCommand.md5
-import io.vertx.core.json.Json
 import io.vertx.core.json.JsonObject
-import java.nio.charset.Charset
 import java.util.*
 
 /**

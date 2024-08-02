@@ -1,10 +1,8 @@
 package github.zimo.autojsx.util
 
-import com.intellij.internal.statistic.uploader.ExternalDataCollectorLogger.findDirectory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.findDirectory
 import github.zimo.autojsx.server.MainVerticle
 import java.io.*
 import java.net.URL

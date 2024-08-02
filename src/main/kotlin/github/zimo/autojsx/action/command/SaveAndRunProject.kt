@@ -5,7 +5,9 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.fileChooser.FileChooserFactory
 import github.zimo.autojsx.server.VertxCommand
-import github.zimo.autojsx.util.*
+import github.zimo.autojsx.util.logE
+import github.zimo.autojsx.util.logI
+import github.zimo.autojsx.util.zipProject
 
 class SaveAndRunProject :
     AnAction("上传并运行项目", "打包项目到APP并运行", github.zimo.autojsx.icons.ICONS.SAVE_RUN_16) {

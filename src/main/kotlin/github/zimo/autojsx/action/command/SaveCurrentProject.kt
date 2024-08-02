@@ -2,12 +2,11 @@ package github.zimo.autojsx.action.command
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 import github.zimo.autojsx.server.VertxCommand
-import github.zimo.autojsx.util.*
-import io.vertx.core.json.JsonObject
-import java.io.File
+import github.zimo.autojsx.util.logE
+import github.zimo.autojsx.util.logI
+import github.zimo.autojsx.util.searchProjectJsonByEditor
+import github.zimo.autojsx.util.zipProject
 
 class SaveCurrentProject :
     AnAction("保存当前项目", "保存当前项目", github.zimo.autojsx.icons.ICONS.SAVE_RUN_16) {

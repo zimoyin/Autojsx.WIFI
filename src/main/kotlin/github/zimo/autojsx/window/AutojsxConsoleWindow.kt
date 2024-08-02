@@ -2,10 +2,6 @@ package github.zimo.autojsx.window
 
 import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.ui.ConsoleViewContentType
-import com.intellij.openapi.externalSystem.ExternalSystemConfigurableAware
-import com.intellij.openapi.externalSystem.service.settings.AbstractExternalSystemConfigurable
-import com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil
-import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
@@ -15,13 +11,9 @@ import com.intellij.ui.dsl.builder.panel
 import github.zimo.autojsx.icons.ICONS
 import github.zimo.autojsx.server.ConsoleOutput
 import github.zimo.autojsx.server.Devices
-import github.zimo.autojsx.server.Devices.component
 import github.zimo.autojsx.server.VertxCommand
 import github.zimo.autojsx.server.VertxServer
 import github.zimo.autojsx.util.*
-import org.jetbrains.plugins.gradle.service.project.open.GradleProjectOpenProcessor
-import org.jetbrains.plugins.gradle.service.project.open.canOpenGradleProject
-import org.jetbrains.plugins.gradle.util.GradleConstants
 import java.awt.Dimension
 import java.awt.FlowLayout
 import javax.swing.Box

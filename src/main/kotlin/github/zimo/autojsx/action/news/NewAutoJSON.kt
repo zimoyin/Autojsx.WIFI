@@ -7,12 +7,7 @@ import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.project.modules
 import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.testFramework.HeavyPlatformTestCase.createChildData
-import com.jetbrains.rd.util.getLogger
-import com.jetbrains.rd.util.warn
-import github.zimo.autojsx.icons.ICONS
 import github.zimo.autojsx.module.MODULE_TYPE_ID
-import github.zimo.autojsx.util.logI
 
 /**
  * 新建项目的项目描述文件 json
