@@ -145,6 +145,33 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                 }
             }
         }
+
+        router.route("/upload_run_path").handler(BodyHandler.create()).handler { context ->
+            kotlin.runCatching {
+                val path = context.body().asString()
+
+                val file = File(path).apply {
+                    if (!exists()) throw FileNotFoundException("文件不存在")
+                }
+
+                if (file.isFile) {
+                    VertxCommand.saveJS(path)
+                } else {
+                    val name = file.listFiles()?.first { it.name == "project.json" && it.isFile }.let {
+                        runCatching { JsonObject(it?.readText()).getString("name") }.getOrElse { path }
+                    }
+                    VertxCommand.runProject(zipBytes(path), name)
+                }
+
+                context.response().end("ok")
+            }.onFailure {
+                logE("接收数据失败", it)
+                context.response().apply {
+                    statusCode = 500
+                    end("error")
+                }
+            }
+        }
         router.route("/*").handler(StaticHandler.create())
     }
 
