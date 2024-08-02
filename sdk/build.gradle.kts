@@ -96,6 +96,7 @@ fun KotlinJsTargetDsl.taskList() {
             // Get Response
             val responseCode = connection.responseCode
             println("Response Code : $responseCode")
+            if (responseCode != 200) throw RuntimeException("Failed : HTTP error code : $responseCode")
 
             connection.disconnect()
         }
@@ -122,6 +123,7 @@ fun KotlinJsTargetDsl.taskList() {
             // Get Response
             val responseCode = connection.responseCode
             println("Response Code : $responseCode")
+            if (responseCode != 200) throw RuntimeException("Failed : HTTP error code : $responseCode")
 
             connection.disconnect()
         }
