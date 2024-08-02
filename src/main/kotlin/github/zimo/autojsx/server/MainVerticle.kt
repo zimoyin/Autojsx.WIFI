@@ -79,7 +79,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                                     .replace("  "," ")
                                     .replace(" ------------ ", "") + "\r\n"
                             }
-                            devicesWs.forEach { (key, value) ->
+                            selectDevicesWs.forEach { (key, value) ->
                                 if (value == ws) ConsoleOutput.println(device, text)
                             }
                         }
