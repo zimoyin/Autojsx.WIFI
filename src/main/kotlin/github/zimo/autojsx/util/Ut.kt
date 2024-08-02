@@ -164,7 +164,7 @@ fun base64_image_toFile(
     times: Long = System.currentTimeMillis(),
 ): File {
     val image = base64_image(base64)
-    val file = File(basePath + File.separator + "/build-output/images/$times/${UUID.randomUUID()}.png")
+    val file = File(basePath + File.separator + "/build/autojs/images/$times.png")
     file.parentFile.mkdirs()
     ImageIO.write(image, "png", file)
     return file

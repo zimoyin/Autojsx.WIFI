@@ -18,13 +18,13 @@ class AnalysisPageNode :
             return
         }
         VertxCommand.getNodes({
-            val zip = File(e.project?.basePath + "/build-output" + "/node/${System.currentTimeMillis()}.xml")
-            zip.parentFile.mkdirs()
-            zip.writeText(it)
+            val nodeFile = File(e.project?.basePath + "/build/autojs/cache/page_node_xml/${System.currentTimeMillis()}.xml")
+            nodeFile.parentFile.mkdirs()
+            nodeFile.writeText(it)
             if (it.trim().isEmpty()){
                 logE("无法获取到节点,请查看手机是否提示授权,或者提示开启无障碍模式/服务")
             }else{
-                logI("保存节点文件: ${zip.canonicalPath}")
+                logI("保存节点文件: ${nodeFile.canonicalPath}")
             }
         })
     }

@@ -7,6 +7,7 @@ import com.intellij.openapi.fileChooser.FileChooserFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import github.zimo.autojsx.server.VertxCommand
+import github.zimo.autojsx.server.VertxCommand.runProject
 import github.zimo.autojsx.util.*
 import java.io.File
 
@@ -21,19 +22,10 @@ class SaveDir :
 
         if (files.isNotEmpty()) {
             val dir = files[0]
-            runProject(dir, e.project)
-        }
-    }
-
-    private fun runProject(file: VirtualFile, project: Project?) {
-        runServer(project)
-        val zip = File(project?.basePath + "/build-output" + "/${file.name}.zip")
-        zip.parentFile.mkdirs()
-        if (zip.exists()) zip.delete()
-
-        executor.submit {
-            logI("文件夹正在上传: " + file.path)
-            VertxCommand.saveProject(zipBytes(file.path),file.path)
+            zipProject(dir,e.project).apply{
+                logI("文件夹正在上传: $dir")
+                VertxCommand.saveProject(bytes,dir.path)
+            }
         }
     }
 }

@@ -89,7 +89,7 @@
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
         </action>
         <action id="runAutojsToRightDir" class="github.zimo.autojsx.action.run.dir.DirRunButton"
-                text="Run Autojsx Project"
+                text="运行项目"
                 description="运行当前项目">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
         </action>

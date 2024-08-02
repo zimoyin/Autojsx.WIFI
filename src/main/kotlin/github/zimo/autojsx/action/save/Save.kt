@@ -26,20 +26,21 @@ class Save :
     override fun actionPerformed(e: AnActionEvent) {
         val file = e.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
         runServer(e.project)
+        logI("选中: $file")
         //保存文件夹
         if (file.isDirectory) {
             saveDir(file, e.project, true)
-            logI("js 文件保存成功: ${file.path}")
         } else {//保存文件
             runCatching {
                 if (file.name == ProjectJSON) {
                     showCheckboxMessageDialog()
                     if (isSaveProject) {
-                        saveDir(file.parent, e.project, false)
+                        saveDir(file, e.project, false)
                         return
                     }
+                } else {
+                    VertxCommand.saveJS(file.path)
                 }
-                VertxCommand.saveJS(file.path)
             }.onFailure {
                 ConsoleOutput.systemPrint("js脚本网络引擎执行失败${file.path} /E \r\n" + it.caseString())
             }
@@ -47,16 +48,16 @@ class Save :
     }
 
     fun saveDir(file: VirtualFile, project: Project?, showDialog: Boolean = true) {
-        val jsonFile = findFile(file, ProjectJSON)
+        val jsonFile = if (file.name == "project.json") file else findFile(file, ProjectJSON)
         if (jsonFile != null) {
             if (showDialog) showCheckboxMessageDialog()
             if (isSaveProject) {
-                zipProject(jsonFile,project).apply{
+                zipProject(file, project).apply {
                     logI("预运行项目: " + info.projectJson)
                     logI("├──> 项目 src: " + info.src?.canonicalPath)
                     logI("├──> 项目 resources: " + info.resources?.canonicalPath)
                     logI("└──> 项目 lib: " + info.lib?.canonicalPath + "\r\n")
-                    VertxCommand.runProject(bytes, info.name)
+                    VertxCommand.saveProject(bytes, info.name)
                 }
                 // 保存项目压缩包完成后就不执行下面的上传文件夹逻辑
                 return
@@ -65,13 +66,8 @@ class Save :
 
         // 如果不是项目文件，就上次文件夹压缩包
         executor.submit {
-            val zip = File(project?.basePath + File.separator + "build-output" + File.separator + "${file.name}.zip")
-            zip(
-                arrayListOf(file.path),
-                project?.basePath + File.separator + "build-output" + File.separator + "${file.name}.zip"
-            )
-            VertxCommand.saveProject(zip.canonicalPath)
-            ConsoleOutput.systemPrint("项目正在上传/I: " + file.path)
+            VertxCommand.saveProject(zipBytes(file.path), file.path)
+            ConsoleOutput.systemPrint("上传文件夹/I: " + file.path)
         }
     }
 
@@ -108,6 +104,7 @@ class Save :
     }
 
     override fun update(e: AnActionEvent) {
-        e.presentation.isEnabledAndVisible = (e.project?.modules?.count { ModuleType.get(it).id == MODULE_TYPE_ID } ?: 0) > 0
+        e.presentation.isEnabledAndVisible =
+            (e.project?.modules?.count { ModuleType.get(it).id == MODULE_TYPE_ID } ?: 0) > 0
     }
 }

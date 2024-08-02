@@ -31,7 +31,8 @@ fun zipProject(
         if (project != null && isGradleProject(project)) {
             // 没有 src 的情况，并且项目是 Gradle 项目。放入根目录
             if (info?.src == null) {
-                add(File(file.path).canonicalPath)
+                if (file.isFile) add(File(file.parent.path).canonicalPath)
+                else add(File(file.path).canonicalPath)
             } else {
                 logW("你正在 Gradle 构建的 Kotlin/Js 环境下执行，Autojs 原生项目")
             }
