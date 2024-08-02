@@ -6,7 +6,10 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.module.ModuleType
+import com.intellij.openapi.project.modules
 import com.intellij.openapi.vfs.VirtualFile
+import github.zimo.autojsx.module.MODULE_TYPE_ID
 import github.zimo.autojsx.server.VertxCommand
 import github.zimo.autojsx.util.logE
 import github.zimo.autojsx.util.runServer
@@ -53,6 +56,6 @@ class DocRunButton :
         super.update(e)
         val file = e.getData(CommonDataKeys.VIRTUAL_FILE)
         val isJsFile = file != null && "js" == file.extension
-        e.presentation.isEnabledAndVisible = isJsFile
+        e.presentation.isEnabledAndVisible = isJsFile && (e.project?.modules?.count { ModuleType.get(it).id == MODULE_TYPE_ID } ?: 0) > 0
     }
 }

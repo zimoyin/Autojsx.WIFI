@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.project.modules
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
@@ -110,9 +111,8 @@ class NewAutoJSX :
     }
 
     override fun update(e: AnActionEvent) {
-        // TODO "The update method used a method marked as unstable"
         e.presentation.isEnabledAndVisible =
-            (e.project?.modules?.count { it.moduleTypeName == MODULE_TYPE_ID } ?: 0) > 0
+            (e.project?.modules?.count { ModuleType.get(it).id == MODULE_TYPE_ID } ?: 0) > 0
     }
 
     private fun createSDK(file: VirtualFile) {

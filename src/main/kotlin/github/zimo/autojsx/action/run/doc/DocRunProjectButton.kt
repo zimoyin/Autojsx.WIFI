@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.module.ModuleType
 import com.intellij.openapi.project.modules
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.findDirectory
@@ -88,8 +89,7 @@ class DocRunProjectButton :
 
 
     override fun update(e: AnActionEvent) {
-        // TODO "The update method used a method marked as unstable"
         e.presentation.isEnabledAndVisible =
-            (e.project?.modules?.count { it.moduleTypeName == MODULE_TYPE_ID } ?: 0) > 0
+            (e.project?.modules?.count { ModuleType.get(it).id == MODULE_TYPE_ID } ?: 0) > 0
     }
 }
