@@ -25,3 +25,6 @@
 2. 使用 new 方法创建一个对象. `JSObject.New(formData_js)` 如: lib.module.FormDataFactory.create
    * 该方法适用于第一种方法无法创建对象的情况下
 3. 使用 js 方法创建对象,并使用 kotlin 接收 `js("new formData_js()")`
+
+# 通过 Html 编写界面UI
+参见 [Autojs与浏览器交互.kt](src%2FjsMain%2Fkotlin%2F%D1%F9%C0%FD%2FAutojs%D3%EB%E4%AF%C0%C0%C6%F7%BD%BB%BB%A5.kt) 和 [web](src%2FjsMain%2Fresources%2Fweb)

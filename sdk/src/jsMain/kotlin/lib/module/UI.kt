@@ -1,5 +1,7 @@
 package lib.module
 
+import lib.packages.android
+
 /**
  *
  * @author : zimo
@@ -36,10 +38,23 @@ external object UI {
     fun showPopupMenu(view: Any, menu: dynamic)
 
     @JsName("web")
-    interface Web{
+    class WebView {
+
+        @JsName("webViewClient")
+        var webViewClient: dynamic
+
+        @JsName("webChromeClient")
+        var webChromeClient: dynamic
+
+        @JsName("evaluateJavascript")
+        fun evaluateJavascript(code: String, b: dynamic)
+
+        @JsName("loadUrl")
         fun loadUrl(url: String)
+
+        @JsName("jsBridge")
         val jsBridge: JsBridge
     }
 
-    val web: Web
+    val web: WebView
 }

@@ -165,6 +165,7 @@ fun KotlinJsTargetDsl.taskList() {
 
         val path = compilations.getByName("main").npmProject.dir.path
         val mainPath = buildFile.parentFile.resolve("build/autojs/compilation")
+        val resource = buildFile.parentFile.resolve("build/processedResources/js/main")
         val mainJs = File(mainPath, "main.js")
 
         if (mainJs.exists() && auto_upload.contains("true")) {
@@ -188,24 +189,13 @@ fun KotlinJsTargetDsl.taskList() {
                 into(mainPath)
             }
 
-            File(path, "kotlin").listFiles()?.filter {
-                it.name.endsWith(".js").not()
-            }?.filter {
-                it.name.endsWith(".mjs").not()
-            }?.filter {
-                it.name.endsWith(".ts").not()
-            }?.filter {
-                it.name.endsWith(".mjs.map").not()
-            }?.forEach {
-                copy {
-                    println(it)
-                    from(it)
-                    into(mainPath)
-                }
+            // 将 resources 文件夹下的内容复制到 mainPath
+            copy {
+                from(resource)
+                into(mainPath)
             }
 
             // main.js 前面添加 ui; 进入UI模式
-            val mainJs = File(mainPath, "main.js")
             if (mainJs.exists() && use_ui.contains("true")) {
                 val content = mainJs.readText()
                 mainJs.writeText("\"ui\";\n$content")
@@ -220,9 +210,11 @@ fun KotlinJsTargetDsl.taskList() {
 
 
         val path = compilations.getByName("main").npmProject.dir.path
+        val configPath = buildFile.parentFile.resolve("config")
         val mainPath = buildFile.parentFile.resolve("build/autojs/compilation")
         val sourceDir = File(path, "kotlin")
         val compilationDir = buildFile.parentFile.resolve("build/autojs/intermediate_compilation_files")
+        val resource = buildFile.parentFile.resolve("build/processedResources/js/main")
         val mainJs = File(mainPath, "main.js")
 
         if (mainJs.exists() && auto_upload.contains("true")) {
@@ -242,10 +234,8 @@ fun KotlinJsTargetDsl.taskList() {
                     into(sourceDir)
                 }
             }
-            // 移动配置文件到 build 项目文件夹下
-            val path = compilations.getByName("main").npmProject.dir.path
-            val configPath = buildFile.parentFile.resolve("config")
 
+            // 移动配置文件到 build 项目文件夹下
             copy {
                 from(configPath)
                 into(File(path))
@@ -265,23 +255,10 @@ fun KotlinJsTargetDsl.taskList() {
                 into(mainPath)
             }
 
-            // 将编译后的文件文件夹内的文件复制到 mainPath
-            File(path, "kotlin").listFiles()?.filter {
-                it.name.endsWith(".js").not()
-            }?.filter {
-                it.name.endsWith(".mjs").not()
-            }?.filter {
-                it.name.endsWith(".ts").not()
-            }?.filter {
-                it.name.endsWith(".mjs.map").not()
-            }?.filter {
-                it.name.endsWith(".js.map").not()
-            }?.forEach {
-                copy {
-                    println(it)
-                    from(it)
-                    into(mainPath)
-                }
+            // 将 resources 文件夹下的内容复制到 mainPath
+            copy {
+                from(resource)
+                into(mainPath)
             }
 
             // main.js 前面添加 "ui"; 进入UI模式

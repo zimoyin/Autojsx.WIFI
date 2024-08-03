@@ -4,22 +4,21 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import lib.kotlin.*
-import lib.module.Thread
-import lib.module.getName
-import lib.module.open
-import lib.module.sleep
+
+import lib.module.*
 import kotlin.js.json
 
 /**
- * 插件：
- * 修复bug
- * 监听打包并根据配置文件进行相应操作（运行，上传等）
- * 运行脚本，拉起控制台
+ * SDK 已经实现大部分 autojs api ，并且支持协程，线程，文件，序列化，JS 脚本，线程，访问文件，以及 JSON
+ * 1. 特有的方法会有 byKotlin 的后缀
+ * 2. lib/kotlin 包下基本都是 kotlin 实现的内容
+ * 3. kotlin 特有的 json 对象你需要使用 .toJsonByJs 进行转换，如果需要字符串则需要 .toSring
+ * 4. kotlin.js.Json 类是 js 的声明类。如果需要转为 String 需要 toJsonString 而不是 toSring
+ * 5. 所有模块全部是驼峰命名，不是驼峰命名的则是包
  */
 fun main() {
     test0()
 }
-
 
 @JsName("test0")
 fun test0() {
@@ -87,6 +86,7 @@ fun test5() {
 // 序列化
 @Serializable
 data class User(val name: String, val age: Int)
+
 fun test6() {
     val user = User("Alice", 25)
 

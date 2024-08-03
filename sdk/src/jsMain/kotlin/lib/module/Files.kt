@@ -74,7 +74,7 @@ external object Files {
      * @param path 文件路径
      * @return 文件字节内容
      */
-    fun readBytes(path: String): Array<Byte>
+    fun readBytes(path: String): ByteArray
 
     /**
      * 写入文件内容
@@ -89,7 +89,7 @@ external object Files {
      * @param path 文件路径
      * @param bytes 文件字节内容
      */
-    fun writeBytes(path: String, bytes: Array<Byte>): Unit
+    fun writeBytes(path: String, bytes: ByteArray): Unit
 
     /**
      * 追加文件内容
@@ -105,7 +105,7 @@ external object Files {
      * @param bytes 追加的字节内容
      * @param encoding 编码
      */
-    fun appendBytes(path: String, bytes: Array<Byte>, encoding: String? = definedExternally): Unit
+    fun appendBytes(path: String, bytes: ByteArray, encoding: String? = definedExternally): Unit
 
     /**
      * 复制文件
@@ -199,5 +199,23 @@ external object Files {
      * @param filter 过滤器函数
      * @return 符合条件的文件列表
      */
-    fun listDir(path: String, filter: (filename: String) -> Boolean): Array<String>
+    fun listDir(path: String, filter: ((filename: String) -> Boolean)? = definedExternally): Array<String>
+
+    /**
+     *
+     * @mode {string} 文件打开模式，包括:
+     *      r: 只读文本模式。该模式下只能对文件执行文本读取操作。
+     *      w: 只写文本模式。该模式下只能对文件执行文本覆盖写入操作。
+     *      a: 附加文本模式。该模式下将会把写入的文本附加到文件末尾。
+     *      rw: 随机读写文本模式。该模式下将会把写入的文本附加到文件末尾。
+     *      目前暂不支持二进制模式，随机读写模式。
+     * @encoding {string} 字符编码。
+     * @bufferSize {number} 文件读写的缓冲区大小。
+     */
+    fun open(
+        path: String,
+        mode: String /* 'r' */,
+        encoding: String? = definedExternally,
+        bufferSize: Int? = definedExternally
+    ): PReadableTextFile
 }

@@ -1,6 +1,7 @@
 package lib.kotlin
 
 import kotlinx.serialization.json.*
+import kotlin.reflect.KClass
 
 /**
  * Js 对象内置方法，以及 Kotlin 对其拓展的方法
@@ -38,7 +39,7 @@ external object JSObject {
  * @param args 参数
  */
 fun JSObject.New(constructor: dynamic, vararg args: dynamic): dynamic {
-    if (Typeof(constructor)  != "function"){
+    if (Typeof(constructor) != "function") {
         throw RuntimeException("First parameter is not a constructor function")
     }
 
@@ -165,4 +166,35 @@ fun JSObject.forEachKey(obj: dynamic, callback: (key: String) -> Unit) {
             })
         """
     )
+}
+
+object JavaClass {
+    val Class = js("java.lang.Class")
+
+    fun getClass(name: String): dynamic {
+        return Class.forName(name)
+    }
+
+    fun getJavaAdapter(name: String): dynamic {
+        return eval(name)
+    }
+}
+
+@JsName("globalThis")
+external val globalThis: dynamic
+
+/**
+ * https://rhino.github.io/tutorials/scripting_java/#the-javaadapter-constructor
+ */
+@JsName("JavaAdapter")
+external class JavaAdapter(javaIntfOrClass: dynamic, javascriptObject: Any) {
+    constructor(javaIntfOrClass: dynamic, interfaces: Array<dynamic>, javascriptObject: Any)
+}
+
+fun JavaAdapterByKotlin(fullyQualifiedName: String, javascriptObject: Any): JavaAdapter {
+    return JavaAdapter(JavaClass.getJavaAdapter(fullyQualifiedName), javascriptObject)
+}
+
+fun JavaAdapterByKotlin(fullyQualifiedName: String, interfaces: Array<String>, javascriptObject: Any): JavaAdapter {
+    return JavaAdapter(JavaClass.getJavaAdapter(fullyQualifiedName),interfaces, javascriptObject)
 }

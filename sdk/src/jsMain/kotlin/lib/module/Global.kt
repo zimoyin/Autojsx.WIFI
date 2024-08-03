@@ -1,5 +1,6 @@
 package lib.module
 
+import kotlin.js.Console
 import kotlin.js.Promise
 
 /**
@@ -48,7 +49,7 @@ external fun openAppSetting(packageName: String): Boolean
 /**
  * 打印到控制台，并带上换行符。 可以传入多个参数，第一个参数作为主要信息，其他参数作为类似于 printf(3) 中的代替值（参数都会传给 util.format()）。
  */
-external fun log(data: String, vararg args: Any?): Unit
+external fun log(data: Any, vararg args: Any?): Unit
 
 /**
  * 输出函数
@@ -258,6 +259,8 @@ external fun exit(): Unit
 external fun random(): Int;
 external fun random(min: Int, max: Int): Int;
 
+@Suppress("NOTHING_TO_INLINE")
+inline fun Console.trace(message: dynamic, vararg args: Any?): Unit = asDynamic().trace(message) as Unit
 
 /* 全局按键 */
 external fun back(): Boolean

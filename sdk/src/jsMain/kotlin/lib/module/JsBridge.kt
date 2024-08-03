@@ -2,7 +2,7 @@ package lib.module
 
 @JsModule("\$autox")
 @JsNonModule
-external object AutoX {
+external interface AutoX {
 
     /**
      * 注册一个监听函数
@@ -27,7 +27,7 @@ external object AutoX {
  */
 @JsModule("ui.web.jsBridge")
 @JsNonModule
-external object JsBridge {
+external interface JsBridge {
 
     /**
      * 注册一个监听函数
@@ -35,7 +35,7 @@ external object JsBridge {
      * @param handler (data, callBack) =>{}  data->web调用安卓  callBack->callBack("回调web");
      * ((data: String, callBack: (data: String) -> Unit) -> Unit)
      */
-    fun registerHandler(name: String, handler: (data:String, callBack: (data: String)->Unit) -> Unit)
+    fun registerHandler(name: String, handler: (data: String, callBack: (data: String) -> Unit) -> Unit)
 
     /**
      * 调用安卓端
@@ -43,5 +43,16 @@ external object JsBridge {
      * @param data 数据
      * @param handler 安卓回调 (data)=>{} data->web回调
      */
-    fun  callHandler(name: String, data: String, handler: (data:String) -> Unit)
+    fun callHandler(name: String, data: String, handler: (data: String) -> Unit)
 }
+
+fun JsBridge.registerHandlerByKotlin(name: String, handler: (data: JsBridgeData) -> Unit) {
+    registerHandler(name) { data, callBack ->
+        handler(JsBridgeData(data, callBack))
+    }
+}
+
+data class JsBridgeData(
+    val data: String,
+    val reply: (data: String) -> Unit
+)

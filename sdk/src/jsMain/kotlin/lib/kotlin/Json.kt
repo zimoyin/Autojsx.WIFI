@@ -18,7 +18,8 @@ fun kotlin.js.Json.toJsonArray(): JsonArray {
 }
 
 fun kotlin.js.Json.toJsonString(): String {
-    return this.toString()
+    val jsonObj = this
+    return js("JSON.stringify(jsonObj)") as String
 }
 
 fun JsonObject.toJsonByJs(): kotlin.js.Json {
