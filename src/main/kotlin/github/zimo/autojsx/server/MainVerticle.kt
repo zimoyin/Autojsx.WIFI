@@ -1,5 +1,6 @@
 package github.zimo.autojsx.server
 
+import com.intellij.openapi.project.ProjectManager
 import github.zimo.autojsx.server.VertxServer.devicesWs
 import github.zimo.autojsx.server.VertxServer.selectDevicesWs
 import github.zimo.autojsx.util.logE
@@ -145,6 +146,33 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                 context.response().end("ok")
             }.onFailure {
                 logE("upload_path 接收数据失败", it)
+                context.response().apply {
+                    statusCode = 500
+                    end("error")
+                }
+            }
+        }
+
+        router.route("/upload_resources_path").handler(BodyHandler.create()).handler { context ->
+            kotlin.runCatching {
+                val path = context.body().asString()
+                logI("upload_resources_path $path")
+
+                val file = File(path).apply {
+                    if (!exists()) throw FileNotFoundException("文件不存在")
+                }
+
+                if (file.isFile) {
+                    logE("upload_resources_path 不支持上传文件")
+                    return@handler
+                } else {
+                    val name = ProjectManager.getInstance().openProjects.firstOrNull()?.name?.let { "$it/" }?:""
+                    VertxCommand.saveProject(zipBytes(path), "$name/$path")
+                }
+
+                context.response().end("ok")
+            }.onFailure {
+                logE("upload_resources_path 接收数据失败", it)
                 context.response().apply {
                     statusCode = 500
                     end("error")

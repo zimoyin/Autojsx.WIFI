@@ -1,4 +1,1 @@
-
 # 节点窗口：获取节点信息与截图信息,并与之相对应
-# 添加 task  httpUploadResources
-Android:

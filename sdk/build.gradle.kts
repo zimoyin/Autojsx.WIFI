@@ -102,6 +102,33 @@ fun KotlinJsTargetDsl.taskList() {
         }
     }
 
+    tasks.register("httpUploadResources") {
+        group = "autojs"
+
+        doLast {
+            val postData = buildFile.parentFile.resolve("build/processedResources/js/main").canonicalPath
+
+            val connection: HttpURLConnection =
+                URL("http://127.0.0.1:$serverPort/upload_resources_path").openConnection() as HttpURLConnection
+            connection.requestMethod = "POST"
+            connection.doOutput = true
+            connection.setRequestProperty("Content-Type", "application/json")
+
+            // Send request
+            val os = connection.outputStream
+            os.write(postData.toByteArray())
+            os.flush()
+            os.close()
+
+            // Get Response
+            val responseCode = connection.responseCode
+            println("Response Code : $responseCode")
+            if (responseCode != 200) throw RuntimeException("Failed : HTTP error code : $responseCode")
+
+            connection.disconnect()
+        }
+    }
+
     tasks.register("httpUploadProject") {
         group = "autojs"
 
