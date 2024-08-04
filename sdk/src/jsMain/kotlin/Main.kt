@@ -15,8 +15,14 @@ import kotlin.js.json
  * 3. kotlin 特有的 json 对象你需要使用 .toJsonByJs 进行转换，如果需要字符串则需要 .toSring
  * 4. kotlin.js.Json 类是 js 的声明类。如果需要转为 String 需要 toJsonString 而不是 toSring
  * 5. 所有模块全部是驼峰命名，不是驼峰命名的则是包
+ *      * 如 files.open() 在Kotlin 中写为 Files.open() 模块名称首字母需要大写
+ *      * 如 java.net.URL  这是已经被 SDK 所实现的类似包结构，可以直接使用
+ * 6. File/InputStream/OutputStream/FileInputStream/FileOutputStream/URL/URI 已经被实现
+ *
+ * SDK : https://github.com/zimoyin/autojs_kotlin_sdk
  */
 fun main() {
+
     test0()
 }
 

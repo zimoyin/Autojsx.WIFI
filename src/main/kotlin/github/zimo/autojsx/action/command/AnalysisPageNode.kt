@@ -17,7 +17,7 @@ class AnalysisPageNode :
             logW("服务器中未选中设备")
             return
         }
-        VertxCommand.getNodes({
+        VertxCommand.getNodesAsXml({
             val nodeFile = File(e.project?.basePath + "/build/autojs/cache/page_node_xml/${System.currentTimeMillis()}.xml")
             nodeFile.parentFile.mkdirs()
             nodeFile.writeText(it)

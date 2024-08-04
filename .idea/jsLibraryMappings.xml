@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JavaScriptLibraryMappings">
+    <excludedPredefinedLibrary name="Autojsx.WIFI/sdk/build/js/node_modules" />
+    <excludedPredefinedLibrary name="Autojsx.WIFI/sdk/build/js/packages/kotlin_autojs_lib-test/node_modules" />
+    <excludedPredefinedLibrary name="Autojsx.WIFI/sdk/build/js/packages/kotlin_autojs_lib/node_modules" />
+  </component>
+</project>

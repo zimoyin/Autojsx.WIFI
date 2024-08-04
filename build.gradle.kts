@@ -10,6 +10,9 @@ version = "1.0.5"
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://maven.aliyun.com/repository/public")
+    }
 }
 
 // Configure Gradle IntelliJ Plugin
@@ -26,6 +29,9 @@ dependencies {
     // 声明对Kotlin标准库的依赖关系
     implementation(kotlin("test"))
     implementation("io.vertx:vertx-web:4.4.4")
+
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.17.2")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.2")
 }
 
 tasks {

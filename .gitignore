@@ -41,3 +41,5 @@ bin/
 ### Mac OS ###
 .DS_Store
 /src/main/resources/KotlinAndJs/
+/sdk/gradle/
+/sdk/kotlin-js-store/

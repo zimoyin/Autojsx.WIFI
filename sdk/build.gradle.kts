@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.targets.js.npm.npmProject
 import org.jetbrains.kotlin.incremental.deleteDirectoryContents
 import java.io.File
 import java.net.HttpURLConnection
+import java.net.URI
 import java.net.URL
 import java.util.Properties
 
@@ -20,6 +21,9 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    maven {
+        url = URI("https://jitpack.io")
+    }
 }
 
 kotlin {
@@ -43,10 +47,6 @@ kotlin {
                 implementation(devNpm("@babel/cli", "^7.14.0"))
                 implementation(devNpm("@babel/preset-env", "^7.14.0"))
 
-//                implementation(npm("@babel/plugin-transform-runtime", "^7.14.0"))
-//                implementation(npm("@babel/plugin-proposal-class-properties", "^7.14.0"))
-//                implementation(npm("@babel/plugin-transform-arrow-functions", "^7.14.0"))
-
                 // Webpack dependencies
                 implementation(devNpm("webpack", "^5.0.0"))
                 implementation(devNpm("webpack-cli", "^4.0.0"))
@@ -57,9 +57,10 @@ kotlin {
 
 
                 // Kotlin dependencies
-                // Coroutines & serialization
+                // Coroutines & serialization & autojs-kotlin-sdk
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+                implementation("com.github.zimoyin:autojs_kotlin_sdk:1.0.6")
             }
         }
     }
@@ -96,34 +97,6 @@ fun KotlinJsTargetDsl.taskList() {
             // Get Response
             val responseCode = connection.responseCode
             println("Response Code : $responseCode")
-            if (responseCode != 200) throw RuntimeException("Failed : HTTP error code : $responseCode")
-
-            connection.disconnect()
-        }
-    }
-
-    tasks.register("httpUploadResources") {
-        group = "autojs"
-
-        doLast {
-            val postData = buildFile.parentFile.resolve("build/processedResources/js/main").canonicalPath
-
-            val connection: HttpURLConnection =
-                URL("http://127.0.0.1:$serverPort/upload_resources_path").openConnection() as HttpURLConnection
-            connection.requestMethod = "POST"
-            connection.doOutput = true
-            connection.setRequestProperty("Content-Type", "application/json")
-
-            // Send request
-            val os = connection.outputStream
-            os.write(postData.toByteArray())
-            os.flush()
-            os.close()
-
-            // Get Response
-            val responseCode = connection.responseCode
-            println("Response Code : $responseCode")
-            if (responseCode != 200) throw RuntimeException("Failed : HTTP error code : $responseCode")
 
             connection.disconnect()
         }
@@ -150,7 +123,6 @@ fun KotlinJsTargetDsl.taskList() {
             // Get Response
             val responseCode = connection.responseCode
             println("Response Code : $responseCode")
-            if (responseCode != 200) throw RuntimeException("Failed : HTTP error code : $responseCode")
 
             connection.disconnect()
         }
@@ -192,7 +164,6 @@ fun KotlinJsTargetDsl.taskList() {
 
         val path = compilations.getByName("main").npmProject.dir.path
         val mainPath = buildFile.parentFile.resolve("build/autojs/compilation")
-        val resource = buildFile.parentFile.resolve("build/processedResources/js/main")
         val mainJs = File(mainPath, "main.js")
 
         if (mainJs.exists() && auto_upload.contains("true")) {
@@ -216,13 +187,24 @@ fun KotlinJsTargetDsl.taskList() {
                 into(mainPath)
             }
 
-            // 将 resources 文件夹下的内容复制到 mainPath
-            copy {
-                from(resource)
-                into(mainPath)
+            File(path, "kotlin").listFiles()?.filter {
+                it.name.endsWith(".js").not()
+            }?.filter {
+                it.name.endsWith(".mjs").not()
+            }?.filter {
+                it.name.endsWith(".ts").not()
+            }?.filter {
+                it.name.endsWith(".mjs.map").not()
+            }?.forEach {
+                copy {
+                    println(it)
+                    from(it)
+                    into(mainPath)
+                }
             }
 
             // main.js 前面添加 ui; 进入UI模式
+            val mainJs = File(mainPath, "main.js")
             if (mainJs.exists() && use_ui.contains("true")) {
                 val content = mainJs.readText()
                 mainJs.writeText("\"ui\";\n$content")
@@ -237,11 +219,9 @@ fun KotlinJsTargetDsl.taskList() {
 
 
         val path = compilations.getByName("main").npmProject.dir.path
-        val configPath = buildFile.parentFile.resolve("config")
         val mainPath = buildFile.parentFile.resolve("build/autojs/compilation")
         val sourceDir = File(path, "kotlin")
         val compilationDir = buildFile.parentFile.resolve("build/autojs/intermediate_compilation_files")
-        val resource = buildFile.parentFile.resolve("build/processedResources/js/main")
         val mainJs = File(mainPath, "main.js")
 
         if (mainJs.exists() && auto_upload.contains("true")) {
@@ -261,8 +241,10 @@ fun KotlinJsTargetDsl.taskList() {
                     into(sourceDir)
                 }
             }
-
             // 移动配置文件到 build 项目文件夹下
+            val path = compilations.getByName("main").npmProject.dir.path
+            val configPath = buildFile.parentFile.resolve("config")
+
             copy {
                 from(configPath)
                 into(File(path))
@@ -282,10 +264,23 @@ fun KotlinJsTargetDsl.taskList() {
                 into(mainPath)
             }
 
-            // 将 resources 文件夹下的内容复制到 mainPath
-            copy {
-                from(resource)
-                into(mainPath)
+            // 将编译后的文件文件夹内的文件复制到 mainPath
+            File(path, "kotlin").listFiles()?.filter {
+                it.name.endsWith(".js").not()
+            }?.filter {
+                it.name.endsWith(".mjs").not()
+            }?.filter {
+                it.name.endsWith(".ts").not()
+            }?.filter {
+                it.name.endsWith(".mjs.map").not()
+            }?.filter {
+                it.name.endsWith(".js.map").not()
+            }?.forEach {
+                copy {
+                    println(it)
+                    from(it)
+                    into(mainPath)
+                }
             }
 
             // main.js 前面添加 "ui"; 进入UI模式
