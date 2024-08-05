@@ -34,16 +34,18 @@ val sourceFiles = listOf(
     File(".idea"),
     File("config"),
     File("src"),
+
     File("build.gradle.kts"),
     File("gradle.properties"),
     File("gradlew"),
     File("gradlew.bat"),
     File("settings.gradle.kts"),
+
     File("README.md")
 //    File("LICENSE"),
 )
 
-val outputZipFile = File("build/zip/KotlinAndJs.zip")
+val outputZipFile = File("../src/main/resources/KotlinAndJs.zip")
 
 outputZipFile.parentFile.mkdirs() // 创建父目录（如果不存在）
 
