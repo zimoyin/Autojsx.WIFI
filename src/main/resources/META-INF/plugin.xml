@@ -68,6 +68,13 @@
                     icon="icons/logo.png"
         />
 
+        <toolWindow id="HierarchyAnalysisWindow"
+                    anchor="right"
+                    factoryClass="github.zimo.autojsx.window.HierarchyAnalysisWindow"
+                    secondary="false"
+                    icon="icons/logo.png"
+        />
+
 
 
     </extensions>

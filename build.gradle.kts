@@ -10,9 +10,9 @@ version = "1.0.5"
 
 repositories {
     mavenCentral()
-    maven {
-        url = uri("https://maven.aliyun.com/repository/public")
-    }
+//    maven {
+//        url = uri("https://maven.aliyun.com/repository/public")
+//    }
 }
 
 // Configure Gradle IntelliJ Plugin
