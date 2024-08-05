@@ -6,6 +6,7 @@ import github.zimo.autojsx.server.AutojsJsonBuilder.Companion.rerunJsFileJson
 import github.zimo.autojsx.server.AutojsJsonBuilder.Companion.runProjectJson
 import github.zimo.autojsx.server.AutojsJsonBuilder.Companion.saveJsFileJson
 import github.zimo.autojsx.server.AutojsJsonBuilder.Companion.saveProjectJson
+import github.zimo.autojsx.uiHierarchyAnalysis.UIHierarchy
 import github.zimo.autojsx.util.base64_image
 import github.zimo.autojsx.util.logE
 import github.zimo.autojsx.util.resourceAsStream
@@ -314,7 +315,7 @@ object VertxCommand {
     /**
      * 获取当前屏幕上的所有节点并记录成xml
      */
-    fun getNodes(
+    fun getNodesAsXml(
         callback: (xml: String) -> Unit,
         devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
     ) {
@@ -347,6 +348,44 @@ object VertxCommand {
             logE("未能获取到Autojs.WIFI 内部脚本执行结果，未能查找到 uuid: $uuid 。请重试")
         }
         callback("")
+    }
+
+    /**
+     * 获取当前屏幕上的所有节点并记录成 json
+     */
+    fun getNodesAsJson(
+        callback: (json: UIHierarchy?) -> Unit,
+        devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
+    ) {
+        VertxServer.content["getNodesJson"] = JsonObject("{\"ID\": \"0\"}")
+        VertxServer.devicesEmpty(devices)
+        var readBytes: ByteArray = ByteArray(0)
+        resourceAsStream("script/NodesJson.js")?.apply {
+            readBytes = readBytes()
+            close()
+        }
+        if (readBytes.isEmpty()) return
+        val uuid = UUID.randomUUID().toString()
+        val script =
+            "let values = ['http://${VertxServer.getServerIpAddress()}:${VertxServer.port}/receive','${uuid}'];\r\n" + String(
+                readBytes
+            )
+        runJs("getNodesJson", script, devices)
+        val startTime = System.currentTimeMillis()
+        while ((System.currentTimeMillis() - startTime) < 3000) {
+            VertxServer.content["getNodesJson"]?.let {
+                if (uuid == it.getString("ID")) {
+                    callback(UIHierarchy.parse(it.getString("value")))
+                    return
+                }
+            }
+        }
+        if (!VertxServer.content.contains("getNodesJson")) {
+            logE("未能获取到Autojs.WIFI 内部脚本执行结果，未能查找到 message: getNodesJson。诊断为回传数据超时")
+        } else if (VertxServer.content["getNodes"]?.getString("ID") == uuid) {
+            logE("未能获取到Autojs.WIFI 内部脚本执行结果，未能查找到 uuid: $uuid 。请重试")
+        }
+        callback(null)
     }
 
     /**
