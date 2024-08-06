@@ -137,7 +137,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                 if (file.isFile) {
                     VertxCommand.saveJS(path)
                 } else {
-                    val name = file.listFiles()?.first { it.name == "project.json" && it.isFile }.let {
+                    val name = file.listFiles()?.firstOrNull { it.name == "project.json" && it.isFile }.let {
                         runCatching { JsonObject(it?.readText()).getString("name") }.getOrElse { path }
                     }
                     VertxCommand.saveProject(zipBytes(path), name)
@@ -192,7 +192,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                 if (file.isFile) {
                     VertxCommand.saveJS(path)
                 } else {
-                    val name = file.listFiles()?.first { it.name == "project.json" && it.isFile }.let {
+                    val name = file.listFiles()?.firstOrNull { it.name == "project.json" && it.isFile }.let {
                         runCatching { JsonObject(it?.readText()).getString("name") }.getOrElse { path }
                     }
                     VertxCommand.runProject(zipBytes(path), name)

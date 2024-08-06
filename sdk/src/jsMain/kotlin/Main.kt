@@ -22,21 +22,23 @@ import kotlin.js.json
  * SDK : https://github.com/zimoyin/autojs_kotlin_sdk
  */
 fun main() {
-
-    test0()
+    test()
 }
 
-@JsName("test0")
-fun test0() {
+// 顶级属性的延迟初始化,只有在使用到的时候才进行初始化。除非使用 @EagerInitialization 注解
+val a = test()
+
+fun test() {
     println("Hello World!!")
 }
 
 // 协程 @see Async.kt
+@JsName("test1")
 fun test1() {
     launch {
         for (i in 0 until 100) {
             println("[${Thread.getName()} 线程] [$name 协程] 计数 $i")
-            delay(1000)
+            delay(50)
         }
     }
 }
@@ -53,14 +55,17 @@ fun test3() {
     function("Hello World")
 
     // eval 也可以执行js，并且允许参数为字符串变量
+    val wh = "Hello World"
+    js("console.log(wh)")
+    eval("console.log(wh)")
 
     // JS 可以访问 Kotlin 方法，这是来自于 Kotlin/Js 的互操作机制
-    val test_fffff = test0()
-    js("test_fffff()")
-
     // 如果想要访问全局属性内容需要使用 @JsName 注解进行标注
-    eval("test0()")
-    js("test0()")
+    eval("test()")
+
+    // k2 开始 无法通过该方法调用 kotlin 方法
+    // k2 认为 js 调用的是来自于 js 文件的 test() 方法，并发现 js 文件的 test 与 kotlin 文件中的 test 重合了，会将 kotlin test重命名。导致 爆出找不到函数异常
+//    js("test()")
 }
 
 // 加载 Js 脚本
@@ -74,7 +79,7 @@ fun test4() {
     Thread.start {
         for (i in 0 until 100) {
             println("线程计数 $i")
-            sleep(1000)
+            sleep(50)
         }
 
         // 注意如果在线程里面更新UI，请使用 ui{} 进行包裹，让其在UI线程中进行更新

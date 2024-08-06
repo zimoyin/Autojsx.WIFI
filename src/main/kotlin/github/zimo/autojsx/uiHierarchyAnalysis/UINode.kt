@@ -78,10 +78,10 @@ data class UIBounds(
 }
 
 /**
- * Hierarchy class annotated for Jackson
+ * 解析获取到的层次布局文件 json(通过 VertxCommand.getNodesAsJson 方法获取)
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-class UIHierarchy @JsonCreator constructor(
+class UIHierarchy @Deprecated("use UIHierarchy.parse(json)") @JsonCreator constructor(
     @JsonProperty("hierarchy") @JsonInclude(JsonInclude.Include.NON_EMPTY) val hierarchy: List<UINode> = emptyList(),
 ) {
 
@@ -109,7 +109,7 @@ class UIHierarchy @JsonCreator constructor(
     }
 
     /**
-     * 通过坐标找到节点
+     * 通过坐标找到节点,例如点击某个了解密上的某个坐标，找到该坐标所在的节点
      */
     fun findNode(point: Point): UINode? {
         var result: UINode? = null
@@ -135,6 +135,9 @@ class UIHierarchy @JsonCreator constructor(
         return results
     }
 
+    /**
+     * 获取所有节点
+     */
     fun getAllNode(): List<UINode> {
         return hierarchy.map {
             getChildren(it, ArrayList()).toList()

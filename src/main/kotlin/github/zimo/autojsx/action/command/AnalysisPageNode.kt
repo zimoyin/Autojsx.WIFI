@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import github.zimo.autojsx.server.VertxCommand
 import github.zimo.autojsx.server.VertxServer
+import github.zimo.autojsx.util.executor
 import github.zimo.autojsx.util.logE
 import github.zimo.autojsx.util.logI
 import github.zimo.autojsx.util.logW
@@ -17,15 +18,17 @@ class AnalysisPageNode :
             logW("服务器中未选中设备")
             return
         }
-        VertxCommand.getNodesAsXml({
-            val nodeFile = File(e.project?.basePath + "/build/autojs/cache/page_node_xml/${System.currentTimeMillis()}.xml")
-            nodeFile.parentFile.mkdirs()
-            nodeFile.writeText(it)
-            if (it.trim().isEmpty()){
-                logE("无法获取到节点,请查看手机是否提示授权,或者提示开启无障碍模式/服务")
-            }else{
-                logI("保存节点文件: ${nodeFile.canonicalPath}")
-            }
-        })
+        executor.execute {
+            VertxCommand.getNodesAsXml({
+                val nodeFile = File(e.project?.basePath + "/build/autojs/cache/page_node_xml/${System.currentTimeMillis()}.xml")
+                nodeFile.parentFile.mkdirs()
+                nodeFile.writeText(it)
+                if (it.trim().isEmpty()){
+                    logE("无法获取到节点,请查看手机是否提示授权,或者提示开启无障碍模式/服务")
+                }else{
+                    logI("保存节点文件: ${nodeFile.canonicalPath}")
+                }
+            })
+        }
     }
 }

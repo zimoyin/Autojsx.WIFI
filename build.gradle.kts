@@ -10,16 +10,13 @@ version = "1.0.5"
 
 repositories {
     mavenCentral()
-//    maven {
-//        url = uri("https://maven.aliyun.com/repository/public")
-//    }
 }
 
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    version.set("2022.2.5")
-//    version.set("2024.1.4")
+//    version.set("2022.2.5")
+    version.set("2024.1.4")
     type.set("IC") // Target IDE Platform
 
     plugins.set(listOf("com.intellij.gradle"/* Plugin Dependencies */))

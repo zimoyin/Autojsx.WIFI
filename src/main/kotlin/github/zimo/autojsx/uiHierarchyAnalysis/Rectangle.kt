@@ -43,9 +43,6 @@ data class Rectangle(val left: Int, val top: Int, val right: Int, val bottom: In
         return (d1 >= 0 && d2 >= 0 && d3 >= 0 && d4 >= 0) || (d1 <= 0 && d2 <= 0 && d3 <= 0 && d4 <= 0)
     }
 
-
-
-
     private fun crossProduct(p1: Point, p2: Point): Int {
         return p1.x * p2.y - p1.y * p2.x
     }

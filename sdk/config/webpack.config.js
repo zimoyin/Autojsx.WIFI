@@ -1,11 +1,11 @@
 // 是否启用代码压缩
-const isMinimize = false
+const isMinimize = true
 
 // 是否启用JS 版本降级, 当前启用代码压缩后，可以不使用 JS 降级, 因为大部分情况下压缩后的代码没有使用 Rhino 引擎支持之外的语法
 const isDowngrade = true
 
 // 是否混淆代码
-const isJavascriptObfuscator = false
+const isJavascriptObfuscator = true
 const isJavascriptObfuscator_Compact = true //混淆时是否压缩代码,该压缩不会更改语法特性，因此还需要第一个压缩或者降级
 
 if (isMinimize === false && isDowngrade === false){
@@ -14,11 +14,12 @@ if (isMinimize === false && isDowngrade === false){
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const path = require('path');
 const JavascriptObfuscator = require("webpack-obfuscator");
-const projectName = path.basename(__dirname);// 获取当前文件夹的名称
+//const projectName = path.basename(__dirname);// 获取当前文件夹的名称
+const projectName = "main"
 module.exports = {
-    entry: `./kotlin/${projectName}.mjs`, // 修改为生成的 JS 文件的路径
+    entry: `./kotlin/${projectName}.js`, // 修改为生成的 JS 文件的路径
     output: {
-        path: path.resolve(__dirname, 'build/output'),
+        path: path.resolve(__dirname, 'dist'),
         filename: 'main.js'
     },
     mode: 'production', //  'production' , 'development'
