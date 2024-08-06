@@ -6,6 +6,7 @@ import io.vertx.core.Future
 import io.vertx.core.Vertx
 import io.vertx.core.http.ServerWebSocket
 import io.vertx.core.json.JsonObject
+import java.io.IOException
 import java.net.InetAddress
 import java.net.NetworkInterface
 
@@ -56,7 +57,7 @@ object VertxServer {
     }
 
     fun getServerIpAddress(): String {
-        if (ipAddress != "Unknown") return ipAddress
+        if (ipAddress != "Unknown" && ipDetection(ipAddress, 1000)) return ipAddress
         val networkInterfaces = NetworkInterface.getNetworkInterfaces()
         while (networkInterfaces.hasMoreElements()) {
             val networkInterface = networkInterfaces.nextElement()
@@ -80,6 +81,23 @@ object VertxServer {
         }
         return "Unknown"
     }
+
+    /**
+     * @param ipAddress 待检测IP地址
+     * @param timeout   检测超时时间（超时应该在3钞以上）
+     * @return
+     */
+    fun ipDetection(ipAddress: String, timeout: Int): Boolean {
+        // 当返回值是true时，说明host是可用的，false则不可。
+        var status = false
+        try {
+            status = InetAddress.getByName(ipAddress).isReachable(timeout)
+        } catch (e: IOException) {
+            logI("IP 地址检测失败: $ipAddress")
+        }
+        return status
+    }
+
 
     // 判断是否为虚拟网卡
     fun isVirtualNetworkInterface(networkInterface: NetworkInterface): Boolean {
