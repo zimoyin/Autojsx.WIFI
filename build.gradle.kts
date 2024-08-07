@@ -6,7 +6,7 @@ plugins {
 
 group = "github.zimo"
 //SNAPSHOT
-version = "1.0.5"
+version = "1.0.6"
 
 repositories {
     mavenCentral()
@@ -16,7 +16,7 @@ repositories {
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
 //    version.set("2022.2.5")
-    version.set("2024.1.4")
+    version.set("2024.2")
     type.set("IC") // Target IDE Platform
 
     plugins.set(listOf("com.intellij.gradle"/* Plugin Dependencies */))
@@ -47,7 +47,8 @@ tasks {
 
 //        sinceBuild.set("223")
         sinceBuild.set("222")
-        untilBuild.set("241.*") // 2024
+//        untilBuild.set("241.*") // 2024.1
+//        untilBuild.set("245.*") // 不指定idea 版本，包含预计所有版本
     }
 
     signPlugin {

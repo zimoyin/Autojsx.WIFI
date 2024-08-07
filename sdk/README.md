@@ -35,3 +35,6 @@
 
 # 通过 Html 编写界面UI
 参见 [Autojs与浏览器交互.kt](src%2FjsMain%2Fkotlin%2F%D1%F9%C0%FD%2FAutojs%D3%EB%E4%AF%C0%C0%C6%F7%BD%BB%BB%A5.kt) 和 [web](src%2FjsMain%2Fresources%2Fweb)
+
+# SDK 源码参见
+https://github.com/zimoyin/autojs_kotlin_sdk

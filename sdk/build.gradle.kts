@@ -67,11 +67,11 @@ kotlin {
 
 
                 // Kotlin dependencies
-                // Coroutines & serialization (不使用可以移除)
+                // Coroutines & serialization (不使用可以移除，移除可能导致 SDK 出现异常)
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
                 // 不可移除!
-                implementation("com.github.zimoyin:autojs_kotlin_sdk:2.0.3")
+                implementation("com.github.zimoyin:autojs_kotlin_sdk:2.0.6")
             }
         }
     }
