@@ -31,7 +31,7 @@ fun zipFile(fileToZip: File, fileName: String, zipOut: ZipOutputStream) {
 }
 
 val sourceFiles = listOf(
-    File(".idea"),
+    File(".run"),
     File("config"),
     File("src"),
 

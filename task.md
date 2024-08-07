@@ -3,9 +3,11 @@
 
 ~~# httpRunProject 等方法 服务器报错~~
 
-# 将 SDK 打包后放到 [resources](src%2Fmain%2Fresources) 下
+~~# 将 SDK 打包后放到 [resources](src%2Fmain%2Fresources) 下~~
 
 # 编译优化
 ~~1. 使用 k2~~
-2. 持续集成: https://kotlinlang.org/docs/js-project-setup.html#run-task
+~~2. 持续集成: https://kotlinlang.org/docs/js-project-setup.html#run-task~~
 3. webpack 配置
+
+

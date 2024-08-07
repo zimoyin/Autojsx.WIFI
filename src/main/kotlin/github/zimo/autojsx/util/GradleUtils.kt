@@ -30,7 +30,7 @@ object GradleUtils {
             object : ExternalProjectRefreshCallback{
                 override fun onSuccess(externalTaskId: ExternalSystemTaskId, externalProject: DataNode<ProjectData>?) {
                     super.onSuccess(externalTaskId, externalProject)
-                    runGradleCommandOnToolWindow(project,"npmInstall","initEnvironment")
+                    runGradleCommandOnToolWindow(project,"initEnvironment","npmInstall")
                 }
             },
             false,

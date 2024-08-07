@@ -22,7 +22,7 @@ class TopRunButton : AnAction(ICONS.START_16) {
         runServer(project)
 
         if (GradleUtils.isGradleProject(project)) {
-            GradleUtils.runGradleCommandOnToolWindow(project, "buildMainJs") {
+            GradleUtils.runGradleCommandOnToolWindow(project, "compile") {
                 if (it) {
                     logI(getGradleOutputMainJsPath(project))
                     val zip = zipProject(getGradleOutputMainJsPath(project), project)

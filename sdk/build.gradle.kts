@@ -71,7 +71,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
                 // 不可移除!
-                implementation("com.github.zimoyin:autojs_kotlin_sdk:1.0.6")
+                implementation("com.github.zimoyin:autojs_kotlin_sdk:2.0.3")
             }
         }
     }
@@ -81,26 +81,42 @@ kotlin {
 fun KotlinJsTargetDsl.taskList() {
 
     val mainFile = compilations.getByName("main").npmProject.dir.get().asFile        // 编译输出文件夹
-    val mainKotlinFile = File(mainFile,"kotlin")                                       // 编译输出文件夹
+    val mainKotlinFile = File(mainFile, "kotlin")                                       // 编译输出文件夹
     val configFile = buildFile.parentFile.resolve("config")                         // 配置文件夹
     val compilationFile = buildFile.parentFile.resolve("build/autojs/compilation") // 最后编译输出文件夹
-    val intermediateCompilationFile =  buildFile.parentFile.resolve("build/autojs/intermediate_compilation_files") // 最后中间编译输出文件夹
-    val compilationMainJsFile =  File(compilationFile, "main.js")                                    // 输出最后编译文件
+    val intermediateCompilationFile =
+        buildFile.parentFile.resolve("build/autojs/intermediate_compilation_files") // 最后中间编译输出文件夹
+    val intermediateCompilationMainJsFile = File(intermediateCompilationFile, "main.js") // 最后中间编译输出文件夹
+    val compilationMainJsFile = File(compilationFile, "main.js")                                    // 输出最后编译文件
 
     val webpackIntermediateFiles = project.findProperty("autojs.webpack.intermediate.files") as String
     val useUI = project.findProperty("autojs.use.ui") as String
     val webpackAutoRun = project.findProperty("autojs.webpack.auto.run") as String
     val webpackAutoUpload = project.findProperty("autojs.webpack.auto.upload") as String
 
-    tasks.register("run"){
+    tasks.register("run") {
         group = "autojs"
         dependsOn("compile")
         finalizedBy("httpRunProject")
 
-        // main.js 前面添加 "ui"; 进入UI模式
-        if (compilationMainJsFile.exists() && useUI.contains("true")) {
-            val content = compilationMainJsFile.readText()
-            compilationMainJsFile.writeText("\"ui\";\n$content")
+        doLast {
+            // 将编译后的文件复制到 mainPath
+            if (compilationFile.exists()) compilationFile.deleteDirectoryContents()
+            copy {
+                from(intermediateCompilationFile)
+                into(compilationFile)
+            }
+            // main.js 前面添加 "ui"; 进入UI模式
+            if (compilationMainJsFile.exists() && useUI.contains("true")) {
+                val content = compilationMainJsFile.readText()
+                val newlineIndex1 = content.indexOf("\r\n")
+                val newlineIndex2 = content.indexOf('\n')
+                var firstLine = if (newlineIndex1 == -1) null else content.substring(0, newlineIndex1)
+                firstLine = firstLine ?: if (newlineIndex2 == -1) "" else content.substring(0, newlineIndex2)
+                if (!firstLine.contains("ui") || firstLine.length > 6) {
+                    compilationMainJsFile.writeText("\"ui\";\n$content")
+                }
+            }
         }
     }
 
@@ -111,10 +127,10 @@ fun KotlinJsTargetDsl.taskList() {
             val isEmpty = compilationFile.list().let {
                 it?.isEmpty() ?: true
             }
-            if (!compilationFile.exists() && isEmpty){
+            if (!compilationFile.exists() && isEmpty) {
                 throw NullPointerException("${compilationFile.canonicalPath} path is null")
             }
-            post("http://127.0.0.1:$serverPort/upload_run_path",compilationFile.canonicalPath)
+            post("http://127.0.0.1:$serverPort/upload_run_path", compilationFile.canonicalPath)
         }
     }
 
@@ -124,17 +140,18 @@ fun KotlinJsTargetDsl.taskList() {
             val isEmpty = compilationFile.list().let {
                 it?.isEmpty() ?: true
             }
-            if (!compilationFile.exists() && isEmpty){
+            if (!compilationFile.exists() && isEmpty) {
                 throw NullPointerException("${compilationFile.canonicalPath} path is null")
             }
-            post("http://127.0.0.1:$serverPort/upload_path",compilationFile.canonicalPath)
+            post("http://127.0.0.1:$serverPort/upload_path", compilationFile.canonicalPath)
         }
     }
 
-    tasks.register("webpack"){
+    tasks.register("webpack") {
         description = "Build project with webpack"
         group = "autojs"
 
+        dependsOn("compile")
         if (compilationMainJsFile.exists() && webpackAutoUpload.contains("true")) {
             finalizedBy("httpUploadProject")
         }
@@ -143,7 +160,7 @@ fun KotlinJsTargetDsl.taskList() {
             finalizedBy("httpRunProject")
         }
 
-        doFirst{
+        doLast {
             val path = mainKotlinFile.path
             // 复制中间编译文件回初次编译位置
             if (webpackIntermediateFiles.contains("true")) {
@@ -162,7 +179,10 @@ fun KotlinJsTargetDsl.taskList() {
             // 执行命令
             exec {
                 compilations.getByName("main").npmProject.useTool(
-                    this, File(path, "..\\..\\..\\node_modules\\webpack\\bin\\webpack.js").path, emptyList(), emptyList()
+                    this,
+                    File(path, "..\\..\\..\\node_modules\\webpack\\bin\\webpack.js").path,
+                    emptyList(),
+                    emptyList()
                 )
             }
 
@@ -271,12 +291,18 @@ fun KotlinJsTargetDsl.taskList() {
         dependsOn("jsProductionExecutableCompileSync")
         dependsOn("compileProductionExecutableKotlinJs")
 
-        intermediateCompilationFile.deleteDirectoryContents()
+        if (intermediateCompilationFile.exists()) intermediateCompilationFile.deleteDirectoryContents()
+        if(compilationFile.exists()) compilationFile.deleteDirectoryContents()
 
-        doLast{
+        doLast {
             copy {
                 from(mainKotlinFile)
                 into(intermediateCompilationFile)
+            }
+            // main.js 前面添加 "ui"; 进入UI模式
+            if (compilationMainJsFile.exists() && useUI.contains("true")) {
+                val content = compilationMainJsFile.readText()
+                compilationMainJsFile.writeText("\"ui\";\n$content")
             }
         }
     }
@@ -288,7 +314,7 @@ fun KotlinJsTargetDsl.taskList() {
     }
 }
 
-fun post(url:String,data:String){
+fun post(url: String, data: String) {
     val connection: HttpURLConnection = URL(url).openConnection() as HttpURLConnection
     println("send data: $data")
     connection.requestMethod = "POST"
@@ -304,10 +330,16 @@ fun post(url:String,data:String){
     // Get Response
     val responseCode = connection.responseCode
     println("Response Code : $responseCode")
-    if (responseCode != 200){
+    if (responseCode != 200) {
         val response = connection.inputStream.bufferedReader().use { it.readText() }
         throw Exception("Response Code : $responseCode, Response: $response")
     }
+
+    // 接收值
+    val response = connection.inputStream.bufferedReader().use {
+        println(it.readLine())
+    }
+
 
     connection.disconnect()
 }

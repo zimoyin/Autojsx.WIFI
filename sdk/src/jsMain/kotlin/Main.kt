@@ -17,7 +17,7 @@ import kotlin.js.json
  * 5. 所有模块全部是驼峰命名，不是驼峰命名的则是包
  *      * 如 files.open() 在Kotlin 中写为 Files.open() 模块名称首字母需要大写
  *      * 如 java.net.URL  这是已经被 SDK 所实现的类似包结构，可以直接使用
- * 6. File/InputStream/OutputStream/FileInputStream/FileOutputStream/URL/URI 已经被实现
+ * 6. File/InputStream/OutputStream/FileInputStream/FileOutputStream /URL/URI/ WebSocket 已经被实现
  *
  * SDK : https://github.com/zimoyin/autojs_kotlin_sdk
  */

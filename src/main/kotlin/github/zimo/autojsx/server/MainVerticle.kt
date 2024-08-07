@@ -7,8 +7,11 @@ import github.zimo.autojsx.util.logE
 import github.zimo.autojsx.util.logI
 import github.zimo.autojsx.util.logW
 import github.zimo.autojsx.util.zipBytes
+import github.zimo.autojsx.window.AutojsxConsoleWindow
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Promise
+import io.vertx.core.http.HttpServerRequest
+import io.vertx.core.http.HttpServerResponse
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
@@ -20,6 +23,10 @@ import java.util.*
 
 class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
 
+    fun HashMap<String, ArrayDeque<String>>.add(device: String, text: String) {
+        if (!this.containsKey(device)) this[device] = ArrayDeque()
+        this[device]!!.add(text)
+    }
 
     override fun start(startPromise: Promise<Void>) {
         val router = Router.router(vertx)
@@ -80,7 +87,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                             var text = jsonObject.getJsonObject("data").getString("log")
                             if (text.contains(" ------------ ") && text.contains("运行结束，用时")) {
                                 text = text.replace("\n", " ")
-                                    .replace("  "," ")
+                                    .replace("  ", " ")
                                     .replace(" ------------ ", "") + "\r\n"
                             }
                             selectDevicesWs.forEach { (key, value) ->
@@ -93,8 +100,8 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
 
                 ws.closeHandler {
                     //remove device
-                    selectDevicesWs.remove("device")
-                    devicesWs.remove("device")
+                    selectDevicesWs.remove(device)
+                    devicesWs.remove(device)
 
 //                    println("WebSocket connection closed")
                     Devices.remove(device)
@@ -114,6 +121,74 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                 }
             }
 
+        routerReceive(router)
+        routerUploadPath(router)
+        routerUploadResourcesPath(router)
+        routerUploadRunPath(router)
+        router.route("/*").handler(StaticHandler.create())
+    }
+
+    private fun routerUploadRunPath(router: Router) {
+        router.route("/upload_run_path").handler(BodyHandler.create()).handler { context ->
+            kotlin.runCatching {
+                val path = context.body().asString()
+                logI("upload_run_path: $path")
+
+                val file = File(path).apply {
+                    if (!exists()) throw FileNotFoundException("文件不存在")
+                }
+
+                if (file.isFile) {
+                    VertxCommand.saveJS(path)
+                } else {
+                    val name = file.listFiles()?.firstOrNull { it.name == "project.json" && it.isFile }.let {
+                        runCatching { JsonObject(it?.readText()).getString("name") }.getOrElse { path }
+                    }
+                    kotlin.runCatching { AutojsxConsoleWindow.show(ProjectManager.getInstance().openProjects.firstOrNull()) }
+                    VertxCommand.runProject(zipBytes(path), name)
+                }
+
+                context.response().end("ok")
+            }.onFailure {
+                logE("upload_run_path 接收数据失败", it)
+                context.response().apply {
+                    statusCode = 500
+                    end("error")
+                }
+            }
+        }
+    }
+
+    private fun routerUploadResourcesPath(router: Router) {
+        router.route("/upload_resources_path").handler(BodyHandler.create()).handler { context ->
+            kotlin.runCatching {
+                val path = context.body().asString()
+                logI("upload_resources_path $path")
+
+                val file = File(path).apply {
+                    if (!exists()) throw FileNotFoundException("文件不存在")
+                }
+
+                if (file.isFile) {
+                    logE("upload_resources_path 不支持上传文件")
+                    return@handler
+                } else {
+                    val name = ProjectManager.getInstance().openProjects.firstOrNull()?.name?.let { "$it/" } ?: ""
+                    VertxCommand.saveProject(zipBytes(path), "$name/$path")
+                }
+
+                context.response().end("ok")
+            }.onFailure {
+                logE("upload_resources_path 接收数据失败", it)
+                context.response().apply {
+                    statusCode = 500
+                    end("error")
+                }
+            }
+        }
+    }
+
+    private fun routerReceive(router: Router) {
         router.route("/receive").handler(BodyHandler.create()).handler { context ->
             kotlin.runCatching {
                 val jsonObject = context.body().asJsonObject()
@@ -124,7 +199,9 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                 context.response().end("error")
             }
         }
+    }
 
+    private fun routerUploadPath(router: Router) {
         router.route("/upload_path").handler(BodyHandler.create()).handler { context ->
             kotlin.runCatching {
                 val path = context.body().asString()
@@ -152,62 +229,6 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                 }
             }
         }
-
-        router.route("/upload_resources_path").handler(BodyHandler.create()).handler { context ->
-            kotlin.runCatching {
-                val path = context.body().asString()
-                logI("upload_resources_path $path")
-
-                val file = File(path).apply {
-                    if (!exists()) throw FileNotFoundException("文件不存在")
-                }
-
-                if (file.isFile) {
-                    logE("upload_resources_path 不支持上传文件")
-                    return@handler
-                } else {
-                    val name = ProjectManager.getInstance().openProjects.firstOrNull()?.name?.let { "$it/" }?:""
-                    VertxCommand.saveProject(zipBytes(path), "$name/$path")
-                }
-
-                context.response().end("ok")
-            }.onFailure {
-                logE("upload_resources_path 接收数据失败", it)
-                context.response().apply {
-                    statusCode = 500
-                    end("error")
-                }
-            }
-        }
-
-        router.route("/upload_run_path").handler(BodyHandler.create()).handler { context ->
-            kotlin.runCatching {
-                val path = context.body().asString()
-                logI("upload_run_path: $path")
-
-                val file = File(path).apply {
-                    if (!exists()) throw FileNotFoundException("文件不存在")
-                }
-
-                if (file.isFile) {
-                    VertxCommand.saveJS(path)
-                } else {
-                    val name = file.listFiles()?.firstOrNull { it.name == "project.json" && it.isFile }.let {
-                        runCatching { JsonObject(it?.readText()).getString("name") }.getOrElse { path }
-                    }
-                    VertxCommand.runProject(zipBytes(path), name)
-                }
-
-                context.response().end("ok")
-            }.onFailure {
-                logE("upload_run_path 接收数据失败", it)
-                context.response().apply {
-                    statusCode = 500
-                    end("error")
-                }
-            }
-        }
-        router.route("/*").handler(StaticHandler.create())
     }
 
     fun String.asJsonObject(): JsonObject = JsonObject(this)

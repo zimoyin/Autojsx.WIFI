@@ -8,6 +8,7 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.dsl.builder.panel
+import github.zimo.autojsx.action.run.doc.DocRunProjectButton
 import github.zimo.autojsx.icons.ICONS
 import github.zimo.autojsx.server.ConsoleOutput
 import github.zimo.autojsx.server.Devices
@@ -119,15 +120,7 @@ class AutojsxConsoleWindow : ToolWindowFactory {
                     }
                     button("运行项目") {
                         runServer(project)
-                        searchProjectJsonByEditor(project) { file ->
-                            zipProject(file, project).apply {
-                                logI("预运行项目: " + info.projectJson)
-                                logI("├──> 项目 src: " + info.src?.canonicalPath)
-                                logI("├──> 项目 resources: " + info.resources?.canonicalPath)
-                                logI("└──> 项目 lib: " + info.lib?.canonicalPath + "\r\n")
-                                VertxCommand.runProject(bytes, info.name)
-                            }
-                        }
+                        DocRunProjectButton.runCurrentProject(project)
                     }.apply {
                         component.icon = ICONS.START_16
                     }

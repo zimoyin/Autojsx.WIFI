@@ -1,8 +1,6 @@
 package 样例
-
 import lib.kotlin.HtmlLoader
 import lib.module.log
-import test0
 
 /**
  *
@@ -16,28 +14,38 @@ fun main() {
     HtmlLoader.create("web/index.html").build().start()
 }
 
+@OptIn(ExperimentalJsExport::class)
+@JsExport
 @JsName("ajFun0")
 fun ajFun0() {
     log("ajFun0 被 web 调用")
 }
 
+@OptIn(ExperimentalJsExport::class)
+@JsExport
 @JsName("ajFun1")
 fun ajFun1(): Int {
     log("ajFun2 被 web 调用")
     return 1
 }
 
+@OptIn(ExperimentalJsExport::class)
+@JsExport
 @JsName("ajFun2")
 fun ajFun2(name: String): Boolean {
     log("ajFun2 被 web 调用: name-> %s", name)
     return false
 }
 
+@OptIn(ExperimentalJsExport::class)
+@JsExport
 @JsName("ajFun3")
 fun ajFun3(): String {
     return "我是字符串"
 }
 
+@OptIn(ExperimentalJsExport::class)
+@JsExport
 @JsName("ajFun4")
 fun ajFun4(index: Int, name: String, age: Int): List<Map<String, Any>> {
     log("ajFun4 被 web 调用: index-> %s, name-> %s, age-> %s", index, name, age)

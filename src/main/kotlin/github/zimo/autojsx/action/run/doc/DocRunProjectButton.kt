@@ -6,8 +6,11 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.module.ModuleType
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.modules
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.wm.ToolWindow
+import com.intellij.openapi.wm.ToolWindowManager
 import github.zimo.autojsx.module.MODULE_TYPE_ID
 import github.zimo.autojsx.server.VertxCommand
 import github.zimo.autojsx.util.*
@@ -24,6 +27,20 @@ class DocRunProjectButton :
         AutojsxConsoleWindow.show(project)
         runServer(project)
         if (project != null) {
+            runCurrentProject(project)
+        }
+    }
+
+
+    override fun update(e: AnActionEvent) {
+        e.presentation.isEnabledAndVisible =
+            (e.project?.modules?.count { ModuleType.get(it).id == MODULE_TYPE_ID } ?: 0) > 0
+    }
+
+    companion object{
+        fun runCurrentProject(
+            project: Project,
+        ) {
             val fileEditorManager = FileEditorManager.getInstance(project)
             //保存正在修改的文件
             fileEditorManager.selectedFiles.apply {
@@ -51,7 +68,7 @@ class DocRunProjectButton :
 
 
             if (GradleUtils.isGradleProject(project) && !isAutojsProject) {
-                GradleUtils.runGradleCommandOnToolWindow(project, "buildMainJs") {
+                GradleUtils.runGradleCommandOnToolWindow(project, "compile") {
                     if (it) {
                         logI(getGradleOutputMainJsPath(project))
                         val zip = zipProject(getGradleOutputMainJsPath(project), project)
@@ -64,7 +81,7 @@ class DocRunProjectButton :
                 // 运行项目
                 runCatching {
                     searchProjectJsonByFile(project, selectedFile) { file ->
-                        zipProject(file, e.project).apply {
+                        zipProject(file, project).apply {
                             logI("预运行项目: " + info.projectJson)
                             logI("├──> 项目 src: " + info.src?.canonicalPath)
                             logI("├──> 项目 resources: " + info.resources?.canonicalPath)
@@ -76,13 +93,6 @@ class DocRunProjectButton :
                     logE("js脚本网络引擎执行失败${selectedFile.path} ", it)
                 }
             }
-
         }
-    }
-
-
-    override fun update(e: AnActionEvent) {
-        e.presentation.isEnabledAndVisible =
-            (e.project?.modules?.count { ModuleType.get(it).id == MODULE_TYPE_ID } ?: 0) > 0
     }
 }

@@ -131,5 +131,13 @@ fun getGradleOutputMainJsPath(project: Project): VirtualFile {
         ?.let { project.basePath?.let { it1 -> VfsUtil.createDirectoryIfMissing(it1) } }
         ?.findDirectory("build")
         ?.findDirectory("autojs")
-        ?.findDirectory("compilation") ?: throw IllegalArgumentException("build/autojs/compilation directory is null")
+        ?.findDirectory("compilation")?.let {
+            if (it.children.isEmpty()) null else it
+        } ?: (project.projectFile ?: project.workspaceFile)?.parent?.parent
+        ?.let { project.basePath?.let { it1 -> VfsUtil.createDirectoryIfMissing(it1) } }
+        ?.findDirectory("build")
+        ?.findDirectory("autojs")
+        ?.findDirectory("intermediate_compilation_files")?.let {
+            if (it.children.isEmpty()) null else it
+        } ?: throw IllegalArgumentException("build/autojs/compilation directory is null")
 }
