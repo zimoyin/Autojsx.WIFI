@@ -42,13 +42,8 @@ tasks {
     }
 
     patchPluginXml {
-//        sinceBuild.set("222")
-//        untilBuild.set("232.*")
-
-//        sinceBuild.set("223")
         sinceBuild.set("222")
-//        untilBuild.set("241.*") // 2024.1
-//        untilBuild.set("245.*") // 不指定idea 版本，包含预计所有版本
+        untilBuild.set("242.*") // 2024.2
     }
 
     signPlugin {
