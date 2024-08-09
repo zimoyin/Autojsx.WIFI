@@ -15,10 +15,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.modules
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.findFile
-import com.intellij.openapi.vfs.readText
-import com.intellij.openapi.wm.ToolWindow
-import com.intellij.openapi.wm.ToolWindowManager
 import github.zimo.autojsx.module.MODULE_TYPE_ID
 import github.zimo.autojsx.server.VertxCommand
 import github.zimo.autojsx.util.*
