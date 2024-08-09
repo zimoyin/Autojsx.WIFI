@@ -35,10 +35,10 @@ class NewAutoJSON :
                             |    },
                             |    "packageName": "github.autojsx.$name",
                             |    "versionName": "1.0.0",
-                            |    "srcPath":"./../",
+                            |    "srcPath":"./../../src/",
                             |    "resources":"./../",
-                            |    "lib":"./../",
-                            |    "versionCode": 1,
+                            |    "lib":"./../../lib/",
+                            |    "versionCode": 1
                             |}
                         """.trimMargin().toByteArray()
                 )

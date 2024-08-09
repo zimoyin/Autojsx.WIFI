@@ -89,11 +89,12 @@ fun addFileToZip(zipOutputStream: ZipOutputStream, file: File, parentDir: String
 }
 
 
-fun findFile(rootDir: VirtualFile, fileName: String): VirtualFile? {
-    return findInDirRecursive(rootDir, fileName)
+fun findFile(rootDir: VirtualFile, fileName: String, limitDepth: Int = 6): VirtualFile? {
+    return findInDirRecursive(rootDir, fileName, limitDepth = limitDepth)
 }
 
-private fun findInDirRecursive(dir: VirtualFile, filename: String?): VirtualFile? {
+private fun findInDirRecursive(dir: VirtualFile, filename: String?, depth: Int = 1, limitDepth: Int = 6): VirtualFile? {
+    if (depth > limitDepth) return null
 
     // 1. 在当前目录查找指定文件
     var file = dir.findChild(filename!!)
@@ -107,7 +108,7 @@ private fun findInDirRecursive(dir: VirtualFile, filename: String?): VirtualFile
     // 3. 优先查找resources子目录
     for (child in children) {
         if (child.name == "resources") {
-            file = findInDirRecursive(child, filename)
+            file = findInDirRecursive(child, filename, depth + 1)
             if (file != null) {
                 return file
             }
@@ -117,7 +118,7 @@ private fun findInDirRecursive(dir: VirtualFile, filename: String?): VirtualFile
     // 4. 递归搜索每个子目录
     for (child in children) {
         if (child.isDirectory) {
-            file = findInDirRecursive(child, filename)
+            file = findInDirRecursive(child, filename, depth + 1)
             if (file != null) {
                 return file
             }

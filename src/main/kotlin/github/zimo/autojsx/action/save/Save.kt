@@ -45,27 +45,38 @@ class Save :
         }
     }
 
-    fun saveDir(file: VirtualFile, project: Project?, showDialog: Boolean = true) {
-        val jsonFile = if (file.name == "project.json") file else findFile(file, ProjectJSON)
-        if (jsonFile != null) {
-            if (showDialog) showCheckboxMessageDialog()
-            if (isSaveProject) {
-                zipProject(file, project).apply {
+    fun saveDir(file: VirtualFile, project: Project?, showDialog: Boolean = true, limit: Int = 6) {
+        var findFile: VirtualFile? = file
+        // 向上查询 src/resources 目录的父目录
+        for (i in 0 until 6) {
+            if (findFile == null) break
+            if (findFile.parent == null || findFile.parent.canonicalPath == project!!.basePath) {
+                break
+            }
+            findFile = findFile.parent
+            if (findFile.findDirectory("src") != null || findFile.findDirectory("resources") != null) {
+                break
+            }
+        }
+        findFile = findFile?.let {
+            if (it.findDirectory("src") != null || it.findDirectory("resources") != null) it else file
+        } ?: file
+        val issrc = findFile.findDirectory("src") != null && findFile.findDirectory("resources") != null
+
+        if (showDialog) showCheckboxMessageDialog()
+        executor.execute {
+            if (issrc && isSaveProject) {
+                zipProject(findFile, project,3).apply {
                     logI("预运行项目: " + info.projectJson)
                     logI("├──> 项目 src: " + info.src?.canonicalPath)
                     logI("├──> 项目 resources: " + info.resources?.canonicalPath)
                     logI("└──> 项目 lib: " + info.lib?.canonicalPath + "\r\n")
                     VertxCommand.saveProject(bytes, info.name)
                 }
-                // 保存项目压缩包完成后就不执行下面的上传文件夹逻辑
-                return
+            } else {
+                ConsoleOutput.systemPrint("上传文件夹/I: " + file.path)
+                VertxCommand.saveProject(zipBytes(file.path), file.path)
             }
-        }
-
-        // 如果不是项目文件，就上次文件夹压缩包
-        executor.submit {
-            VertxCommand.saveProject(zipBytes(file.path), file.path)
-            ConsoleOutput.systemPrint("上传文件夹/I: " + file.path)
         }
     }
 

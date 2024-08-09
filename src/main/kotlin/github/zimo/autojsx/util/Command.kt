@@ -15,8 +15,9 @@ import java.io.File
 fun zipProject(
     file: VirtualFile,
     project: Project?,
+    limit: Int = 6
 ): ZipProjectResult {
-    val info = ZipProjectJsonInfo.findProjectJsonInfo(file, project)
+    val info = ZipProjectJsonInfo.findProjectJsonInfo(file, project, limit)
 
     if (info == null) logE("无法压缩文件夹，该文件夹不是一个项目文件夹: 无法找到 project.json 文件")
 
@@ -91,21 +92,21 @@ data class ZipProjectJsonInfo(
             )
         }
 
-        fun findProjectJsonInfo(file: VirtualFile, project: Project?): ZipProjectJsonInfo? {
+        fun findProjectJsonInfo(file: VirtualFile, project: Project?, limit: Int = 6): ZipProjectJsonInfo? {
             if (file.isDirectory && file.children.isEmpty()) return null
             if (file.isFile && file.name == "project.json")
                 return runCatching { from(File(file.path), project) }.getOrNull()
             if (file.isFile && file.name != "project.json") return null
+
             val projectJson = file.let {
-                if (it.isDirectory) findFile(it, "project.json") else it
+                if (it.isDirectory) findFile(it, "project.json", limit) else it
             }?.let {
                 if (!it.exists()) null else File(it.path)
-            }.let {
-                it
-                    ?: throw IllegalArgumentException("无法压缩文件夹，该文件夹不是一个项目文件夹: 无法找到 project.json 文件")
-            }
+            } ?: return null
 
-            return runCatching { from(projectJson, project) }.getOrNull()
+            return runCatching { from(projectJson, project) }.onFailure {
+                logE("无法解析 project.json 文件: $file",it)
+            }.getOrNull()
         }
     }
 

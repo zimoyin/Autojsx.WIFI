@@ -11,9 +11,12 @@ import com.intellij.openapi.externalSystem.task.TaskCallback
 import com.intellij.openapi.externalSystem.util.ExternalSystemUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
+import org.gradle.tooling.GradleConnectionException
 import org.gradle.tooling.GradleConnector
+import org.gradle.tooling.ResultHandler
 import org.jetbrains.plugins.gradle.util.GradleConstants
 import java.io.File
+import java.io.OutputStream
 
 /**
  *
@@ -27,10 +30,10 @@ object GradleUtils {
             project,
             GradleConstants.SYSTEM_ID,
             project.basePath ?: return,
-            object : ExternalProjectRefreshCallback{
+            object : ExternalProjectRefreshCallback {
                 override fun onSuccess(externalTaskId: ExternalSystemTaskId, externalProject: DataNode<ProjectData>?) {
                     super.onSuccess(externalTaskId, externalProject)
-                    runGradleCommandOnToolWindow(project,"initEnvironment","npmInstall")
+                    runGradleCommandOnToolWindow(project, "initEnvironment", "npmInstall")
                 }
             },
             false,
@@ -48,13 +51,34 @@ object GradleUtils {
         } ?: false
     }
 
-    fun runGradleCommand(project: Project, vararg command: String) {
+    data class RunGradleCommandResult(val success: Boolean, val output: String, val error: String)
+
+    fun runGradleCommand(project: Project, vararg command: String, callback: ((RunGradleCommandResult) -> Unit)? = null) {
         // 直接运行 Gradle 命令
-        val connector = GradleConnector.newConnector().forProjectDirectory(File(project.basePath))
+        val connector = GradleConnector.newConnector().forProjectDirectory(project.basePath?.let { File(it) })
         connector.connect().use { connection ->
+            val outputStream = StringBuilder()
+            val errorStream = StringBuilder()
             connection.newBuild()
+                .setStandardOutput(object : OutputStream() {
+                    override fun write(b: Int) {
+                        outputStream.append(b.toChar())
+                    }
+                }).setStandardError(object : OutputStream() {
+                    override fun write(b: Int) {
+                        errorStream.append(b.toChar())
+                    }
+                })
                 .forTasks(*command)
-                .run()
+                .run(object : ResultHandler<Void> {
+                    override fun onComplete(p0: Void?) {
+                        callback?.let { it(RunGradleCommandResult(true, outputStream.toString(), errorStream.toString())) }
+                    }
+
+                    override fun onFailure(p0: GradleConnectionException?) {
+                        callback?.let { it(RunGradleCommandResult(false, outputStream.toString(), errorStream.toString())) }
+                    }
+                })
         }
     }
 

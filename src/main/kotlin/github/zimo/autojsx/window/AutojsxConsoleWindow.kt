@@ -141,7 +141,7 @@ class AutojsxConsoleWindow : ToolWindowFactory {
         ConsoleOutput.isInitOutput = false
         consoleView.print("欢迎使用 Autojsx!", ConsoleViewContentType.LOG_DEBUG_OUTPUT)
         consoleView.performWhenNoDeferredOutput {
-            ConsoleOutput.console!!.flushDeferredText()
+            ConsoleOutput.console?.flushDeferredText()
         }
 
         // 创建上面的按钮区
