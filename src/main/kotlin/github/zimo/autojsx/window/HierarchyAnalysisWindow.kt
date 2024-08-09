@@ -4,6 +4,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
+import github.zimo.autojsx.uiHierarchyAnalysis.Point
+import github.zimo.autojsx.uiHierarchyAnalysis.UIHierarchy
+import github.zimo.autojsx.uiHierarchyAnalysis.UINode
+import github.zimo.autojsx.util.logI
 import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Dimension
@@ -27,7 +31,7 @@ import kotlin.math.abs
  * @author : zimo
  * @date : 2024/08/04
  */
-@Deprecated("因关键技术缺失，废弃该方法")
+//@Deprecated("因关键技术缺失，废弃该方法")
 class HierarchyAnalysisWindow : ToolWindowFactory {
 
     override fun createToolWindowContent(p0: Project, window: ToolWindow) {
@@ -63,14 +67,15 @@ class HierarchyAnalysisWindow : ToolWindowFactory {
 
     fun imageUI(p0: Project): JPanel {
         val mainJPanel = JPanel()
-//        mainJPanel.layout = BorderLayout()
+        mainJPanel.layout = BorderLayout()
 
         // Load the image
         val image = loadLastImage(p0)
         val originalIcon = ImageIcon(image?.path)
 
-        var panePoorWidth = 1.0
-        var panePoorHeight = 1.0
+        // Calculate the aspect ratio of the original image
+        val aspectRatio = originalIcon.iconWidth.toDouble() / originalIcon.iconHeight.toDouble()
+
         // Add a component listener to the JPanel to detect size changes
         mainJPanel.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(e: ComponentEvent?) {
@@ -78,24 +83,23 @@ class HierarchyAnalysisWindow : ToolWindowFactory {
                 val newWidth = mainJPanel.width
                 val newHeight = mainJPanel.height
 
-                println("New dimensions: ($newWidth, $newHeight)")
-                // Get original dimensions of the image
-                val originalWidth = originalIcon.iconWidth
-                val originalHeight = originalIcon.iconHeight
+                // Determine the new dimensions to maintain the aspect ratio
+                val scaledWidth: Int
+                val scaledHeight: Int
 
-                println("Original dimensions: ($originalWidth, $originalHeight)")
-                if (newWidth > 0 && newHeight > 0 && panePoorWidth == 1.0 && panePoorHeight == 1.0) {
-                    panePoorWidth = abs(newWidth.toDouble()/originalWidth )
-                    panePoorHeight = abs(newHeight.toDouble()/originalHeight)
+                // Determine which dimension to scale
+                if (newWidth / aspectRatio <= newHeight) {
+                    scaledWidth = newWidth
+                    scaledHeight = (newWidth / aspectRatio).toInt()
+                } else {
+                    scaledWidth = (newHeight * aspectRatio).toInt()
+                    scaledHeight = newHeight
                 }
-                println("Pane poor: ($panePoorWidth, $panePoorHeight)")
 
-                val scaledWidth: Int = (newWidth * panePoorWidth).toInt()
-                val scaledHeight: Int = (newHeight * panePoorHeight).toInt()
-
-                println("Scaled dimensions: ($scaledWidth, $scaledHeight)")
                 // Scale the image to fit the JPanel
-                val scaledImage = originalIcon.image.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_SMOOTH)
+                val scaledImage =
+                    originalIcon.image.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_AREA_AVERAGING)
+                // 重绘图片
                 val scaledIcon = ImageIcon(scaledImage)
 
                 // Update the JLabel with the scaled icon
@@ -106,28 +110,43 @@ class HierarchyAnalysisWindow : ToolWindowFactory {
                 mainJPanel.repaint()
                 jLabel.addMouseListener(object : MouseAdapter() {
                     override fun mouseClicked(e: MouseEvent) {
-                        val clickX = e.x
-                        val clickY = e.y
+                        // Calculate the image's position inside the JPanel
+                        val imageXOffset = (newWidth - scaledWidth) / 2
+                        val imageYOffset = (newHeight - scaledHeight) / 2
 
-                        // Convert the click coordinates to the original image coordinates
-                        val originalX = (clickX * panePoorWidth).toInt()
-                        val originalY = (clickY * panePoorHeight).toInt()
+                        // Calculate the click position relative to the image
+                        val clickX = e.x - imageXOffset
+                        val clickY = e.y - imageYOffset
 
-                        println("Click coordinates: ($clickX, $clickY)")
-                        println("Original image coordinates: ($originalX, $originalY)")
+                        // Calculate the scale ratios
+                        val scaleX = originalIcon.iconWidth.toDouble() / scaledWidth.toDouble()
+                        val scaleY = originalIcon.iconHeight.toDouble() / scaledHeight.toDouble()
+
+                        // Map the click position to the original image size
+                        val originalClickX = (clickX * scaleX).toInt()
+                        val originalClickY = (clickY * scaleY).toInt()
+
+                        if (clickX in 0 until scaledWidth + 1 && clickY in 0 until scaledHeight + 1) {
+                            logI("Clicked at ($clickX, $clickY) relative to the image")
+                            logI("Clicked at ($originalClickX, $originalClickY) relative to the original image")
+                        } else {
+                            logI("Clicked outside the image bounds")
+                        }
                     }
                 })
             }
         })
 
-        mainJPanel.add(JLabel(originalIcon))
+        mainJPanel.add(JLabel(originalIcon), BorderLayout.CENTER)
         mainJPanel.minimumSize = Dimension(100, 100)
         mainJPanel.background = Color.red
         return mainJPanel
     }
 
-    // 扩展函数来计算两个整数的最大公约数
-    fun Int.gcd(other: Int): Int = if (other == 0) this else other.gcd(this % other)
+
+    fun onUpdateImage(callback: () -> Unit) {
+
+    }
 
     fun buttonUI(p0: Project): JPanel {
         val mainJPanel = JPanel()
@@ -142,3 +161,55 @@ class HierarchyAnalysisWindow : ToolWindowFactory {
         return file
     }
 }
+
+data class ImageState(
+    val jPanel: JPanel,
+    val imageWidth:Int,
+    val imageHeight:Int,
+    val originalImageWidth:Int,
+    val originalImageHeight:Int
+){
+    fun update(scaledIcon: ImageIcon){
+        val newWidth = jPanel.width
+        val newHeight = jPanel.height
+        val jLabel = JLabel(scaledIcon)
+        jPanel.removeAll()
+        jPanel.add(jLabel)
+        jPanel.revalidate()
+        jPanel.repaint()
+        jLabel.addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                // Calculate the image's position inside the JPanel
+                val imageXOffset = (newWidth - imageWidth) / 2
+                val imageYOffset = (newHeight - imageHeight) / 2
+
+                // Calculate the click position relative to the image
+                val clickX = e.x - imageXOffset
+                val clickY = e.y - imageYOffset
+
+                // Calculate the scale ratios
+                val scaleX = originalImageWidth.toDouble() / imageWidth.toDouble()
+                val scaleY = originalImageHeight.toDouble() / imageHeight.toDouble()
+
+                // Map the click position to the original image size
+                val originalClickX = (clickX * scaleX).toInt()
+                val originalClickY = (clickY * scaleY).toInt()
+
+                if (clickX in 0 until imageWidth + 1 && clickY in 0 until imageHeight + 1) {
+                    logI("Clicked at ($clickX, $clickY) relative to the image")
+                    logI("Clicked at ($originalClickX, $originalClickY) relative to the original image")
+                } else {
+                    logI("Clicked outside the image bounds")
+                }
+            }
+        })
+    }
+}
+
+data class HierarchyState(
+    val hierarchy: UIHierarchy,
+    val image: ImageIO,
+    val selectImagePoint: Point,
+    val selectOriginalImagePoint: Point,
+    val selectNode: UINode
+)
