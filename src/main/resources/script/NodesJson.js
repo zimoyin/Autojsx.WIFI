@@ -4,6 +4,7 @@
  */
 // let values = [];
 
+let startTime = Date.now();
 // 获取屏幕上的所有节点，有父子从属描述
 var allNodes = find();
 var count = 0
@@ -103,7 +104,10 @@ for (var i = 0; i < allNodes.length; i++) {
 var jsonData = {
     hierarchy: rootNodes
 };
+let endTime = Date.now();
+console.log(`构建节点信息耗时: ${endTime - startTime} milliseconds.`);
 
+startTime = Date.now();
 // 发送JSON数据
 let data = {
     cmd: 9,
@@ -111,10 +115,15 @@ let data = {
     ID: values[1],
     value: JSON.stringify(jsonData)
 };
+endTime = Date.now();
+console.log(`节点信息转义为JSON数据耗时: ${endTime - startTime} milliseconds.`);
 
+startTime = Date.now();
 let res = http.postJson(values[0], data);
 if (res.statusCode === 200) {
     console.log("CMD 访问成功: " + data.message + " ID: " + data.ID + "  send data: " + data.message);
 } else {
     console.log("CMD 访问失败: " + data.message + " ID: " + data.ID);
 }
+endTime = Date.now();
+console.log(`发送数据耗时: ${endTime - startTime} milliseconds.`);

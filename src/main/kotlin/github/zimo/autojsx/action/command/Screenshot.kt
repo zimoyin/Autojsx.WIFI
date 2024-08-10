@@ -18,14 +18,14 @@ class Screenshot :
         executor.submit {
             logI("正在截图")
             val times = System.currentTimeMillis()
-            VertxCommand.getScreenshot({
+            VertxCommand.getScreenshot{
                 if (it.isEmpty()) {
                     logW("截图失败没有获取屏幕截图 base64")
                     return@getScreenshot
                 }
                 val file = base64_image_toFile(it, e.project?.basePath ?: "", times)
                 logI("截图完成: $file")
-            })
+            }
         }
     }
 

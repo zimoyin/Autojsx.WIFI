@@ -9,6 +9,7 @@ import github.zimo.autojsx.server.AutojsJsonBuilder.Companion.saveProjectJson
 import github.zimo.autojsx.uiHierarchyAnalysis.UIHierarchy
 import github.zimo.autojsx.util.base64_image
 import github.zimo.autojsx.util.logE
+import github.zimo.autojsx.util.logI
 import github.zimo.autojsx.util.resourceAsStream
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.http.ServerWebSocket
@@ -248,7 +249,8 @@ object VertxCommand {
             )
         runJs("[SystemScript]GetTheRunningScript", script, devices)
         val startTime = System.currentTimeMillis()
-        while ((System.currentTimeMillis() - startTime) < 3000) {
+        logI("服务器正在获取运行时脚本列表，最大等待当前脚本返回时间，为 4.5 秒。不要重复执行")
+        while ((System.currentTimeMillis() - startTime) < 4500) {
             VertxServer.content["getRunningList"]?.let {
                 if (uuid == it.getString("ID")) {
                     val array: ArrayList<RunningListPojo> = ArrayList()
@@ -334,7 +336,8 @@ object VertxCommand {
             )
         runJs("getNodes", script, devices)
         val startTime = System.currentTimeMillis()
-        while ((System.currentTimeMillis() - startTime) < 3000) {
+        logI("服务器正在获取节点信息，最大等待当前脚本返回时间，为 15 秒。不要重复执行")
+        while ((System.currentTimeMillis() - startTime) < 15 * 1000) {
             VertxServer.content["getNodes"]?.let {
                 if (uuid == it.getString("ID")) {
                     callback(it.getString("value"))
@@ -354,11 +357,13 @@ object VertxCommand {
      * 获取当前屏幕上的所有节点并记录成 json
      */
     fun getNodesAsJson(
-        callback: (json: UIHierarchy?) -> Unit,
         devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
+        callback: (json: UIHierarchy?) -> Unit,
     ) {
         VertxServer.content["getNodesJson"] = JsonObject("{\"ID\": \"0\"}")
-        VertxServer.devicesEmpty(devices)
+        if (VertxServer.devicesEmpty(devices)) {
+            return
+        }
         var readBytes: ByteArray = ByteArray(0)
         resourceAsStream("script/NodesJson.js")?.apply {
             readBytes = readBytes()
@@ -372,7 +377,8 @@ object VertxCommand {
             )
         runJs("getNodesJson", script, devices)
         val startTime = System.currentTimeMillis()
-        while ((System.currentTimeMillis() - startTime) < 3000) {
+        logI("服务器正在获取节点信息，最大等待当前脚本返回时间，为 15 秒。不要重复执行")
+        while ((System.currentTimeMillis() - startTime) < 15 * 1000) {
             VertxServer.content["getNodesJson"]?.let {
                 if (uuid == it.getString("ID")) {
                     callback(UIHierarchy.parse(it.getString("value")))
@@ -410,7 +416,8 @@ object VertxCommand {
             )
         runJs("getApplications", script, devices)
         val startTime = System.currentTimeMillis()
-        while ((System.currentTimeMillis() - startTime) < 8 * 1000) {
+        logI("服务器正在获取应用信息，最大等待当前脚本返回时间，为 15 秒。不要重复执行")
+        while ((System.currentTimeMillis() - startTime) < 15 * 1000) {
             VertxServer.content["getApplications"]?.let {
                 if (uuid == it.getString("ID")) {
                     val list = ArrayList<ApplicationListPojo>()
@@ -449,11 +456,13 @@ object VertxCommand {
      * 截图
      */
     fun getScreenshot(
-        callback: (base64: String) -> Unit,
         devices: HashMap<String, ServerWebSocket> = VertxServer.selectDevicesWs,
+        callback: (base64: String) -> Unit,
     ) {
         VertxServer.content["getScreenshot"] = JsonObject("{\"ID\": \"0\"}")
-        VertxServer.devicesEmpty(devices)
+        if (VertxServer.devicesEmpty(devices)) {
+            return
+        }
         var readBytes: ByteArray = ByteArray(0)
         resourceAsStream("script/Screenshot.js")?.apply {
             readBytes = readBytes()
@@ -467,7 +476,8 @@ object VertxCommand {
             )
         runJs("getScreenshot", script, devices)
         val startTime = System.currentTimeMillis()
-        while ((System.currentTimeMillis() - startTime) < 6000) {
+        logI("服务器正在获取截图，最大等待当前脚本返回时间，为 10 秒。不要重复执行")
+        while ((System.currentTimeMillis() - startTime) < 10 * 1000) {
             VertxServer.content["getScreenshot"]?.let {
                 if (uuid == it.getString("ID")) {
                     callback(it.getString("value"))

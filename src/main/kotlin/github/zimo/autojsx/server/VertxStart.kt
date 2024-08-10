@@ -50,10 +50,12 @@ object VertxServer {
 
     fun isActivity(): Boolean = vertx != null
 
-    fun devicesEmpty(devices: HashMap<String, ServerWebSocket> = selectDevicesWs) {
+    fun devicesEmpty(devices: HashMap<String, ServerWebSocket> = selectDevicesWs): Boolean {
         if (devices.isEmpty()) {
             ConsoleOutput.systemPrint("操作警告/W: 未选择任何设备,无法执行脚本")
+            return true
         }
+        return false
     }
 
     fun getServerIpAddress(): String {

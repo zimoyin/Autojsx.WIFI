@@ -1,29 +1,25 @@
 package github.zimo.autojsx.window
 
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
-import github.zimo.autojsx.uiHierarchyAnalysis.Point
-import github.zimo.autojsx.uiHierarchyAnalysis.UIHierarchy
-import github.zimo.autojsx.uiHierarchyAnalysis.UINode
-import github.zimo.autojsx.util.logI
+import com.intellij.ui.dsl.builder.Panel
+import com.intellij.ui.dsl.builder.panel
+import github.zimo.autojsx.server.VertxCommand
+import github.zimo.autojsx.server.VertxServer
+import github.zimo.autojsx.util.base64_image
+import github.zimo.autojsx.util.executor
+import github.zimo.autojsx.util.logE
+import github.zimo.autojsx.window.hierarchy.*
 import java.awt.BorderLayout
-import java.awt.Color
 import java.awt.Dimension
-import java.awt.Image
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
-import java.awt.image.BufferedImage
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.math.BigDecimal
-import javax.imageio.ImageIO
 import javax.swing.*
-import kotlin.math.abs
 
 
 /**
@@ -31,12 +27,18 @@ import kotlin.math.abs
  * @author : zimo
  * @date : 2024/08/04
  */
-//@Deprecated("因关键技术缺失，废弃该方法")
 class HierarchyAnalysisWindow : ToolWindowFactory {
+    val ImageState = ImageState()
+    val HierarchyState = HierarchyState()
+    val TreeState = TreeState()
+    val TableState = TableState()
 
     override fun createToolWindowContent(p0: Project, window: ToolWindow) {
-        val content = ContentFactory.getInstance().createContent(ui(p0, window), "HierarchyAnalysis", false)
+        val content = ContentFactory.getInstance().createContent(ui(p0, window), "布局分析", false)
         window.contentManager.addContent(content)
+
+        val content2 = ContentFactory.getInstance().createContent(panel { row { label("当前尚未实现") } }, "图色分析", false)
+        window.contentManager.addContent(content2)
     }
 
 
@@ -65,151 +67,109 @@ class HierarchyAnalysisWindow : ToolWindowFactory {
         return panel
     }
 
+
     fun imageUI(p0: Project): JPanel {
-        val mainJPanel = JPanel()
-        mainJPanel.layout = BorderLayout()
-
-        // Load the image
-        val image = loadLastImage(p0)
-        val originalIcon = ImageIcon(image?.path)
-
-        // Calculate the aspect ratio of the original image
-        val aspectRatio = originalIcon.iconWidth.toDouble() / originalIcon.iconHeight.toDouble()
-
-        // Add a component listener to the JPanel to detect size changes
+        val mainJPanel = ImageState.panel
         mainJPanel.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(e: ComponentEvent?) {
-                // Get the new dimensions of the JPanel
-                val newWidth = mainJPanel.width
-                val newHeight = mainJPanel.height
-
-                // Determine the new dimensions to maintain the aspect ratio
-                val scaledWidth: Int
-                val scaledHeight: Int
-
-                // Determine which dimension to scale
-                if (newWidth / aspectRatio <= newHeight) {
-                    scaledWidth = newWidth
-                    scaledHeight = (newWidth / aspectRatio).toInt()
-                } else {
-                    scaledWidth = (newHeight * aspectRatio).toInt()
-                    scaledHeight = newHeight
-                }
-
-                // Scale the image to fit the JPanel
-                val scaledImage =
-                    originalIcon.image.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_AREA_AVERAGING)
-                // 重绘图片
-                val scaledIcon = ImageIcon(scaledImage)
-
-                // Update the JLabel with the scaled icon
-                val jLabel = JLabel(scaledIcon)
-                mainJPanel.removeAll()
-                mainJPanel.add(jLabel)
-                mainJPanel.revalidate()
-                mainJPanel.repaint()
-                jLabel.addMouseListener(object : MouseAdapter() {
-                    override fun mouseClicked(e: MouseEvent) {
-                        // Calculate the image's position inside the JPanel
-                        val imageXOffset = (newWidth - scaledWidth) / 2
-                        val imageYOffset = (newHeight - scaledHeight) / 2
-
-                        // Calculate the click position relative to the image
-                        val clickX = e.x - imageXOffset
-                        val clickY = e.y - imageYOffset
-
-                        // Calculate the scale ratios
-                        val scaleX = originalIcon.iconWidth.toDouble() / scaledWidth.toDouble()
-                        val scaleY = originalIcon.iconHeight.toDouble() / scaledHeight.toDouble()
-
-                        // Map the click position to the original image size
-                        val originalClickX = (clickX * scaleX).toInt()
-                        val originalClickY = (clickY * scaleY).toInt()
-
-                        if (clickX in 0 until scaledWidth + 1 && clickY in 0 until scaledHeight + 1) {
-                            logI("Clicked at ($clickX, $clickY) relative to the image")
-                            logI("Clicked at ($originalClickX, $originalClickY) relative to the original image")
-                        } else {
-                            logI("Clicked outside the image bounds")
-                        }
-                    }
-                })
+                ImageState.calculateNewDimensionsToFitPanel()
+                val scaledImage = ImageState.redrawImage(HierarchyState)
+                val scaledIcon = if (scaledImage == null) ImageIcon() else ImageIcon(scaledImage)
+                ImageState.update(scaledIcon, HierarchyState, TreeState, TableState)
             }
         })
 
-        mainJPanel.add(JLabel(originalIcon), BorderLayout.CENTER)
-        mainJPanel.minimumSize = Dimension(100, 100)
-        mainJPanel.background = Color.red
+        mainJPanel.add(JLabel(ImageState.getImageIcon()), BorderLayout.CENTER)
         return mainJPanel
-    }
-
-
-    fun onUpdateImage(callback: () -> Unit) {
-
     }
 
     fun buttonUI(p0: Project): JPanel {
         val mainJPanel = JPanel()
-        mainJPanel.add(JButton("分析层次"))
+
+        val treeScrollPane = JScrollPane(TreeState.tree).apply {
+            TreeState.init(ImageState, HierarchyState, TableState)
+        }
+        val tableScrollPane = JScrollPane(TableState.table)
+        mainJPanel.add {
+            row {
+                cell(buttonHierarchyAnalysis(p0))
+                button("生成代码"){
+                    GeneratingCode(HierarchyState).generateCode()
+                }
+            }
+            row { cell(treeScrollPane) }
+            row { cell(tableScrollPane) }
+        }
+
         mainJPanel.minimumSize = Dimension(100, 100)
+        mainJPanel.addComponentListener(object : ComponentAdapter() {
+            override fun componentResized(e: ComponentEvent) {
+                // 获取主面板的新尺寸
+                val newSize = e.component.size
+                if (newSize.width <= 0 || newSize.height <= 0) return
+                // 设置 JScrollPane 的新尺寸
+                treeScrollPane.preferredSize = Dimension(newSize.width - 2, newSize.height / 2 - 2)
+                treeScrollPane.size = Dimension(newSize.width - 2, newSize.height / 2 - 2)
+                tableScrollPane.preferredSize = Dimension(newSize.width - 2, newSize.height / 2 - 2)
+                tableScrollPane.size = Dimension(newSize.width - 2, newSize.height / 2 - 2)
+                mainJPanel.revalidate()  // 重新布局组件
+                mainJPanel.repaint()     // 重绘组件
+            }
+        })
         return mainJPanel
     }
 
-    fun loadLastImage(e0: Project): File? {
-        val path = e0.basePath + File.separator + "/build/autojs/images/"
-        val file = File(path).listFiles()?.filter { it.extension == "png" }?.maxBy { it.nameWithoutExtension.toLong() }
-        return file
-    }
-}
-
-data class ImageState(
-    val jPanel: JPanel,
-    val imageWidth:Int,
-    val imageHeight:Int,
-    val originalImageWidth:Int,
-    val originalImageHeight:Int
-){
-    fun update(scaledIcon: ImageIcon){
-        val newWidth = jPanel.width
-        val newHeight = jPanel.height
-        val jLabel = JLabel(scaledIcon)
-        jPanel.removeAll()
-        jPanel.add(jLabel)
-        jPanel.revalidate()
-        jPanel.repaint()
-        jLabel.addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) {
-                // Calculate the image's position inside the JPanel
-                val imageXOffset = (newWidth - imageWidth) / 2
-                val imageYOffset = (newHeight - imageHeight) / 2
-
-                // Calculate the click position relative to the image
-                val clickX = e.x - imageXOffset
-                val clickY = e.y - imageYOffset
-
-                // Calculate the scale ratios
-                val scaleX = originalImageWidth.toDouble() / imageWidth.toDouble()
-                val scaleY = originalImageHeight.toDouble() / imageHeight.toDouble()
-
-                // Map the click position to the original image size
-                val originalClickX = (clickX * scaleX).toInt()
-                val originalClickY = (clickY * scaleY).toInt()
-
-                if (clickX in 0 until imageWidth + 1 && clickY in 0 until imageHeight + 1) {
-                    logI("Clicked at ($clickX, $clickY) relative to the image")
-                    logI("Clicked at ($originalClickX, $originalClickY) relative to the original image")
-                } else {
-                    logI("Clicked outside the image bounds")
+    fun buttonHierarchyAnalysis(e: Project): JButton {
+        val action = {
+            VertxServer.start()
+            val submit = executor.submit {
+                VertxCommand.getScreenshot {
+                    if (it.isEmpty()) {
+                        logE("获取截图失败")
+                        return@getScreenshot
+                    }
+                    val image = base64_image(it)
+                    if (image != null) {
+                        ImageState.updateImage(image)
+                        HierarchyState.selectImagePoint = null
+                        HierarchyState.selectOriginalImagePoint = null
+                        HierarchyState.selectNode = null
+                        ImageState.update(
+                            ImageState.getImageIcon(HierarchyState),
+                            HierarchyState,
+                            TreeState,
+                            TableState
+                        )
+                    } else {
+                        logE("获取截图失败")
+                    }
                 }
             }
-        })
+            val submit2 = executor.submit {
+                VertxCommand.getNodesAsJson {
+                    if (it == null) {
+                        logE("获取Node失败")
+                        return@getNodesAsJson
+                    }
+                    HierarchyState.hierarchy = it
+                    TreeState.updateTree(HierarchyState)
+                }
+            }
+            submit2.get()
+            submit.get()
+        }
+        return JButton("分析层次").apply {
+            this.addActionListener {
+                ProgressManager.getInstance().run(object : Task.Backgroundable(e, "分析层次...", true) {
+                    override fun run(indicator: ProgressIndicator) {
+                        action()
+                    }
+                })
+            }
+        }
     }
 }
 
-data class HierarchyState(
-    val hierarchy: UIHierarchy,
-    val image: ImageIO,
-    val selectImagePoint: Point,
-    val selectOriginalImagePoint: Point,
-    val selectNode: UINode
-)
+private fun JPanel.add(callback: Panel.() -> Unit) {
+    this.add(panel { callback() })
+}

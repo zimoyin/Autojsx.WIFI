@@ -114,7 +114,10 @@ class UIHierarchy @Deprecated("use UIHierarchy.parse(json)") @JsonCreator constr
     fun findNode(point: Point): UINode? {
         var result: UINode? = null
         hierarchy.map {
-            findNode(point, it, HashSet())
+            findNode(point, it, HashSet()).let {nodes->
+                if (nodes.isEmpty()) findNode(point, it, nodes,false)
+                else nodes
+            }
         }.forEach {
             if (it.size == 1) result = it.last()
             if (it.size > 1) {
@@ -124,9 +127,10 @@ class UIHierarchy @Deprecated("use UIHierarchy.parse(json)") @JsonCreator constr
         return result
     }
 
-    private fun findNode(point: Point, node: UINode, results: HashSet<UINode>): HashSet<UINode> {
+    private fun findNode(point: Point, node: UINode, results: HashSet<UINode>,ignoreEmptyChildNode: Boolean = true): HashSet<UINode> {
         val rectangle = node.bounds.toRectangle()
         if (rectangle.isPointInRectangle(point)) {
+            if (!ignoreEmptyChildNode) results.add(node)
             if (node.childNodes.isEmpty()) results.add(node)
             node.childNodes.forEach {
                 findNode(point, it, results)
