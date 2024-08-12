@@ -16,7 +16,7 @@ import javax.swing.tree.TreePath
  * @author : zimo
  * @date : 2024/08/10
  */
-data class TreeState(
+data class HierarchyTreeState(
     val treeRootNode: DefaultMutableTreeNode = DefaultMutableTreeNode("Root"),
     val treeModel: DefaultTreeModel = DefaultTreeModel(treeRootNode),
     val treeNodeIdMap: MutableMap<String, UINode> = mutableMapOf<String, UINode>(),
@@ -44,7 +44,7 @@ data class TreeState(
     }
 ) {
 
-    fun init(ImageState: ImageState, HierarchyState: HierarchyState, TableState: TableState) {
+    fun init(ImageState: HierarchyImageState, HierarchyState: HierarchyState, TableState: HierarchyTableState) {
         //添加监听
         tree.addTreeSelectionListener { e ->
             val selectedNode = tree.getLastSelectedPathComponent() as DefaultMutableTreeNode?
@@ -52,7 +52,7 @@ data class TreeState(
                 val id = selectedNode.userObject.toString()
                 val uiNode = treeNodeIdMap[id]
                 HierarchyState.selectNode = uiNode
-                ImageState.update(ImageIcon(ImageState.redrawImage(HierarchyState)), HierarchyState, this, TableState)
+                ImageState.update(ImageIcon(ImageState.resizeAndRedrawRectangleImage(HierarchyState)), HierarchyState, this, TableState)
             }
         }
     }

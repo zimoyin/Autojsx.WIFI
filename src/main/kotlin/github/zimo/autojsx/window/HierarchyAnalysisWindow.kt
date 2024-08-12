@@ -28,17 +28,15 @@ import javax.swing.*
  * @date : 2024/08/04
  */
 class HierarchyAnalysisWindow : ToolWindowFactory {
-    val ImageState = ImageState()
+    val ImageState = HierarchyImageState()
     val HierarchyState = HierarchyState()
-    val TreeState = TreeState()
-    val TableState = TableState()
+    val TreeState = HierarchyTreeState()
+    val TableState = HierarchyTableState()
 
     override fun createToolWindowContent(p0: Project, window: ToolWindow) {
         val content = ContentFactory.getInstance().createContent(ui(p0, window), "布局分析", false)
         window.contentManager.addContent(content)
-
-        val content2 = ContentFactory.getInstance().createContent(panel { row { label("当前尚未实现") } }, "图色分析", false)
-        window.contentManager.addContent(content2)
+        ImageColorAnalysisWindow().createToolWindowContent(p0, window)
     }
 
 
@@ -70,10 +68,11 @@ class HierarchyAnalysisWindow : ToolWindowFactory {
 
     fun imageUI(p0: Project): JPanel {
         val mainJPanel = ImageState.panel
+
         mainJPanel.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(e: ComponentEvent?) {
                 ImageState.calculateNewDimensionsToFitPanel()
-                val scaledImage = ImageState.redrawImage(HierarchyState)
+                val scaledImage = ImageState.resizeAndRedrawRectangleImage(HierarchyState)
                 val scaledIcon = if (scaledImage == null) ImageIcon() else ImageIcon(scaledImage)
                 ImageState.update(scaledIcon, HierarchyState, TreeState, TableState)
             }
@@ -94,7 +93,7 @@ class HierarchyAnalysisWindow : ToolWindowFactory {
             row {
                 cell(buttonHierarchyAnalysis(p0))
                 button("生成代码"){
-                    GeneratingCode(HierarchyState).generateCode()
+                    HierarchyGeneratingCode(HierarchyState).generateCode()
                 }
             }
             row { cell(treeScrollPane) }

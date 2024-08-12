@@ -9,7 +9,7 @@ import javax.swing.table.DefaultTableModel
  * @author : zimo
  * @date : 2024/08/10
  */
-class TableState {
+class HierarchyTableState {
     private val columnNames = arrayOf("Property", "Value")
     private val data = arrayOf(
         arrayOf("Property", "Value"),
@@ -23,6 +23,27 @@ class TableState {
 
     fun clear(){
         tableModel.rowCount = 0
+        table.revalidate()
+        table.repaint()
+    }
+
+    fun add(v:Any,v2:Any){
+        add(arrayOf(v.toString(),v2.toString()))
+    }
+
+    fun add(row: Array<String>) {
+        tableModel.addRow(row)
+        table.revalidate()
+        table.repaint()
+    }
+
+    fun update(array: Array<Array<String>>){
+        clear()
+        array.forEach { row ->
+            tableModel.addRow(row)
+        }
+        table.revalidate()
+        table.repaint()
     }
 
     fun update(node:UINode){

@@ -9,7 +9,7 @@ import java.awt.datatransfer.Transferable
 import javax.swing.*
 
 
-class GeneratingCode(val hierarchy: HierarchyState) {
+class HierarchyGeneratingCode(val hierarchy: HierarchyState) {
 
     fun generateCode() {
         val dialog = object : DialogWrapper(true) {
