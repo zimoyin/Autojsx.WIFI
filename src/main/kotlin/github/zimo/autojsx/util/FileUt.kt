@@ -130,15 +130,15 @@ private fun findInDirRecursive(dir: VirtualFile, filename: String?, depth: Int =
 fun getGradleOutputMainJsPath(project: Project, isCompile: Boolean = true): VirtualFile {
     return (project.projectFile ?: project.workspaceFile)?.parent?.parent
         ?.let { project.basePath?.let { it1 -> VfsUtil.createDirectoryIfMissing(it1) } }
-        ?.findOrCreateDirectory("build")
-        ?.findOrCreateDirectory("autojs")
-        ?.findOrCreateDirectory("compilation")?.let {
+        ?.findDirectory("build")
+        ?.findDirectory("autojs")
+        ?.findDirectory("compilation")?.let {
             if (it.children.isEmpty() || !isCompile) null else it
         } ?: (project.projectFile ?: project.workspaceFile)?.parent?.parent
         ?.let { project.basePath?.let { it1 -> VfsUtil.createDirectoryIfMissing(it1) } }
-        ?.findOrCreateDirectory("build")
-        ?.findOrCreateDirectory("autojs")
-        ?.findOrCreateDirectory("intermediate_compilation_files")?.let {
+        ?.findDirectory("build")
+        ?.findDirectory("autojs")
+        ?.findDirectory("intermediate_compilation_files")?.let {
             if (it.children.isEmpty()) null else it
         } ?: throw IllegalArgumentException("build/autojs/compilation directory is null")
 }
