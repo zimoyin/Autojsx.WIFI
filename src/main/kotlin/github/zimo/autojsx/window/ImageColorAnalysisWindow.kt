@@ -71,7 +71,11 @@ class ImageColorAnalysisWindow : ToolWindowFactory {
 //        magnifier.image = ImageState.image
 
         mainJPanel.addComponentListener(componentAdapter())
-        mainJPanel.add(JLabel(ImageState.getImageIcon()), BorderLayout.CENTER)
+        if (ImageState.image == null) {
+            mainJPanel.add(JLabel("Not Found Image"), BorderLayout.CENTER)
+        }else{
+            mainJPanel.add(JLabel(ImageState.getImageIcon()), BorderLayout.CENTER)
+        }
         return mainJPanel
     }
 
@@ -82,6 +86,7 @@ class ImageColorAnalysisWindow : ToolWindowFactory {
     }
 
     private fun initImageListener(ImageState: HierarchyImageState) {
+        if (ImageState.image == null) return
         ImageState.calculateNewDimensionsToFitPanel()
         val scaledImage = ImageState.resizeAndRedrawRectangleImage()
         val scaledIcon = if (scaledImage == null) ImageIcon() else ImageIcon(scaledImage)

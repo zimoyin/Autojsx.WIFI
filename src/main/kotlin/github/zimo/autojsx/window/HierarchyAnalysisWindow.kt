@@ -1,5 +1,6 @@
 package github.zimo.autojsx.window
 
+import ai.grazie.detector.ngram.main
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -45,6 +46,7 @@ class HierarchyAnalysisWindow : ToolWindowFactory {
 
         // 创建分隔面板
         val splitPane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, imageUI(p0), buttonUI(p0))
+//        val splitPane = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, JLabel("445"), buttonUI(p0))
         splitPane.dividerLocation = 200 // 设置分隔线的初始位置，可以根据需要调整
         splitPane.setDividerSize(3)
         splitPane.isEnabled = true
@@ -71,14 +73,34 @@ class HierarchyAnalysisWindow : ToolWindowFactory {
 
         mainJPanel.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(e: ComponentEvent?) {
-                ImageState.calculateNewDimensionsToFitPanel()
-                val scaledImage = ImageState.resizeAndRedrawRectangleImage(HierarchyState)
-                val scaledIcon = if (scaledImage == null) ImageIcon() else ImageIcon(scaledImage)
-                ImageState.update(scaledIcon, HierarchyState, TreeState, TableState)
+                if (ImageState.image != null) {
+                    ImageState.calculateNewDimensionsToFitPanel()
+                    val scaledImage = ImageState.resizeAndRedrawRectangleImage(HierarchyState)
+                    val scaledIcon = if (scaledImage == null) ImageIcon() else ImageIcon(scaledImage)
+                    ImageState.update(scaledIcon, HierarchyState, TreeState, TableState)
+                }
+                mainJPanel.revalidate()
+                mainJPanel.repaint()
+            }
+
+            override fun componentMoved(e: ComponentEvent?) {
+                super.componentMoved(e)
+                mainJPanel.revalidate()
+                mainJPanel.repaint()
+            }
+
+            override fun componentShown(e: ComponentEvent?) {
+                super.componentShown(e)
+                mainJPanel.revalidate()
+                mainJPanel.repaint()
             }
         })
 
-        mainJPanel.add(JLabel(ImageState.getImageIcon()), BorderLayout.CENTER)
+        if (ImageState.image == null) {
+            mainJPanel.add(JLabel("Not Found Image"), BorderLayout.CENTER)
+        }else{
+            mainJPanel.add(JLabel(ImageState.getImageIcon()), BorderLayout.CENTER)
+        }
         return mainJPanel
     }
 
@@ -111,6 +133,18 @@ class HierarchyAnalysisWindow : ToolWindowFactory {
                 treeScrollPane.size = Dimension(newSize.width - 2, newSize.height / 2 - 2)
                 tableScrollPane.preferredSize = Dimension(newSize.width - 2, newSize.height / 2 - 2)
                 tableScrollPane.size = Dimension(newSize.width - 2, newSize.height / 2 - 2)
+                mainJPanel.revalidate()  // 重新布局组件
+                mainJPanel.repaint()     // 重绘组件
+            }
+
+            override fun componentMoved(e: ComponentEvent?) {
+                super.componentMoved(e)
+                mainJPanel.revalidate()  // 重新布局组件
+                mainJPanel.repaint()     // 重绘组件
+            }
+
+            override fun componentShown(e: ComponentEvent?) {
+                super.componentShown(e)
                 mainJPanel.revalidate()  // 重新布局组件
                 mainJPanel.repaint()     // 重绘组件
             }
