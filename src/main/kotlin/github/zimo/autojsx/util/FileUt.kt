@@ -127,18 +127,39 @@ private fun findInDirRecursive(dir: VirtualFile, filename: String?, depth: Int =
     return null
 }
 
-fun getGradleOutputMainJsPath(project: Project): VirtualFile {
+fun getGradleOutputMainJsPath(project: Project, isCompile: Boolean = true): VirtualFile {
     return (project.projectFile ?: project.workspaceFile)?.parent?.parent
         ?.let { project.basePath?.let { it1 -> VfsUtil.createDirectoryIfMissing(it1) } }
-        ?.findDirectory("build")
-        ?.findDirectory("autojs")
-        ?.findDirectory("compilation")?.let {
-            if (it.children.isEmpty()) null else it
+        ?.findOrCreateDirectory("build")
+        ?.findOrCreateDirectory("autojs")
+        ?.findOrCreateDirectory("compilation")?.let {
+            if (it.children.isEmpty() || !isCompile) null else it
         } ?: (project.projectFile ?: project.workspaceFile)?.parent?.parent
         ?.let { project.basePath?.let { it1 -> VfsUtil.createDirectoryIfMissing(it1) } }
-        ?.findDirectory("build")
-        ?.findDirectory("autojs")
-        ?.findDirectory("intermediate_compilation_files")?.let {
+        ?.findOrCreateDirectory("build")
+        ?.findOrCreateDirectory("autojs")
+        ?.findOrCreateDirectory("intermediate_compilation_files")?.let {
             if (it.children.isEmpty()) null else it
         } ?: throw IllegalArgumentException("build/autojs/compilation directory is null")
+}
+
+fun getGradleOutputMainJsPathAsFile(project: Project, isCompile: Boolean = true): File {
+    return (project.projectFile ?: project.workspaceFile)?.parent?.parent?.let {
+        project.basePath?.let { path ->
+            if (isCompile) {
+                File(path, "build/autojs/compilation").let {
+                    if (!it.exists()) File(path, "build/autojs/compilation")
+                    else it
+                }
+            } else {
+                File(path, "build/autojs/intermediate_compilation_files")?.let {
+                    if (!it.exists()) null
+                    else it
+                }
+            }
+        }
+    }?.let {
+        if (it.exists() && (it.listFiles()?.isNotEmpty()) == true) return it
+        else null
+    } ?: throw IllegalArgumentException("build/autojs/compilation directory is null")
 }

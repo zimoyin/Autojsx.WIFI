@@ -24,8 +24,8 @@ class TopRunButton : AnAction(ICONS.START_16) {
         if (GradleUtils.isGradleProject(project)) {
             GradleUtils.runGradleCommandOnToolWindow(project, "compile") {
                 if (it) {
-                    logI(getGradleOutputMainJsPath(project))
-                    val zip = zipProject(getGradleOutputMainJsPath(project), project)
+                    logI(getGradleOutputMainJsPath(project,false))
+                    val zip = zipProject(getGradleOutputMainJsPath(project,false), project)
                     VertxCommand.runProject(zip.bytes, zip.info.name)
                 } else {
                     logE("Gradle:compile 构建失败,请通过构建窗口查看错误信息")

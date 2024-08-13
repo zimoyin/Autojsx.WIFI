@@ -76,8 +76,8 @@ class DirRunButton : AnAction(ICONS.START_16) {
                     logI("开始构建 Gradle:compile")
                     GradleUtils.runGradleCommand(project, "compile") { result ->
                         if (result.success) {
-                            logI(getGradleOutputMainJsPath(project))
-                            val zip = zipProject(getGradleOutputMainJsPath(project), project)
+                            logI(getGradleOutputMainJsPath(project,false))
+                            val zip = zipProject(getGradleOutputMainJsPath(project,false), project)
                             VertxCommand.runProject(zip.bytes, zip.info.name)
                         } else {
                             logE("Gradle:compile 构建失败\n${result.error}\n")

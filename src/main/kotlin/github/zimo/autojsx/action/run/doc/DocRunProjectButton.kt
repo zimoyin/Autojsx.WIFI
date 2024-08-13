@@ -116,7 +116,7 @@ class DocRunProjectButton :
                 showCheckboxMessageDialog()
                 if (isRunGradleConsole) GradleUtils.runGradleCommandOnToolWindow(project, "compile") {
                     if (it) {
-                        val outputMainJsPath = getGradleOutputMainJsPath(project)
+                        val outputMainJsPath = getGradleOutputMainJsPath(project,false)
                         logI(outputMainJsPath)
                         val zip = zipProject(outputMainJsPath, project)
                         VertxCommand.runProject(zip.bytes, zip.info.name)
@@ -130,10 +130,26 @@ class DocRunProjectButton :
                                 logI("开始构建 Gradle:compile")
                                 GradleUtils.runGradleCommand(project, "compile") { result ->
                                     if (result.success) {
-                                        val outputMainJsPath = getGradleOutputMainJsPath(project)
-                                        logI(outputMainJsPath)
-                                        val zip = zipProject(outputMainJsPath, project)
-                                        VertxCommand.runProject(zip.bytes, zip.info.name)
+                                        logI("构建Gradle:compile 成功")
+                                        val outputMainJsPath = kotlin.runCatching {
+                                            getGradleOutputMainJsPath(project,false)
+                                        }.getOrNull()
+
+                                        if (outputMainJsPath == null){
+                                            logW("Gradle 已经构建完成了，但是 IDEA 未能索引到构建后的文件。使用 File 进行加载")
+                                            kotlin.runCatching {
+                                                val file = getGradleOutputMainJsPathAsFile(project,false)
+                                                VertxCommand.runProject(zipBytes(file.canonicalPath), file.path)
+                                            }.onFailure {
+                                                logE("无法执行项目，无法正确加载编译后的文件")
+                                            }
+                                            return@runGradleCommand
+                                        }else{
+                                            logI(outputMainJsPath)
+                                            val zip = zipProject(outputMainJsPath, project)
+                                            VertxCommand.runProject(zip.bytes, zip.info.name)
+                                        }
+
                                     } else {
                                         logE("Gradle:compile 构建失败\n${result.error}\n")
                                     }
