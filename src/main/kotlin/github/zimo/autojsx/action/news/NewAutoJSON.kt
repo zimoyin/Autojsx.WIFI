@@ -1,5 +1,6 @@
 package github.zimo.autojsx.action.news
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -46,6 +47,10 @@ class NewAutoJSON :
             // 刷新虚拟文件系统，以确保新创建的文件可见
             VirtualFileManager.getInstance().refreshWithoutFileWatcher(false)
         }
+    }
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.BGT
     }
 
     override fun update(e: AnActionEvent) {

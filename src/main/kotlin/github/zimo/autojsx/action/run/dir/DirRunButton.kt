@@ -1,5 +1,6 @@
 package github.zimo.autojsx.action.run.dir
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.PlatformDataKeys
@@ -88,6 +89,10 @@ class DirRunButton : AnAction(ICONS.START_16) {
         } else {
             logE("无法运行该项目，该文件夹不是一个项目文件夹: src 为空 && 未能检测到 Gradle")
         }
+    }
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.BGT
     }
 
     override fun update(e: AnActionEvent) {

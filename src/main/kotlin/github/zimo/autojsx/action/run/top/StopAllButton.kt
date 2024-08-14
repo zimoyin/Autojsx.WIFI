@@ -1,5 +1,6 @@
 package github.zimo.autojsx.action.run.top
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.module.ModuleType
@@ -18,6 +19,10 @@ class StopAllButton:
     override fun actionPerformed(e: AnActionEvent) {
         VertxCommand.stopAll()
         ConsoleOutput.systemPrint("Action/I: 停止所有脚本指令已发送")
+    }
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.BGT
     }
 
     override fun update(e: AnActionEvent) {
