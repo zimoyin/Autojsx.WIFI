@@ -300,9 +300,9 @@ fun KotlinJsTargetDsl.taskList() {
                 into(intermediateCompilationFile)
             }
             // main.js 前面添加 "ui"; 进入UI模式
-            if (compilationMainJsFile.exists() && useUI.contains("true")) {
-                val content = compilationMainJsFile.readText()
-                compilationMainJsFile.writeText("\"ui\";\n$content")
+            if (intermediateCompilationMainJsFile.exists() && useUI.contains("true")) {
+                val content = intermediateCompilationMainJsFile.readText()
+                intermediateCompilationMainJsFile.writeText("\"ui\";\n$content")
             }
         }
     }
