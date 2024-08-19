@@ -80,7 +80,8 @@ kotlin {
 
 fun KotlinJsTargetDsl.taskList() {
 
-    val mainFile = compilations.getByName("main").npmProject.dir.get().asFile        // 编译输出文件夹
+    val name = moduleName?:"main"
+    val mainFile = compilations.getByName(name).npmProject.dir.get().asFile        // 编译输出文件夹
     val mainKotlinFile = File(mainFile, "kotlin")                                       // 编译输出文件夹
     val configFile = buildFile.parentFile.resolve("config")                         // 配置文件夹
     val compilationFile = buildFile.parentFile.resolve("build/autojs/compilation") // 最后编译输出文件夹
@@ -88,6 +89,7 @@ fun KotlinJsTargetDsl.taskList() {
         buildFile.parentFile.resolve("build/autojs/intermediate_compilation_files") // 最后中间编译输出文件夹
     val intermediateCompilationMainJsFile = File(intermediateCompilationFile, "main.js") // 最后中间编译输出文件夹
     val compilationMainJsFile = File(compilationFile, "main.js")                                    // 输出最后编译文件
+    val processedResourcesFile = buildFile.parentFile.resolve("build/processedResources/js/$name")
 
     val webpackIntermediateFiles = project.findProperty("autojs.webpack.intermediate.files") as String
     val useUI = project.findProperty("autojs.use.ui") as String
@@ -186,28 +188,20 @@ fun KotlinJsTargetDsl.taskList() {
                 )
             }
 
+
             // 将编译后的文件复制到 mainPath
-            if (compilationFile.exists()) compilationFile.deleteDirectoryContents()
-            copy {
-                from(mainFile.resolve("dist"))
-                into(compilationFile)
+            if (compilationFile.exists()){
+                compilationFile.deleteDirectoryContents()
+                copy {
+                    from(mainFile.resolve("dist"))
+                    into(compilationFile)
+                }
             }
 
-            // 将编译后的文件文件夹内的文件复制到 mainPath
-            mainKotlinFile.listFiles()?.asSequence()?.filter {
-                it.name.endsWith(".js").not()
-            }?.filter {
-                it.name.endsWith(".mjs").not()
-            }?.filter {
-                it.name.endsWith(".ts").not()
-            }?.filter {
-                it.name.endsWith(".mjs.map").not()
-            }?.filter {
-                it.name.endsWith(".js.map").not()
-            }?.toList()?.forEach {
+            // 复制资源文件到 mainPath
+            if (processedResourcesFile.exists()){
                 copy {
-                    println(it)
-                    from(it)
+                    from(processedResourcesFile)
                     into(compilationFile)
                 }
             }

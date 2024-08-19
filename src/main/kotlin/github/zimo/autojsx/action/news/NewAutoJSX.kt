@@ -1,5 +1,6 @@
 package github.zimo.autojsx.action.news
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -77,6 +78,9 @@ class NewAutoJSX :
         }
     }
 
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.BGT
+    }
 
     private fun showCheckboxMessageDialog() {
         // 定义对话框的消息内容

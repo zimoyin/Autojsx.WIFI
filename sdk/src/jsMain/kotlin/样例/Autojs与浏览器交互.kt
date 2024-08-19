@@ -1,5 +1,7 @@
 package 样例
 import lib.kotlin.HtmlLoader
+import lib.module.Thread
+import lib.module.getName
 import lib.module.log
 
 /**
@@ -11,7 +13,39 @@ fun main() {
     /**
      * 可以通过 HtmlLoader.create("web/index.html").onXXX 来设置各种监听。监听必须在 build 之前创建
      */
-    HtmlLoader.create("web/index.html").build().start()
+    val htmlLoaderBuilder = HtmlLoader.create("web/web/index.html")
+    // 浏览器加载页面完成
+    htmlLoaderBuilder.onPageFinished {
+        // 在浏览器执行JS
+        HtmlLoader.callJs("console.log('Hello World')")
+        println("页面加载完成: ${it.url}")
+    }
+    // 浏览器开始加载页面
+    htmlLoaderBuilder.onPageStarted {
+        println("页面开始加载: ${it.url}")
+    }
+    // 浏览器加载页面错误
+    htmlLoaderBuilder.onPageError {
+        println("页面加载错误: ${it.error}")
+    }
+    // 浏览器回调结果
+    htmlLoaderBuilder.onCallbackResult {
+        println("浏览器调用AUTOJS  回调结果: ${it.cmd} -> ${it.result}")
+    }
+    // 浏览器回调
+    htmlLoaderBuilder.onCallback {
+        println("浏览器调用AUTOJS  回调: ${it.cmd}-> ${it.result}")
+    }
+    // 浏览器控制台输出
+    htmlLoaderBuilder.onConsoleMessage {
+        println("[${Thread.getName()} 线程][浏览器]: ${it.message}")
+    }
+    // WebView 的 WebSettings  配置： 可见文章 https://www.jianshu.com/p/90823049a389
+    htmlLoaderBuilder.config.apply {
+        this.saveFormData = true
+    }
+    val htmlLoader = htmlLoaderBuilder.build()
+    htmlLoader.start()
 }
 
 @OptIn(ExperimentalJsExport::class)

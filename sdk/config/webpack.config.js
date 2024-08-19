@@ -2,14 +2,14 @@
 const isMinimize = true
 
 // 是否启用JS 版本降级, 当前启用代码压缩后，可以不使用 JS 降级, 因为大部分情况下压缩后的代码没有使用 Rhino 引擎支持之外的语法
-const isDowngrade = true
+const isDowngrade = false
 
 // 是否混淆代码
-const isJavascriptObfuscator = true
-const isJavascriptObfuscator_Compact = true //混淆时是否压缩代码,该压缩不会更改语法特性，因此还需要第一个压缩或者降级
+const isJavascriptObfuscator = false
+const isJavascriptObfuscator_Compact = false //混淆时是否压缩代码,该压缩不会更改语法特性，因此还需要第一个压缩或者降级
 
 if (isMinimize === false && isDowngrade === false){
-    throw new Error('At least one of isMinimize and isDowngrade must be true')
+    console.log(Error('At least one of isMinimize and isDowngrade must be true'))
 }
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const path = require('path');
@@ -94,7 +94,8 @@ function javascriptObfuscator() {
         /* 启用全局变量和函数名你的混淆 */
         renameGlobals: true,
         /* 混淆器会对对象的属性名进行重命名。这包括对象字面量、类的属性以及任何通过点符号或方括号语法设置的属性。 */
-        renameProperties: true,
+        /* 注意启用后可能导致无法加载标准库 js */
+        // renameProperties: true,
         /* 禁用模糊处理和生成标识符 */
         reservedNames: ['main'],
         /* 禁用数组内字符串的转换 */
