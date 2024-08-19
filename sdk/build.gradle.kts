@@ -71,7 +71,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
                 // 不可移除!
-                implementation("com.github.zimoyin:autojs_kotlin_sdk:2.0.8")
+                implementation("com.github.zimoyin:autojs_kotlin_sdk:2.0.9")
             }
         }
     }
