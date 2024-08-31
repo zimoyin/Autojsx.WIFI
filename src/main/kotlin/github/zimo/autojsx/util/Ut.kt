@@ -1,6 +1,7 @@
 package github.zimo.autojsx.util
 
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -21,6 +22,30 @@ import java.util.concurrent.Executors
 import java.util.zip.ZipInputStream
 import javax.imageio.ImageIO
 
+fun Project.fileEditorManager(): FileEditorManager {
+    return FileEditorManager.getInstance(this)
+}
+
+fun FileEditorManager.saveCurrentDocument() {
+    selectedFiles.apply {
+        val documentManager = FileDocumentManager.getInstance()
+        ApplicationManager.getApplication().runReadAction {
+            for (file in this) {
+                file ?: continue
+                kotlin.runCatching {
+                    val document: Document? = documentManager.getDocument(file)
+                    if (document != null) {
+                        ApplicationManager.getApplication().invokeLater {
+                            documentManager.saveDocument(document)
+                        }
+                    }
+                }.onFailure {
+                    logW("无法保存当前打开的文件",it)
+                }
+            }
+        }
+    }
+}
 
 /**
  * 在当前文件夹查询project.json文件
@@ -30,17 +55,9 @@ import javax.imageio.ImageIO
 fun searchProjectJsonByEditor(project: Project?, executeSpecificOperation: (VirtualFile) -> Unit) {
     if (project != null) {
         val projectBasePath = project.basePath
-        val fileEditorManager = FileEditorManager.getInstance(project)
+        val fileEditorManager = project.fileEditorManager()
         //保存正在修改的文件
-        fileEditorManager.selectedFiles.apply {
-            val documentManager = FileDocumentManager.getInstance()
-            for (file in this) {
-                val document: Document? = documentManager.getDocument(file!!)
-                if (document != null) {
-                    documentManager.saveDocument(document)
-                }
-            }
-        }
+        fileEditorManager.saveCurrentDocument()
 
 
         val selectedEditor = fileEditorManager.selectedEditor
@@ -154,7 +171,7 @@ fun stopServer(project: Project?) {
     VertxServer.stop()
 }
 
-val executor: ExecutorService = Executors.newFixedThreadPool(3)
+val executor: ExecutorService = Executors.newFixedThreadPool(8)
 
 
 fun base64_image_toFile(

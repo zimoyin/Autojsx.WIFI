@@ -8,6 +8,7 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.dsl.builder.panel
+import github.zimo.autojsx.action.command.ApkBuilder
 import github.zimo.autojsx.action.run.doc.DocRunProjectButton
 import github.zimo.autojsx.icons.ICONS
 import github.zimo.autojsx.server.ConsoleOutput
@@ -129,6 +130,9 @@ class AutojsxConsoleWindow : ToolWindowFactory {
                         ConsoleOutput.systemPrint("Action/I: 停止所有脚本指令已发送")
                     }.apply {
                         component.icon = ICONS.STOP_16
+                    }
+                    button("打包"){
+                        executor.submit { ApkBuilder.buildApk(project) }
                     }
                 }
             }

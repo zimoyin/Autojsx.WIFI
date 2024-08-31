@@ -32,7 +32,7 @@ class NewAutoJSON :
                             |        "build"
                             |    ],
                             |    "launchConfig": {
-                            |        "hideLogs": true
+                            |        "hideLogs": false
                             |    },
                             |    "packageName": "github.autojsx.$name",
                             |    "versionName": "1.0.0",

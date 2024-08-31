@@ -8,6 +8,7 @@ let startTime = Date.now();
 // 获取屏幕上的所有节点，有父子从属描述
 var allNodes = find();
 var count = 0
+
 // 定义函数，递归构建节点信息
 function buildNodeInfo(node, index) {
     count++
@@ -35,6 +36,19 @@ function buildNodeInfo(node, index) {
     var password = node.password();
     var selected = node.selected();
     var depth = node.depth();
+    var editable = false;
+    var multiLine = false;
+    var drawingOrder = -1;
+    try {
+        try{
+            editable = node.isEditable();
+        }catch (e){}
+        try{
+            multiLine = node.isMultiLine();
+        }catch (e){}
+        drawingOrder = node.getDrawingOrder();
+    } catch (e) {
+    }
 
     var boundsString = "[" + bounds.left + "," + bounds.top + "][" + bounds.right + "," + bounds.bottom + "]";
 
@@ -76,6 +90,9 @@ function buildNodeInfo(node, index) {
         longClickable: longClickable,
         password: password,
         selected: selected,
+        editable: editable,
+        drawingOrder: drawingOrder,
+        multiLine: multiLine,
         childNodes: []
     };
 

@@ -21,7 +21,8 @@ class AutoMenu : ActionGroup() {
             /**/
             SelectDevice(), Separator(),
             /**/
-            Screenshot(), AnalysisPageNode(), AnalysisApplicationList(),
+            Screenshot(), AnalysisPageNode(), AnalysisApplicationList(),Separator(),
+            ApkBuilder()
             /**/
 //            Separator(), ADBTODO()
         )

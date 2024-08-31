@@ -1,5 +1,7 @@
 import org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 import org.jetbrains.kotlin.gradle.targets.js.npm.npmProject
 import org.jetbrains.kotlin.incremental.deleteDirectoryContents
 import java.io.File
@@ -26,10 +28,6 @@ repositories {
 
 kotlin {
     js(IR) {
-        // 是否使用 nodejs 的下载功能.让 gradle 去自动下载 node 到 gradle 缓存文件夹
-        rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin> {
-            rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().download = true
-        }
         // 输出模块名称
         moduleName = "main"
         // 设置package.json
@@ -68,10 +66,11 @@ kotlin {
 
                 // Kotlin dependencies
                 // Coroutines & serialization (不使用可以移除，移除可能导致 SDK 出现异常)
+//                implementation(kotlin("test"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
                 // 不可移除!
-                implementation("com.github.zimoyin:autojs_kotlin_sdk:2.0.9")
+                implementation("com.github.zimoyin:autojs_kotlin_sdk:2.1.0")
             }
         }
     }
@@ -95,6 +94,13 @@ fun KotlinJsTargetDsl.taskList() {
     val useUI = project.findProperty("autojs.use.ui") as String
     val webpackAutoRun = project.findProperty("autojs.webpack.auto.run") as String
     val webpackAutoUpload = project.findProperty("autojs.webpack.auto.upload") as String
+    val webpackPreRunCompose = project.findProperty("autojs.webpack.pre.run.compose") as String
+    val isDownloadNode = (project.findProperty("kotlin.js.node.download") as String).contains("true")
+
+    // 是否使用 nodejs 的下载功能.让 gradle 去自动下载 node 到 gradle 缓存文件夹
+    rootProject.plugins.withType<NodeJsRootPlugin> {
+        rootProject.the<NodeJsRootExtension>().download = isDownloadNode
+    }
 
     tasks.register("run") {
         group = "autojs"
@@ -153,7 +159,9 @@ fun KotlinJsTargetDsl.taskList() {
         description = "Build project with webpack"
         group = "autojs"
 
-        dependsOn("compile")
+        if (webpackPreRunCompose.contains("true")){
+            dependsOn("compile")
+        }
         if (compilationMainJsFile.exists() && webpackAutoUpload.contains("true")) {
             finalizedBy("httpUploadProject")
         }
@@ -216,26 +224,40 @@ fun KotlinJsTargetDsl.taskList() {
 
     tasks.register("info") {
         group = "autojs"
-        val nodeExecutable = compilations.getByName("main").npmProject.nodeJs.requireConfigured().executable
-        val nodeDir = compilations.getByName("main").npmProject.nodeJs.requireConfigured().nodeBinDir
-        val platformName = compilations.getByName("main").npmProject.nodeJs.requireConfigured().platformName
-        val architectureName = compilations.getByName("main").npmProject.nodeJs.requireConfigured().architectureName
-        val path = mainFile.path
-        val mainPath = buildFile.parentFile.resolve("build/autojs")
+        rootProject.plugins.withType<NodeJsRootPlugin> {
+            val nodeJsRootExtension = rootProject.the<NodeJsRootExtension>()
 
-        println("-----------------------------------------------------------------------------")
-        println("> PlatformName name:       $platformName")
-        println("> ArchitectureName name:   $architectureName")
-        println("> Kotlin compiler version: ${KotlinVersion.CURRENT} ")
-        println("> Kotlin compiler type:    ${KotlinJsCompilerType.IR}")
-        println("> Node executable:         $nodeExecutable")
-        println("> Node directory:          $nodeDir")
-        println("> Build js project path:   $path")
-        println("> Output path:             $mainPath")
-        println("> Config:")
-        println("   > use_ui                       :$useUI")
-        println("   > webpack_intermediate_files   :$webpackIntermediateFiles")
-        println("-----------------------------------------------------------------------------")
+            val nodeExecutable = compilations.getByName("main").npmProject.nodeJs.requireConfigured().executable
+            val nodeDir = compilations.getByName("main").npmProject.nodeJs.requireConfigured().nodeBinDir
+            val platformName = compilations.getByName("main").npmProject.nodeJs.requireConfigured().platformName
+            val architectureName = compilations.getByName("main").npmProject.nodeJs.requireConfigured().architectureName
+            val path = mainFile.path
+            val mainPath = buildFile.parentFile.resolve("build/autojs")
+
+            val httpProxyHost = project.findProperty("systemProp.http.proxyHost") as String?
+            val httpProxyPort = project.findProperty("systemProp.http.proxyPort") as String?
+            val httpsProxyHost = project.findProperty("systemProp.https.proxyHost") as String?
+            val httpsProxyPort = project.findProperty("systemProp.https.proxyPort") as String?
+
+            println("-----------------------------------------------------------------------------")
+            println("> PlatformName name:       $platformName")
+            println("> ArchitectureName name:   $architectureName")
+            println("> Kotlin compiler version: ${KotlinVersion.CURRENT} ")
+            println("> Kotlin compiler type:    ${KotlinJsCompilerType.IR}")
+            println("> Node executable:         $nodeExecutable")
+            println("> Node directory:          $nodeDir")
+            println("> Build js project path:   $path")
+            println("> Is Node Download:        ${nodeJsRootExtension.download}")
+            println("> Node downloadBaseUrl:    ${nodeJsRootExtension.downloadBaseUrl}")
+            println("> Node installationDir:    ${nodeJsRootExtension.installationDir}")
+            println("> Output path:             $mainPath")
+            println("> Config:")
+            println("   > use_ui                       :$useUI")
+            println("   > webpack_intermediate_files   :$webpackIntermediateFiles")
+            println("   > http proxy                   :${httpProxyHost ?: ""}:$httpProxyPort")
+            println("   > https proxy                  :${httpsProxyHost ?: ""}:$httpsProxyPort")
+            println("-----------------------------------------------------------------------------")
+        }
     }
 
     tasks.register("initEnvironment") {

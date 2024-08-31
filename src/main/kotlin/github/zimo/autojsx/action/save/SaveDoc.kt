@@ -1,5 +1,6 @@
 package github.zimo.autojsx.action.save
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -33,5 +34,9 @@ class SaveDoc : AnAction(github.zimo.autojsx.icons.ICONS.SAVE_FILE_16) {
         val file = e.getData(CommonDataKeys.VIRTUAL_FILE)
         val isJsFile = file != null && "js" == file.extension
         e.presentation.isEnabledAndVisible = isJsFile && (e.project?.modules?.count { ModuleType.get(it).id == MODULE_TYPE_ID } ?: 0) > 0
+    }
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.BGT
     }
 }

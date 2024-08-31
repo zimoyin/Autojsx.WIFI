@@ -8,6 +8,7 @@ import com.intellij.openapi.module.ModifiableModuleModel
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ModifiableRootModel
+import com.intellij.openapi.roots.ui.configuration.ModulesProvider
 import com.intellij.openapi.vfs.VirtualFile
 import github.zimo.autojsx.util.GradleUtils
 import github.zimo.autojsx.util.findOrCreateDirectory
@@ -15,6 +16,8 @@ import github.zimo.autojsx.util.writeText
 import java.io.File
 import java.io.FileOutputStream
 import java.util.zip.ZipInputStream
+import javax.swing.JComponent
+import javax.swing.JLabel
 
 
 /**
@@ -69,7 +72,7 @@ class MyModuleBuilder : ModuleBuilder() {
                                         "build"
                                     ],
                                     "launchConfig": {
-                                        "hideLogs": true
+                                        "hideLogs": false
                                     },
                                     "packageName": "github.autojsx.${entry.file?.name}",
                                     "versionName": "1.0.0",
@@ -120,7 +123,6 @@ class MyModuleBuilder : ModuleBuilder() {
 
 
     override fun createProject(name: String?, path: String?): Project? {
-        println("createProject name: $name path: $path exists:${path?.let { File(it).exists() }}")
         return super.createProject(name, path)
     }
 

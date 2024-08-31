@@ -25,3 +25,7 @@ fun logV(msg: Any?) {
 fun logW(msg: Any?) {
     ConsoleOutput.systemPrint("警告/W: $msg")
 }
+
+fun logW(msg: Any?, e: Throwable?) {
+    ConsoleOutput.systemPrint("错误/W: $msg ${(if (e != null) "\r\n" else "") + e?.caseString()}")
+}

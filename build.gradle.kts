@@ -1,12 +1,12 @@
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "1.8.21"
+    id("org.jetbrains.kotlin.jvm") version "2.0.0"
     id("org.jetbrains.intellij") version "1.13.3"
 }
 
 group = "github.zimo"
 //SNAPSHOT
-version = "1.0.10"
+version = "1.1.0"
 
 repositories {
     mavenCentral()

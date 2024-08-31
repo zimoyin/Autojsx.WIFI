@@ -42,6 +42,19 @@ function buildNodeInfo(node, index) {
     var password = node.password();
     var selected = node.selected();
     var depth = node.depth();
+    var editable = false;
+    var multiLine = false;
+    var drawingOrder = -1;
+    try {
+        try{
+            editable = node.isEditable();
+        }catch (e){}
+        try{
+            multiLine = node.isMultiLine();
+        }catch (e){}
+        drawingOrder = node.getDrawingOrder();
+    } catch (e) {
+    }
 
     // 可能是桌面
     var applicationPackageName = "";
@@ -54,7 +67,7 @@ function buildNodeInfo(node, index) {
     var indent = '  '.repeat(depth);
     if (nodeId === null || nodeId === undefined) nodeId = "";
     if (description === null || description === undefined) description = "";
-    xmlData += `<node index="${index}" depth="${depth}" text="${text}" resource-id="${nodeId}" class="${className}" packageName="${packageName}" applicationPackageName="${applicationPackageName}" content-desc="${description}" bounds="${boundsString}" checkable="${checkable}" checked="${checked}" clickable="${clickable}" enabled="${enabled}" focusable="${focusable}" focused="${focused}" scrollable="${scrollable}" long-clickable="${longClickable}" password="${password}" selected="${selected}" bundle="${boundsString}" left="${left}" top="${top}" right="${right}" bottom="${bottom}" width="${width}" height="${height}"`
+    xmlData += `<node index="${index}" depth="${depth}" text="${text}" resource-id="${nodeId}" class="${className}" packageName="${packageName}" applicationPackageName="${applicationPackageName}" content-desc="${description}" bounds="${boundsString}" checkable="${checkable}" checked="${checked}" clickable="${clickable}" enabled="${enabled}" focusable="${focusable}" focused="${focused}" scrollable="${scrollable}" long-clickable="${longClickable}" password="${password}" selected="${selected}" bundle="${boundsString}" left="${left}" top="${top}" right="${right}" bottom="${bottom}" width="${width}" height="${height}" editable="${editable}" multiLine="${multiLine}" drawingOrder="${drawingOrder}`
 
     if (node.children().length === 0) {
         xmlData += "/>"

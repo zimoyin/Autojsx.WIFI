@@ -1,13 +1,9 @@
 package github.zimo.autojsx.action.run.doc
 
-import com.intellij.codeInsight.codeVision.CodeVisionState.NotReady.result
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.editor.Document
-import com.intellij.openapi.fileEditor.FileDocumentManager
-import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.module.ModuleType
-import com.intellij.openapi.progress.BackgroundTaskQueue
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -19,7 +15,6 @@ import github.zimo.autojsx.module.MODULE_TYPE_ID
 import github.zimo.autojsx.server.VertxCommand
 import github.zimo.autojsx.util.*
 import github.zimo.autojsx.window.AutojsxConsoleWindow
-import io.vertx.core.json.JsonObject
 
 
 /**
@@ -82,17 +77,10 @@ class DocRunProjectButton :
         fun runCurrentProject(
             project: Project,
         ) {
-            val fileEditorManager = FileEditorManager.getInstance(project)
+            val fileEditorManager = project.fileEditorManager()
             //保存正在修改的文件
-            fileEditorManager.selectedFiles.apply {
-                val documentManager = FileDocumentManager.getInstance()
-                for (file in this) {
-                    val document: Document? = documentManager.getDocument(file!!)
-                    if (document != null) {
-                        documentManager.saveDocument(document)
-                    }
-                }
-            }
+            fileEditorManager.saveCurrentDocument()
+
             val selectedFile: VirtualFile? = kotlin.runCatching { fileEditorManager.selectedFiles[0] }.getOrNull()
             var findFile: VirtualFile? = selectedFile
             // 向上查询 src 目录的父目录
@@ -122,19 +110,7 @@ class DocRunProjectButton :
                     }
                 } else {
                     executor.execute {
-                        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "正在构建项目", true) {
-                            override fun run(indicator: ProgressIndicator) {
-                                logI("开始构建 Gradle:compile")
-                                GradleUtils.runGradleCommand(project, "compile") { result ->
-                                    if (result.success) {
-                                        logI("构建Gradle:compile 成功")
-                                        runProject(project)
-                                    } else {
-                                        logE("Gradle:compile 构建失败\n${result.error}\n")
-                                    }
-                                }
-                            }
-                        })
+                        runBackgroundGradleProject(project)
                     }
                 }
             } else {
@@ -159,6 +135,26 @@ class DocRunProjectButton :
             }
         }
 
+        fun runBackgroundGradleProject(project: Project, run: Boolean = true) {
+            ProgressManager.getInstance().run(object : Task.Backgroundable(project, "正在构建项目", true) {
+                override fun run(indicator: ProgressIndicator) {
+                    runBlockGradleProject(project, run)
+                }
+            })
+        }
+
+        private fun runBlockGradleProject(project: Project, run: Boolean) {
+            logI("开始构建 Gradle:compile")
+            GradleUtils.runGradleCommand(project, "compile") { result ->
+                if (result.success) {
+                    logI("构建Gradle:compile 成功")
+                    if (run) runProject(project)
+                } else {
+                    logE("Gradle:compile 构建失败\n${result.error}\n")
+                }
+            }
+        }
+
         private fun runProject(project: Project) {
             val outputMainJsPath = kotlin.runCatching {
                 getGradleOutputMainJsPath(project, false)
@@ -179,5 +175,9 @@ class DocRunProjectButton :
                 VertxCommand.runProject(zip.bytes, zip.info.name)
             }
         }
+    }
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.BGT
     }
 }

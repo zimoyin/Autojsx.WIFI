@@ -30,6 +30,9 @@ data class UINode @JsonCreator constructor(
     @JsonProperty("longClickable") val longClickable: Boolean,
     @JsonProperty("password") val password: Boolean,
     @JsonProperty("selected") val selected: Boolean,
+    @JsonProperty("editable") val editable: Boolean = false,
+    @JsonProperty("multiLine") val multiLine: Boolean = false,
+    @JsonProperty("drawingOrder") val drawingOrder: Int = -1,
     @JsonProperty("childNodes") val childNodes: Collection<UINode> = emptyList()
 ) {
 

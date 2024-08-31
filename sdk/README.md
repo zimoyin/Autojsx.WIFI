@@ -2,11 +2,21 @@
 
 1. 该项目使用 Kotlin/Js 构建，它可以将 Kotlin 代码编译成 JavaScript 代码，然后运行在 AutoJS中运行。  
 2. 想要使用本项目需要 Node 环境,通常构建脚本会自动下载.
-3. 使用**buildMainJs** gradle 命令来完成项目构建
-4. 项目以预先为你引入了更多的依赖如果不需要该依赖可以到 [build.gradle.kts](build.gradle.kts) 中删除
+   * 如果下载失败，请在 [gradle.properties](gradle.properties) 设置代理。
+   * 如果使用本地 Node 将 [build.gradle.kts](build.gradle.kts) 中的 `rootProject.the<NodeJsRootExtension>().download` 设置为 false
+3. 使用**compile** gradle 命令来完成项目构建,生成文件位于 `build/autojs/intermediate_compilation_files`
+   * 如果[gradle.properties](gradle.properties)中设置`kotlin.js.ir.output.granularity=whole-program`那么生产的编译文件可以在 autojs 中直接运行
+4. 使用**webpack** gradle 命令来完成项目打包,生成文件位于 `build/autojs/compilation`
+   * 会调用 webpack 打包脚本,将`compile`生成的文件打包到 `build/autojs/compilation`
+   * 与 webpack 相关的配置项目([gradle.properties](gradle.properties)):
+     * autojs.webpack.intermediate.files=false # 是否打包时打包中间编译文件，而不是最初的编译文件。适用于将中间文件修改后重新打包
+     * autojs.webpack.pre.run.compose=false # 是否在打包前运行 compose 任务，默认为 true
+     * .....
+5. 项目以预先为你引入了更多的依赖如果不需要该依赖可以到 [build.gradle.kts](build.gradle.kts) 中删除
 
 # 配置文件
-配置文件在 config 文件夹中,[config.properties](config%2Fconfig.properties) 文件与Gradle 脚本相关.[webpack.config.js](config%2Fwebpack.config.js) 与 Node 脚本相关
+[config.properties](config%2Fconfig.properties) 文件与Gradle 脚本相关.    
+[config/webpack.config.js](config%2Fwebpack.config.js) 与 Node Webpack脚本相关.
 
 # 加载脚本
 1. 使用 loadJsFile 函数可以执行脚本
