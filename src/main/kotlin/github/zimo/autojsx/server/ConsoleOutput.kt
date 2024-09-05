@@ -3,11 +3,18 @@ package github.zimo.autojsx.server
 import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.application.ApplicationManager
+import github.zimo.autojsx.util.logI
 
 
 object ConsoleOutput {
     private val map: HashMap<String, ArrayList<Message>> = HashMap()
-    var console: ConsoleViewImpl? = null
+    var currentConsole: ConsoleViewImpl? = null
+        set(value) {
+            field = value
+            value?.let { consoleList.add(it) }
+            update()
+        }
+    private val consoleList = HashSet<ConsoleViewImpl>()
     var currentDevice: String? = "所有设备"
     var isInitOutput = false
     var level0: String = "V"
@@ -31,7 +38,7 @@ object ConsoleOutput {
     }
 
     fun println(device: String, message: String) {
-        print(device,message + "\r\n")
+        print(device, message + "\r\n")
     }
 
     fun print(device: String, message: String) {
@@ -136,40 +143,40 @@ object ConsoleOutput {
 
     fun update() {
         val device = Devices.currentDevice
-        if (currentDevice == device) {
-            if (!isInitOutput) {
-                if (console != null) {
+        for (console in consoleList) {
+            System.out.println(console.hashCode())
+            if (currentDevice == device) {
+                if (!isInitOutput) {
                     clearConsole()
                     isInitOutput = true
                     map[currentDevice]?.forEach {
-                        if (it.levelI >= levelI()) console!!.print("[${it.device}] ${it.message}", it.level)
+                        if (it.levelI >= levelI()) console.print("[${it.device}] ${it.message}", it.level)
+                    }
+                } else {
+                    map[currentDevice]?.last()?.let {
+                        if (it.levelI >= levelI()) console.print("[${it.device}] ${it.message}", it.level)
                     }
                 }
             } else {
-                if (console != null) {
-                    map[currentDevice]?.last()?.let {
-                        if (it.levelI >= levelI()) console!!.print("[${it.device}] ${it.message}", it.level)
-                    }
-                }
-            }
-        } else {
-            currentDevice = device
-            if (console != null) {
+                currentDevice = device
                 clearConsole()
                 isInitOutput = true
                 map[currentDevice]?.forEach {
-                    if (it.levelI >= levelI()) console!!.print("[${it.device}] ${it.message}", it.level)
+                    if (it.levelI >= levelI()) console.print("[${it.device}] ${it.message}", it.level)
                 }
             }
         }
+
         flush()
     }
 
     private fun flush() {
         ApplicationManager.getApplication().invokeLater {
             //刷新控制台
-            console?.performWhenNoDeferredOutput {
-                console!!.flushDeferredText()
+            for (viewImpl in consoleList) {
+                viewImpl.performWhenNoDeferredOutput {
+                    viewImpl.flushDeferredText()
+                }
             }
         }
     }
@@ -181,12 +188,12 @@ object ConsoleOutput {
     }
 
     private fun clearConsole() {
-        console?.clear()
+        currentConsole?.clear()
         flush()
     }
 
     fun toEnd() {
-        console?.scrollToEnd()
+        currentConsole?.scrollToEnd()
     }
 
 

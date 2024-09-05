@@ -38,6 +38,15 @@ class AutojsxConsoleWindow : ToolWindowFactory {
                 logW("工具窗口 'Autojsx Console' 未找到")
             }
         }
+
+
+        fun getInstance(project: Project): AutojsxConsoleWindow? {
+            return ToolWindowManager.getInstance(project).getToolWindow("AutojsxConsole").let {
+                runCatching {
+                    it!! as AutojsxConsoleWindow
+                }.getOrNull()
+            }
+        }
     }
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
@@ -100,15 +109,15 @@ class AutojsxConsoleWindow : ToolWindowFactory {
                         ConsoleOutput.toEnd()
                     }
                     button("开启/关闭服务器") {
-                        if (VertxServer.isStart){
+                        if (VertxServer.isStart) {
                             stopServer(project)
-                        }else{
+                        } else {
                             runServer(project)
                         }
                     }.apply {
-                        if (VertxServer.isStart){
+                        if (VertxServer.isStart) {
                             component.icon = ICONS.STOP_SERVER_16
-                        }else{
+                        } else {
                             component.icon = ICONS.START_SERVER_16
                         }
                     }
@@ -131,7 +140,7 @@ class AutojsxConsoleWindow : ToolWindowFactory {
                     }.apply {
                         component.icon = ICONS.STOP_16
                     }
-                    button("打包"){
+                    button("打包") {
                         executor.submit { ApkBuilder.buildApk(project) }
                     }
                 }
@@ -141,11 +150,11 @@ class AutojsxConsoleWindow : ToolWindowFactory {
 
         // 创建控制台
         val consoleView = ConsoleViewImpl(project, true)
-        ConsoleOutput.console = consoleView
+        ConsoleOutput.currentConsole = consoleView
         ConsoleOutput.isInitOutput = false
         consoleView.print("欢迎使用 Autojsx!", ConsoleViewContentType.LOG_DEBUG_OUTPUT)
         consoleView.performWhenNoDeferredOutput {
-            ConsoleOutput.console?.flushDeferredText()
+            ConsoleOutput.currentConsole?.flushDeferredText()
         }
 
         // 创建上面的按钮区
