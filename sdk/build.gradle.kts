@@ -1,3 +1,6 @@
+import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
@@ -18,6 +21,7 @@ plugins {
 
 group = "zimoyin.github"
 version = "1.0-SNAPSHOT"
+val sdkVersion = "2.1.1"
 
 repositories {
     mavenCentral()
@@ -27,6 +31,7 @@ repositories {
 }
 
 kotlin {
+    checkSDK()
     js(IR) {
         // 输出模块名称
         moduleName = "main"
@@ -70,7 +75,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
                 // 不可移除!
-                implementation("com.github.zimoyin:autojs_kotlin_sdk:2.1.0")
+                implementation("com.github.zimoyin:autojs_kotlin_sdk:$sdkVersion")
             }
         }
     }
@@ -79,7 +84,7 @@ kotlin {
 
 fun KotlinJsTargetDsl.taskList() {
 
-    val name = moduleName?:"main"
+    val name = moduleName ?: "main"
     val mainFile = compilations.getByName(name).npmProject.dir.get().asFile        // 编译输出文件夹
     val mainKotlinFile = File(mainFile, "kotlin")                                       // 编译输出文件夹
     val configFile = buildFile.parentFile.resolve("config")                         // 配置文件夹
@@ -138,7 +143,7 @@ fun KotlinJsTargetDsl.taskList() {
             if (!compilationFile.exists() && isEmpty) {
                 throw NullPointerException("${compilationFile.canonicalPath} path is null")
             }
-            post("http://127.0.0.1:$serverPort/upload_run_path", compilationFile.canonicalPath)
+            http("http://127.0.0.1:$serverPort/upload_run_path", compilationFile.canonicalPath)
         }
     }
 
@@ -151,7 +156,7 @@ fun KotlinJsTargetDsl.taskList() {
             if (!compilationFile.exists() && isEmpty) {
                 throw NullPointerException("${compilationFile.canonicalPath} path is null")
             }
-            post("http://127.0.0.1:$serverPort/upload_path", compilationFile.canonicalPath)
+            http("http://127.0.0.1:$serverPort/upload_path", compilationFile.canonicalPath)
         }
     }
 
@@ -159,7 +164,7 @@ fun KotlinJsTargetDsl.taskList() {
         description = "Build project with webpack"
         group = "autojs"
 
-        if (webpackPreRunCompose.contains("true")){
+        if (webpackPreRunCompose.contains("true")) {
             dependsOn("compile")
         }
         if (compilationMainJsFile.exists() && webpackAutoUpload.contains("true")) {
@@ -198,7 +203,7 @@ fun KotlinJsTargetDsl.taskList() {
 
 
             // 将编译后的文件复制到 mainPath
-            if (compilationFile.exists()){
+            if (compilationFile.exists()) {
                 compilationFile.deleteDirectoryContents()
                 copy {
                     from(mainFile.resolve("dist"))
@@ -207,7 +212,7 @@ fun KotlinJsTargetDsl.taskList() {
             }
 
             // 复制资源文件到 mainPath
-            if (processedResourcesFile.exists()){
+            if (processedResourcesFile.exists()) {
                 copy {
                     from(processedResourcesFile)
                     into(compilationFile)
@@ -308,7 +313,7 @@ fun KotlinJsTargetDsl.taskList() {
         dependsOn("compileProductionExecutableKotlinJs")
 
         if (intermediateCompilationFile.exists()) intermediateCompilationFile.deleteDirectoryContents()
-        if(compilationFile.exists()) compilationFile.deleteDirectoryContents()
+        if (compilationFile.exists()) compilationFile.deleteDirectoryContents()
 
         doLast {
             copy {
@@ -330,18 +335,21 @@ fun KotlinJsTargetDsl.taskList() {
     }
 }
 
-fun post(url: String, data: String) {
+fun http(url: String, data: String?, method: String = "POST"): String {
     val connection: HttpURLConnection = URL(url).openConnection() as HttpURLConnection
     println("send data: $data")
-    connection.requestMethod = "POST"
+    connection.requestMethod = method
     connection.doOutput = true
     connection.setRequestProperty("Content-Type", "application/json")
 
     // Send request
-    val os = connection.outputStream
-    os.write(data.toByteArray())
-    os.flush()
-    os.close()
+    if (data != null) {
+        connection.outputStream.use { os ->
+            os.write(data.toByteArray())
+            os.flush()
+            os.close()
+        }
+    }
 
     // Get Response
     val responseCode = connection.responseCode
@@ -353,9 +361,22 @@ fun post(url: String, data: String) {
 
     // 接收值
     val response = connection.inputStream.bufferedReader().use {
-        println(it.readLine())
+        it.readLine()
     }
 
 
     connection.disconnect()
+    return response
+}
+
+fun checkSDK() {
+    val url = "https://jitpack.io/api/builds/com.github.zimoyin/autojs_kotlin_sdk/latestOk"
+    try {
+        val resp = http(url, null, "GET")
+        if (Gson().fromJson(resp, JsonObject::class.java).get("version").asString != sdkVersion) {
+            throw Exception("SDK Version Error: $sdkVersion, Please update SDK")
+        }
+    } catch (e: Exception) {
+        throw Exception("SDK Version Error: $sdkVersion, Please update SDK",e)
+    }
 }
