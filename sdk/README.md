@@ -48,3 +48,11 @@
 
 # SDK 源码参见
 https://github.com/zimoyin/autojs_kotlin_sdk
+
+
+# 工具
+## 映射工具
+映射编译后的行号回原本的kotlin 行号中  
+连接: https://github.com/zimoyin/autojsx_kotlin_js_map_tool  
+注意：该工具使用 nodejs 进行运行，需要 nodejs 环境
+

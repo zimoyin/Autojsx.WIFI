@@ -21,7 +21,7 @@ plugins {
 
 group = "zimoyin.github"
 version = "1.0-SNAPSHOT"
-val sdkVersion = "2.1.1"
+val sdkVersion = "2.1.2"
 
 repositories {
     mavenCentral()
@@ -312,8 +312,10 @@ fun KotlinJsTargetDsl.taskList() {
         dependsOn("jsProductionExecutableCompileSync")
         dependsOn("compileProductionExecutableKotlinJs")
 
-        if (intermediateCompilationFile.exists()) intermediateCompilationFile.deleteDirectoryContents()
-        if (compilationFile.exists()) compilationFile.deleteDirectoryContents()
+        doFirst {
+            if (intermediateCompilationFile.exists()) intermediateCompilationFile.deleteDirectoryContents()
+            if (compilationFile.exists()) compilationFile.deleteDirectoryContents()
+        }
 
         doLast {
             copy {
@@ -373,10 +375,17 @@ fun checkSDK() {
     val url = "https://jitpack.io/api/builds/com.github.zimoyin/autojs_kotlin_sdk/latestOk"
     try {
         val resp = http(url, null, "GET")
-        if (Gson().fromJson(resp, JsonObject::class.java).get("version").asString != sdkVersion) {
-            throw Exception("SDK Version Error: $sdkVersion, Please update SDK")
+        val newVersion = Gson().fromJson(resp, JsonObject::class.java).get("version").asString
+        newVersion.replace(".","").toInt()
+        if (newVersion != sdkVersion) {
+            System.err.println(">>>>> sdk new version: $newVersion")
+            System.err.println(">>>>> sdk old version: $sdkVersion")
+            throw IllegalStateException("SDK version too low: $sdkVersion, Please update SDK to $newVersion")
         }
-    } catch (e: Exception) {
-        throw Exception("SDK Version Error: $sdkVersion, Please update SDK",e)
+        println(">>>>> sdk version: $sdkVersion")
+    } catch (e:IllegalStateException){
+        System.err.println("${e::class.java.simpleName}: "+e.message)
+    }catch (e: Exception) {
+        System.err.println("${e::class.java.simpleName}: "+e.message)
     }
 }

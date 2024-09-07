@@ -3,7 +3,6 @@ package github.zimo.autojsx.server
 import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.application.ApplicationManager
-import github.zimo.autojsx.util.logI
 
 
 object ConsoleOutput {
@@ -50,7 +49,7 @@ object ConsoleOutput {
         list = limitSize(list)
         val msg = parse(device, message)
         list.add(msg)
-        print(msg)
+        print0(msg)
     }
 
     /**
@@ -65,7 +64,7 @@ object ConsoleOutput {
      *         consoleView.print("用于显示错误输出内容的样式，通常以红色显示。\n", ConsoleViewContentType.LOG_ERROR_OUTPUT)
      */
 
-    private fun print(message: Message) {
+    private fun print0(message: Message) {
         var list = map["所有设备"]
         if (list == null) {
             list = ArrayList()
@@ -78,7 +77,7 @@ object ConsoleOutput {
 
     fun systemPrint(message: String) {
         val msg = parse("系统日志", message + "\r\n")
-        print(msg)
+        print0(msg)
     }
 
 
@@ -144,11 +143,9 @@ object ConsoleOutput {
     fun update() {
         val device = Devices.currentDevice
         for (console in consoleList) {
-            System.out.println(console.hashCode())
             if (currentDevice == device) {
                 if (!isInitOutput) {
-                    clearConsole()
-                    isInitOutput = true
+                    clearConsole(console)
                     map[currentDevice]?.forEach {
                         if (it.levelI >= levelI()) console.print("[${it.device}] ${it.message}", it.level)
                     }
@@ -158,14 +155,14 @@ object ConsoleOutput {
                     }
                 }
             } else {
-                currentDevice = device
-                clearConsole()
-                isInitOutput = true
+                clearConsole(console)
                 map[currentDevice]?.forEach {
                     if (it.levelI >= levelI()) console.print("[${it.device}] ${it.message}", it.level)
                 }
             }
         }
+        currentDevice = device
+        isInitOutput = true
 
         flush()
     }
@@ -182,18 +179,25 @@ object ConsoleOutput {
     }
 
     fun clear() {
-        clearConsole()
         if (currentDevice == "所有设备") map.clear()
         else map.remove(currentDevice)
     }
 
-    private fun clearConsole() {
-        currentConsole?.clear()
+    private fun clearConsole(console: ConsoleViewImpl? = null) {
+        if (console == null){
+            consoleList.forEach {
+                it.clear()
+            }
+        }else{
+            console.clear()
+        }
         flush()
     }
 
     fun toEnd() {
-        currentConsole?.scrollToEnd()
+        consoleList.forEach {
+            it.scrollToEnd()
+        }
     }
 
 
