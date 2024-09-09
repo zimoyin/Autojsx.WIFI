@@ -52,7 +52,9 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                 }
 
                 ws.textMessageHandler {
-                    val jsonObject = it.asJsonObject()
+                    val jsonObject = kotlin.runCatching { it.asJsonObject() }.onFailure {
+                        logE("Invalid JSON format", it)
+                    }.getOrNull() ?: return@textMessageHandler
                     val returnData = JsonObject()
                     when (jsonObject.getString("type")) {
                         "hello" -> {

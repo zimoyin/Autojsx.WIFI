@@ -179,6 +179,7 @@ object ConsoleOutput {
     }
 
     fun clear() {
+        clearConsole()
         if (currentDevice == "所有设备") map.clear()
         else map.remove(currentDevice)
     }
