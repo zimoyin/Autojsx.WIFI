@@ -3,10 +3,7 @@ package github.zimo.autojsx.server
 import com.intellij.openapi.project.ProjectManager
 import github.zimo.autojsx.server.VertxServer.devicesWs
 import github.zimo.autojsx.server.VertxServer.selectDevicesWs
-import github.zimo.autojsx.util.logE
-import github.zimo.autojsx.util.logI
-import github.zimo.autojsx.util.logW
-import github.zimo.autojsx.util.zipBytes
+import github.zimo.autojsx.util.*
 import github.zimo.autojsx.window.AutojsxConsoleWindow
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Promise
@@ -51,6 +48,7 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                     }
                 }
 
+
                 ws.textMessageHandler {
                     val jsonObject = kotlin.runCatching { it.asJsonObject() }.onFailure {
                         logE("Invalid JSON format", it)
@@ -62,15 +60,19 @@ class MainVerticle(val port: Int = 9317) : AbstractVerticle() {
                             val app_version = jsonObject.getJsonObject("data").getString("app_version")
                             val app_version_code = jsonObject.getJsonObject("data").getString("app_version_code")
                             val client_version = jsonObject.getJsonObject("data").getString("client_version")
+                            val versionCode = app_version_code.replace(".", "").toInt()
                             device = jsonObject.getJsonObject("data").getString("device_name")
-                            val then19 = app_version_code.replace(".", "").toInt() >= 629
+                            val then19 = versionCode >= 629
                             //return data
                             returnData.put("message_id", UUID.randomUUID().toString())
-                            if (then19) returnData.put("data", "ok")
-                            else returnData.put("data", "连接成功")
-                            if (then19) returnData.put("version", "1.109.0")
                             returnData.put("debug", false)
                             returnData.put("type", "hello")
+                            if (then19) {
+                                returnData.put("data", "ok")
+                                returnData.put("version", "1.109.0")
+                            } else {
+                                returnData.put("data", "连接成功")
+                            }
                             //新设备介入
                             selectDevicesWs[device] = ws
                             devicesWs[device] = ws
