@@ -6,7 +6,7 @@ plugins {
 
 group = "github.zimo"
 //SNAPSHOT
-version = "1.1.3"
+version = "1.1.4"
 
 repositories {
     mavenCentral()
@@ -43,7 +43,7 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("222")
-        untilBuild.set("242.*") // 2024.2
+//        untilBuild.set("242.*") // 2024.2
     }
 
     signPlugin {
