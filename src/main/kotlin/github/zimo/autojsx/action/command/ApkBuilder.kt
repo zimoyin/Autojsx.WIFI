@@ -11,6 +11,7 @@ import github.zimo.autojsx.pojo.ApkBuilderPojo
 import github.zimo.autojsx.server.ConsoleOutput
 import github.zimo.autojsx.util.*
 import io.vertx.core.json.JsonObject
+import kotlinx.coroutines.runBlocking
 import org.gradle.internal.impldep.bsh.commands.dir
 import org.jetbrains.annotations.NonNls
 import org.jetbrains.annotations.SystemIndependent
@@ -20,6 +21,8 @@ import java.io.InputStreamReader
 import java.net.URLClassLoader
 import java.nio.charset.Charset
 import javax.swing.SwingUtilities
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 /**
  *
@@ -50,7 +53,7 @@ class ApkBuilder :
             val dir = File(base, ".gradle").apply { mkdirs() }
             val coreJar = File(dir, "autox_apk_builder.jar")
             val workDir = File(dir, "apk_build_cache").apply { mkdirs() }
-            val workAssetDir = File(workDir, "asset").apply { mkdirs() }
+            val workAssetDir = File(workDir, "asset").apply { if (exists()) deleteRecursively();mkdirs(); }
             val projectJson = File(workAssetDir, "project.json").apply { mkdirs() }
 
             val fileEditorManager = project.fileEditorManager()
@@ -76,13 +79,24 @@ class ApkBuilder :
                         projectJson = projectJson.absolutePath
                     )
                     val config = File(dir, "apk_builder_config.json").apply {
-                        writeText(JsonObject.mapFrom(pojo).printToString())
+                        val json = if (this.exists()) {
+                            JsonObject(readText()).apply {
+                                put("workDir", pojo.workDir)
+                                put("assets", pojo.assets)
+                                put("projectJson", pojo.projectJson)
+                            }
+                        } else {
+                            JsonObject.mapFrom(pojo)
+                        }
+                        writeText(json.printToString())
                     }
 
                     val javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java"
                     val jarPath = coreJar.absolutePath
+
+                    logI("修改配置文件可以让界面无窗体启动")
                     val processBuilder = ProcessBuilder(
-                        javaBin, "-cp", jarPath, "com.github.zimoyin.autox.gui.MainKt", config.absolutePath
+                        javaBin, "-cp", jarPath, "com.github.zimoyin.autox.gui.MainKt", config.absolutePath,
                     )
 
                     logI("开始运行第三方打包程序")
@@ -134,7 +148,8 @@ class ApkBuilder :
                 val isAutoJsProject = autojsProjectBuildAsset(selectedFile, project, workAssetDir)
                 if (!isAutoJsProject && isGradleProject) {
                     gradleProjectBuildAsset(project, base, workAssetDir)
-                } else {
+                }
+                if (!isAutoJsProject && !isGradleProject) {
                     logW("请打开一个正确的AutoJs项目并打开其中的文件，程序将以此为基础搜索项目")
                     throw IllegalArgumentException("无法找到AutoJs项目，且当前项目不是Gradle项目，无法打包")
                 }
@@ -177,7 +192,7 @@ class ApkBuilder :
                 }
             }.onFailure {
                 logW("下载打包文件失败，请在IDEA 设置 代理后重试")
-                throw IllegalStateException("下载打包文件失败",it)
+                throw IllegalStateException("下载打包文件失败", it)
             }
         }
 
@@ -190,14 +205,13 @@ class ApkBuilder :
             var findFile: VirtualFile? = selectedFile
             for (i in 0 until 6) {
                 if (findFile == null) break
-                if (findFile.parent == null || findFile.parent.canonicalPath == project.basePath) {
-                    break
-                }
                 findFile = findFile.parent
-                if (findFile.findDirectory("src") != null) {
+
+                if (findFile == null || findFile.canonicalPath == project.basePath || findFile.findDirectory("src") != null) {
                     break
                 }
             }
+
             var isAutoJsProject = false
             if (findFile != null) {
                 ZipProjectJsonInfo.findProjectJsonInfo(findFile, project)?.apply {
@@ -219,12 +233,24 @@ class ApkBuilder :
             base: @SystemIndependent @NonNls String?,
             workAssetDir: File
         ) {
-            DocRunProjectButton.runBackgroundGradleProject(project, false)
+//            DocRunProjectButton.runBackgroundGradleProject(project, false)
+            callRunGradleProject(project)
             val file = File(base, "build/autojs/intermediate_compilation_files")
             copy(file, workAssetDir)
             logI("拷贝intermediate_compilation_files到asset目录: \n$file \n  ⬇ \n$workAssetDir")
         }
 
+        // 将挂起函数封装为 普通函数
+        private fun callRunGradleProject(project: Project): Boolean = runBlocking {
+            runGradleProject(project)
+        }
+
+        // 将异步方法包装成挂起函数
+        private suspend fun runGradleProject(project: Project): Boolean = suspendCoroutine { cont ->
+            DocRunProjectButton.runBackgroundGradleProject(project, false) { result ->
+                cont.resume(result)
+            }
+        }
 
         /**
          * 拷贝文件到目标文件夹

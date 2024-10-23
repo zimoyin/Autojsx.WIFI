@@ -135,27 +135,38 @@ class DocRunProjectButton :
             }
         }
 
-        fun runBackgroundGradleProject(project: Project, run: Boolean = true) {
+        fun runBackgroundGradleProject(project: Project, run: Boolean = true, onResult: ((Boolean) -> Unit) = {}) {
             ProgressManager.getInstance().run(object : Task.Backgroundable(project, "正在构建项目", true) {
                 override fun run(indicator: ProgressIndicator) {
-                    runBlockGradleProject(project, run)
+                    runBlockGradleProject(project, run, onResult)
+                }
+
+                override fun onCancel() {
+                    onResult(false)
                 }
             })
         }
 
-        private fun runBlockGradleProject(project: Project, run: Boolean) {
-            logI("开始构建 Gradle:compile")
-            GradleUtils.runGradleCommand(project, "compile") { result ->
-                if (result.success) {
-                    logI("构建Gradle:compile 成功")
-                    if (run) runProject(project)
-                } else {
-                    logE("Gradle:compile 构建失败\n${result.error}\n")
+        fun runBlockGradleProject(project: Project, run: Boolean, onResult: ((Boolean) -> Unit) = {}) {
+            kotlin.runCatching {
+                logI("开始构建 Gradle:compile")
+                GradleUtils.runGradleCommand(project, "compile") { result ->
+                    if (result.success) {
+                        logI("构建Gradle:compile 成功")
+                        if (!run) onResult(true)
+                        if (run) runProject(project, onResult)
+                    } else {
+                        onResult(false)
+                        logE("Gradle:compile 构建失败\n${result.error}\n")
+                    }
                 }
+            }.onFailure {
+                logE("Gradle:compile 构建失败", it)
+                onResult(false)
             }
         }
 
-        private fun runProject(project: Project) {
+        private fun runProject(project: Project, onResult: ((Boolean) -> Unit) = {}) {
             val outputMainJsPath = kotlin.runCatching {
                 getGradleOutputMainJsPath(project, false)
             }.getOrNull()
@@ -165,14 +176,21 @@ class DocRunProjectButton :
                 kotlin.runCatching {
                     val file = getGradleOutputMainJsPathAsFile(project, false)
                     VertxCommand.runProject(zipBytes(file.canonicalPath), file.path)
+                    onResult(true)
                 }.onFailure {
+                    onResult(false)
                     logE("无法执行项目，无法正确加载编译后的文件")
                 }
                 return
             } else {
                 logI(outputMainJsPath)
-                val zip = zipProject(outputMainJsPath, project)
-                VertxCommand.runProject(zip.bytes, zip.info.name)
+                kotlin.runCatching {
+                    val zip = zipProject(outputMainJsPath, project)
+                    VertxCommand.runProject(zip.bytes, zip.info.name)
+                    onResult(true)
+                }.onFailure {
+                    onResult(false)
+                }
             }
         }
     }
