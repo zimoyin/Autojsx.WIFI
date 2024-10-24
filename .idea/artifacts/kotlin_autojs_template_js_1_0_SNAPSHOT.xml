@@ -1,8 +1,6 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="kotlin_autojs_template-js-1.0-SNAPSHOT">
     <output-path>$PROJECT_DIR$/sdk/build/libs</output-path>
-    <root id="archive" name="kotlin_autojs_template-js-1.0-SNAPSHOT.jar">
-      <element id="module-output" name="kotlin_autojs_template.jsMain" />
-    </root>
+    <root id="archive" name="kotlin_autojs_template-js-1.0-SNAPSHOT.jar" />
   </artifact>
 </component>
