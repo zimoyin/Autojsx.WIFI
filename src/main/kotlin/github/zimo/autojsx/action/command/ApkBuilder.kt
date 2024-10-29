@@ -222,6 +222,11 @@ class ApkBuilder :
                     logI("拷贝resources到asset目录: \n$findFile \n  ⬇ \n$workAssetDir\n")
                     logI("拷贝lib到asset目录: \n$lib \n  ⬇ \n$workAssetDir\n")
                     logI("拷贝src到asset目录: \n$src \n  ⬇ \n$workAssetDir\n")
+                    if (workAssetDir.list()?.firstOrNull { it == "sdk" } != null){
+                        workAssetDir.resolve("sdk").deleteRecursively()
+                        workAssetDir.resolve("sdk").delete()
+                        logI("删除sdk目录: ${workAssetDir.resolve("sdk")}")
+                    }
                     isAutoJsProject = true
                 }
             }
