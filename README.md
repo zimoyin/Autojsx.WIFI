@@ -1,6 +1,14 @@
 ### 这是一个IDEA平台上的 Autojsx 的插件。用于帮助你在idea上更好的开发 Autojsx
 [@Autojsx项目](https://github.com/kkevsekk1/AutoX) 主要以自动化、工作流为目标，更多地是方便日常生活工作，例如启动游戏时自动屏蔽通知、一键与特定联系人微信视频（知乎上出现过该问题，老人难以进行复杂的操作和子女进行微信视频）等  
 该插件主要支持[kkevsekk1](https://github.com/kkevsekk1/AutoX) 维护的Autojsx
+
+### 功能列表
+* 布局分析
+* 图色查找
+* 项目创建与管理运行
+* Kotlin + node 开发模板创建
+* 多设备管理
+* 程序打包
 ### 如何使用
 1. 使用IDEA版本 2022.2.5 — 2024.2 推荐使用专业版
 2. 现在插件可以在IDEA的插件中心找到，搜索名称为 Autojsx.WIFI
