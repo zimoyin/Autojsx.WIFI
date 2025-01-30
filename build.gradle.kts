@@ -1,7 +1,7 @@
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "2.0.0"
-    id("org.jetbrains.intellij") version "1.13.3"
+    id("org.jetbrains.intellij") version "1.17.4" //"1.13.3"
 }
 
 group = "github.zimo"
@@ -18,8 +18,10 @@ intellij {
     version.set("2022.2.5")
 //    version.set("2024.2")
     type.set("IC") // Target IDE Platform
-
     plugins.set(listOf("com.intellij.gradle"/* Plugin Dependencies */))
+
+//    type.set("IU") // Target IDE Platform
+//    plugins.set(listOf("com.intellij.gradle","com.intellij.java","com.intellij.database"/* Plugin Dependencies */))
 }
 
 dependencies {

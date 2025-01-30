@@ -21,7 +21,7 @@ plugins {
 
 group = "zimoyin.github"
 version = "1.0-SNAPSHOT"
-val sdkVersion = "2.1.2"
+val sdkVersion = "2.1.3"
 
 repositories {
     mavenCentral()

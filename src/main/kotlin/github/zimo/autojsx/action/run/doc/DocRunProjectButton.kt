@@ -1,5 +1,6 @@
 package github.zimo.autojsx.action.run.doc
 
+import com.intellij.codeInsight.codeVision.CodeVisionState.NotReady.result
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -190,6 +191,7 @@ class DocRunProjectButton :
                     onResult(true)
                 }.onFailure {
                     onResult(false)
+                    logE("无法执行项目，无法正确加载编译后的文件")
                 }
             }
         }

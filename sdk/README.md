@@ -20,6 +20,7 @@
 
 # 加载脚本
 1. 使用 loadJsFile 函数可以执行脚本
+   * loadJsFile("test.js") 如果文件最后返回的是一个 function 的话, 可以使用 loadJsFile("test.js").call() 调用
 2. 使用 require 方法可以加载脚本文件.
    * 通过 eval 或者 js 等函数方式调用. 
    * 通过原生方式调用, 需要使用 external 等关键字声明一些 kotlin 方法或者其他
